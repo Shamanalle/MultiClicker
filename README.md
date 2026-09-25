@@ -1,13 +1,28 @@
 # MultiClicker
 
-[![Minecraft](https://img.shields.io/badge/Minecraft-1.21.8-blue.svg)](https://minecraft.net/)
-[![Fabric](https://img.shields.io/badge/Fabric-Loader%200.16.14-green.svg)](https://fabricmc.net/)
-[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://adoptium.net/)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.21.8%20--%2026.3-blue.svg)](https://minecraft.net/)
+[![Fabric](https://img.shields.io/badge/Fabric-Loader%20%3E%3D%200.16.0-green.svg)](https://fabricmc.net/)
+[![Java](https://img.shields.io/badge/Java-21%20%7C%2025-orange.svg)](https://adoptium.net/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A modern, highly modular and feature-rich automation and auto-clicker mod for **Minecraft 1.21.8** (Fabric / NeoForge).
+A modern, highly modular and feature-rich automation and auto-clicker mod supporting **Minecraft 1.21.8 up to 26.3 (Wilderness Bound)** for Fabric.
 
 Designed with a clean component-based architecture, advanced humanization algorithms to bypass strict anti-cheat heuristics, survival fail-safes, and a sleek in-game GUI with real-time stats and 3D ESP target tracking.
+
+---
+
+## 📦 Supported Versions & Downloads
+
+All official release builds are available on the [**GitHub Releases**](https://github.com/Shamanalle/MultiClicker/releases) page. Each Minecraft version has its own dedicated branch and optimized build:
+
+| Minecraft Version | Update Name | Branch | Java | Download Artifact |
+|:---:|:---|:---:|:---:|:---|
+| **1.21.8** | *Baseline Release* | [`main`](https://github.com/Shamanalle/MultiClicker/tree/main) | Java 21 | [`MultiClicker-1.0.0+1.21.8.jar`](https://github.com/Shamanalle/MultiClicker/releases/download/v1.0.0/MultiClicker-1.0.0+1.21.8.jar) |
+| **1.21.9** | *The Copper Age* | [`release/1.21.9`](https://github.com/Shamanalle/MultiClicker/tree/release/1.21.9) | Java 21 | [`MultiClicker-1.0.0+1.21.9.jar`](https://github.com/Shamanalle/MultiClicker/releases/download/v1.0.0/MultiClicker-1.0.0+1.21.9.jar) |
+| **1.21.11** | *Mounts of Mayhem* | [`release/1.21.11`](https://github.com/Shamanalle/MultiClicker/tree/release/1.21.11) | Java 21 | [`MultiClicker-1.0.0+1.21.11.jar`](https://github.com/Shamanalle/MultiClicker/releases/download/v1.0.0/MultiClicker-1.0.0+1.21.11.jar) |
+| **26.1** | *Tiny Takeover* | [`release/26.1`](https://github.com/Shamanalle/MultiClicker/tree/release/26.1) | Java 25 | [`MultiClicker-1.0.0+26.1.jar`](https://github.com/Shamanalle/MultiClicker/releases/download/v1.0.0/MultiClicker-1.0.0+26.1.jar) |
+| **26.2** | *Chaos Cubed* | [`release/26.2`](https://github.com/Shamanalle/MultiClicker/tree/release/26.2) | Java 25 | [`MultiClicker-1.0.0+26.2.jar`](https://github.com/Shamanalle/MultiClicker/releases/download/v1.0.0/MultiClicker-1.0.0+26.2.jar) |
+| **26.3** | *Wilderness Bound* | [`release/26.3`](https://github.com/Shamanalle/MultiClicker/tree/release/26.3) | Java 25 | [`MultiClicker-1.0.0+26.3.jar`](https://github.com/Shamanalle/MultiClicker/releases/download/v1.0.0/MultiClicker-1.0.0+26.3.jar) |
 
 ---
 
@@ -38,18 +53,18 @@ Designed with a clean component-based architecture, advanced humanization algori
 ### ⛏️ 4. World & Mining
 - **Adaptive Mining Mode**: Automatically distinguishes between attacking entities and breaking blocks, switching to continuous break logic.
 - **Block Whitelist / Blacklist**: Whitelist high-value ores or blacklist unintended blocks.
-- **Auto-Tool**: Instantly switches to the fastest hotbar tool for the target block.
+- **Auto-Tool**: Instantly switches to the fastest hotbar tool for the target block with full server packet sync (`ServerboundSetCarriedItemPacket`).
 
 ### ❤️ 5. Survival & Protection
 - **Panic Mode**: Emergency triggers when health drops below a configurable threshold (auto-disconnect or safe retreat).
-- **Auto-Totem**: Instantly slots a Totem of Undying from your inventory into the offhand when health is critically low.
+- **Auto-Totem**: Instantly slots a Totem of Undying from your inventory into the offhand when health is critically low with network debounce.
 - **Smart Offhand**: Intelligently swaps shields, golden apples, totems, and fireworks based on combat situation.
-- **Auto-Eat**: Automatically consumes food from hotbar/inventory when hunger or health drops.
+- **Auto-Eat**: Automatically consumes food from hotbar/inventory when hunger or health drops with packet synchronization.
 
 ### 🤖 6. Full Automation
 - **Auto-Fish**: Autonomous fishing with splash-particle and bobber movement detection.
 - **Anti-AFK**: Evades server AFK kicks using pseudo-random micro-movements, pitch/yaw rotation, and jumps.
-- **Auto-Walk**: Continuous hands-free walking with obstacle jump assist.
+- **Auto-Walk**: Continuous hands-free walking with obstacle jump assist and auto-pause when screens are open.
 - **Trash Drop**: Configurable list of unwanted items to automatically discard from inventory.
 
 ### 📊 7. Visuals, HUD & 3D ESP
@@ -76,24 +91,30 @@ Designed with a clean component-based architecture, advanced humanization algori
 
 ## 📦 Requirements & Installation
 
-1. Install **Minecraft 1.21.8**.
-2. Install **Fabric Loader** (version `0.16.14` or newer).
-3. Download and place the latest **Fabric API** into your `.minecraft/mods` folder.
-4. Download [`MultiClicker-fabric-1.0.0.jar`](fabric/build/libs/MultiClicker-fabric-1.0.0.jar) and place it into your `.minecraft/mods` folder.
+1. Install the appropriate **Minecraft** version (from 1.21.8 up to 26.3).
+2. Install **Fabric Loader** (version `0.16.0` or newer).
+3. Download the matching **Fabric API** for your Minecraft version and place it into your `.minecraft/mods` folder.
+4. Download the corresponding `MultiClicker-1.0.0+<version>.jar` from [**Releases**](https://github.com/Shamanalle/MultiClicker/releases) and place it into `.minecraft/mods`.
 5. Launch the game and press <kbd>O</kbd> to configure your settings!
 
 ---
 
 ## 🛠️ Building from Source
 
-Ensure you have **JDK 21** installed and configured.
+### Prerequisites:
+- **JDK 21** for branches `main` (1.21.8), `release/1.21.9`, and `release/1.21.11`.
+- **JDK 25** for branches `release/26.1`, `release/26.2`, and `release/26.3`.
 
+### Build Steps:
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/Shamanalle/MultiClicker.git
 cd MultiClicker
 
-# Build with Gradle wrapper
+# 2. Switch to the desired Minecraft version branch
+git checkout release/26.3   # or: main, release/1.21.9, release/1.21.11, release/26.1, release/26.2
+
+# 3. Build with Gradle wrapper
 ./gradlew build
 ```
 
