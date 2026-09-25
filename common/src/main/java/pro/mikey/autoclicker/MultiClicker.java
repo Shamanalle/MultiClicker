@@ -22,7 +22,7 @@ import pro.mikey.autoclicker.module.combat.TargetFilterModule;
 import pro.mikey.autoclicker.module.mining.AutoToolModule;
 import pro.mikey.autoclicker.module.mining.MiningModule;
 import pro.mikey.autoclicker.module.survival.AutoEatModule;
-import pro.mikey.autoclicker.module.survival.AutoTotemModule;
+import pro.mikey.autoclicker.module.survival.OffhandModule;
 import pro.mikey.autoclicker.module.survival.SafetyModule;
 import pro.mikey.autoclicker.module.visual.HighlightModule;
 import pro.mikey.autoclicker.module.visual.HudModule;
@@ -54,7 +54,7 @@ public final class MultiClicker {
     private final ClickerModule clicker = new ClickerModule();
     private final TargetFilterModule targetFilter = new TargetFilterModule();
     private final SafetyModule safety = new SafetyModule();
-    private final AutoTotemModule autoTotem = new AutoTotemModule();
+    private final OffhandModule offhand = new OffhandModule();
     private final AutoEatModule autoEat = new AutoEatModule();
     private final AutoFishModule autoFish = new AutoFishModule();
     private final AntiAfkModule antiAfk = new AntiAfkModule();
@@ -67,13 +67,13 @@ public final class MultiClicker {
     private final InterfaceModule ui = new InterfaceModule();
 
     /** Display order (grouped by category in the menu). */
-    private final List<Module> modules = List.of(clicker, targetFilter, safety, autoTotem, autoEat, autoFish,
+    private final List<Module> modules = List.of(clicker, targetFilter, safety, offhand, autoEat, autoFish,
             antiAfk, autoWalk, inventoryCleaner, mining, autoTool, hud, highlight, ui);
     /**
      * Tick order. The clicker runs before the modules that borrow its keys (auto eat, auto fish),
      * so their input wins within the same tick.
      */
-    private final List<Module> tickOrder = List.of(safety, clicker, autoTotem, autoEat, autoFish, autoTool,
+    private final List<Module> tickOrder = List.of(safety, clicker, autoEat, offhand, autoFish, autoTool,
             inventoryCleaner, antiAfk, autoWalk);
 
     private final ConfigManager config;
