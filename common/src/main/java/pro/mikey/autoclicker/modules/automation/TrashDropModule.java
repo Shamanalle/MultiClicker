@@ -2,7 +2,7 @@ package pro.mikey.autoclicker.modules.automation;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import pro.mikey.autoclicker.core.Module;
 import pro.mikey.autoclicker.core.Setting;
 import pro.mikey.autoclicker.core.Setting.*;
@@ -115,11 +115,11 @@ public class TrashDropModule implements Module {
                 // Convert inventory slot to container slot for player inventory menu
                 int containerSlot = (i < 9) ? (36 + i) : i;
                 // Use Q-key throw via container click (vanilla protocol, server-safe)
-                mc.gameMode.handleInventoryMouseClick(
+                mc.gameMode.handleContainerInput(
                         mc.player.inventoryMenu.containerId,
                         containerSlot,
                         1, // button=1 for full stack throw
-                        ClickType.THROW,
+                        ContainerInput.THROW,
                         mc.player);
                 dropped++;
             }

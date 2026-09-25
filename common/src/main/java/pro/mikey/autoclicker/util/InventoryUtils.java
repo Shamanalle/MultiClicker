@@ -3,7 +3,7 @@ package pro.mikey.autoclicker.util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -92,11 +92,11 @@ public final class InventoryUtils {
         if (mc.player == null || mc.gameMode == null || invSlot < 0 || invSlot >= 36)
             return;
         int containerSlot = (invSlot < 9) ? (36 + invSlot) : invSlot;
-        mc.gameMode.handleInventoryMouseClick(
+        mc.gameMode.handleContainerInput(
                 mc.player.inventoryMenu.containerId,
                 containerSlot,
                 40, // F-key swap with offhand
-                ClickType.SWAP,
+                ContainerInput.SWAP,
                 mc.player);
     }
 }

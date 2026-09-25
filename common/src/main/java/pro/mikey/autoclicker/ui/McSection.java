@@ -1,6 +1,6 @@
 package pro.mikey.autoclicker.ui;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import pro.mikey.autoclicker.core.Setting;
 import java.util.*;
 import java.util.function.BooleanSupplier;
@@ -132,7 +132,7 @@ public class McSection extends McWidget {
     }
 
     @Override
-    protected void draw(GuiGraphics g, int mx, int my, float dt) {
+    protected void draw(GuiGraphicsExtractor g, int mx, int my, float dt) {
         colAnim = spring(colAnim, collapsed ? 0f : 1f, 0.25f, dt);
         boolean masterOff = master != null && !master.get();
         boolean shouldDim = (dimCond != null && dimCond.getAsBoolean()) || masterOff;

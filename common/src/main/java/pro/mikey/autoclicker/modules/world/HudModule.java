@@ -1,7 +1,7 @@
 package pro.mikey.autoclicker.modules.world;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -146,7 +146,7 @@ public class HudModule implements Module {
     // Rendering
     // ══════════════════════════════════════════════════════════════
 
-    public void render(GuiGraphics context, net.minecraft.client.DeltaTracker delta) {
+    public void render(GuiGraphicsExtractor context, net.minecraft.client.DeltaTracker delta) {
         if (!enabled.get())
             return;
         AutoClicker instance = AutoClicker.getInstance();
@@ -285,7 +285,7 @@ public class HudModule implements Module {
 
     // ── Helper methods ──
 
-    private void drawHudLine(GuiGraphics context, Minecraft client, Component text,
+    private void drawHudLine(GuiGraphicsExtractor context, Minecraft client, Component text,
             int lineIndex, int screenW, int screenH, boolean isRight, boolean isBottom) {
         int lineHeight = 14;
         int margin = 6;
@@ -318,7 +318,7 @@ public class HudModule implements Module {
         } else {
             McWidget.fill(context, lx - padding, ly - 2, lx - padding + 1, ly + 10, accentAlpha);
         }
-        context.drawString(client.font, text, lx, ly, 0xFFFFFFFF, true);
+        context.text(client.font, text, lx, ly, 0xFFFFFFFF, true);
     }
 
     private String formatStat2(float value) {

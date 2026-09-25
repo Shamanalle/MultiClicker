@@ -1,6 +1,6 @@
 package pro.mikey.autoclicker.ui;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import java.util.function.Consumer;
 
 public class McToggle extends McWidget {
@@ -19,7 +19,7 @@ public class McToggle extends McWidget {
     }
 
     @Override
-    protected void draw(GuiGraphics g, int mx, int my, float dt) {
+    protected void draw(GuiGraphicsExtractor g, int mx, int my, float dt) {
         anim = spring(anim, value ? 1f : 0f, 0.2f, dt);
         if (hoverAnim > 0.01f) fill(g, x, y, x + w, y + h, (int)(hoverAnim * 10) << 24 | 0x00FFFFFF);
 

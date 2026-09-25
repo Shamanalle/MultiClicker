@@ -54,7 +54,7 @@ public interface Module {
     // ── Rendering ────────────────────────────────────────────────────
 
     /** Called every render frame for HUD overlay drawing. */
-    default void onHudRender(Minecraft mc, net.minecraft.client.gui.GuiGraphics graphics,
+    default void onHudRender(Minecraft mc, net.minecraft.client.gui.GuiGraphicsExtractor graphics,
             net.minecraft.client.DeltaTracker delta) {
     }
 

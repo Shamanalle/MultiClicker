@@ -12,7 +12,6 @@
     "MixinArmorStand",
     "MixinMouseHandler",
     "InventoryAccessor",
-    "MixinGameRenderer",
     "MixinMinecraft",
     "MixinFishingHook",
     "MixinKeepAlive"

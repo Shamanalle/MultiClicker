@@ -1,12 +1,6 @@
 plugins {
-    id 'dev.architectury.loom' version '1.11-SNAPSHOT' apply false
-    id 'architectury-plugin' version '3.4-SNAPSHOT'
-    id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
+    id 'fabric-loom' version '1.18.2' apply false
     id 'maven-publish'
-}
-
-architectury {
-    minecraft = project.minecraft_version
 }
 
 allprojects {
@@ -18,9 +12,13 @@ subprojects {
     version = project.mod_version
     group = project.maven_group
 
-    apply plugin: 'dev.architectury.loom'
-    apply plugin: 'architectury-plugin'
+    apply plugin: 'fabric-loom'
     apply plugin: 'maven-publish'
+
+    loom {
+        noIntermediateMappings()
+        enableTransitiveAccessWideners = false
+    }
 
     base {
         // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
@@ -34,24 +32,30 @@ subprojects {
 
     dependencies {
         minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
-        mappings loom.officialMojangMappings()
+        mappings loom.layered {
+            mappings(rootProject.file("mappings.tiny"))
+        }
     }
 
     java {
         withSourcesJar()
 
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.toVersion(25)
+        targetCompatibility = JavaVersion.toVersion(25)
     }
 
     tasks.withType(JavaCompile).configureEach {
-        it.options.release = 21
+        it.options.release = 25
         it.options.encoding = "UTF-8"
+    }
+
+    tasks.withType(net.fabricmc.loom.task.RemapSourcesJarTask).configureEach {
+        enabled = false
     }
 
     jar {
         from("LICENSE") {
-            rename { "${it}_${project.archivesBaseName}" }
+            rename { "${it}_${project.base.archivesName.get()}" }
         }
     }
 
@@ -60,7 +64,7 @@ subprojects {
         publications {
             mavenJava(MavenPublication) {
                 groupId project.group
-                artifactId project.archivesBaseName
+                artifactId project.base.archivesName.get()
                 version project.version
                 from components.java
             }

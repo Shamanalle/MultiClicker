@@ -54,4 +54,22 @@ public class MixinMinecraft {
                     clicker.consumeFrameLatchedEntity();
                 });
     }
+
+    @Inject(method = "pick", at = @At("TAIL"))
+    private void afterPick(float partialTicks, CallbackInfo ci) {
+        AutoClicker instance = AutoClicker.getInstance();
+        if (instance == null)
+            return;
+
+        Minecraft mc = (Minecraft) (Object) this;
+        if (mc.player == null || mc.level == null)
+            return;
+
+        if (mc.hitResult instanceof EntityHitResult ehr
+                && ehr.getEntity() instanceof LivingEntity le
+                && le.isAlive() && le.isAttackable()) {
+            instance.getModuleManager().<CombatClickerModule>get("combat_clicker")
+                    .ifPresent(clicker -> clicker.setFrameLatchedEntity(le));
+        }
+    }
 }

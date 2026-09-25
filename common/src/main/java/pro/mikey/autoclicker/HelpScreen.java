@@ -1,6 +1,6 @@
 package pro.mikey.autoclicker;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.input.KeyEvent;
@@ -57,18 +57,18 @@ public class HelpScreen extends Screen {
     private int totH() { int h = 0; for (Entry e : entries) h += eH(e); return h; }
 
     @Override
-    public void render(GuiGraphics g, int mx, int my, float dt) {
+    public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float dt) {
         McWidget.fill(g, 0, 0, width, height, 0xF0080812);
         int ac = McWidget.accent();
 
         McWidget.gradV(g, 0, 0, width, HH, 0xFF111128, 0xFF0D0D20);
         McWidget.fill(g, 0, HH - 1, width, HH, (0x22 << 24) | (ac & 0x00FFFFFF));
-        g.drawString(font, "Мануал MultiClicker", 12, (HH - 9) / 2, 0xFFE2E2EE, true);
+        g.text(font, "Мануал MultiClicker", 12, (HH - 9) / 2, 0xFFE2E2EE, true);
 
         int total = 0;
         for (Module m : AutoClicker.getInstance().getModuleManager().getModules()) total += m.getSettings().size();
         String badge = total + " настроек";
-        g.drawString(font, badge, width - font.width(badge) - 12, (HH - 9) / 2, 0xFF8888BB, false);
+        g.text(font, badge, width - font.width(badge) - 12, (HH - 9) / 2, 0xFF8888BB, false);
 
         int topY = HH, botY = height - FH, visH = botY - topY;
         int cw = Math.min(width - 40, 560), lx = (width - cw) / 2;
@@ -87,13 +87,13 @@ public class HelpScreen extends Screen {
                     McWidget.shadow(g, lx, y, cw, SH, 2);
                     McWidget.panel(g, lx, y, cw, SH, 0xFF111128, 0xFF222248);
                     McWidget.fill(g, lx + 1, y + 3, lx + 6, y + SH - 3, ac);
-                    g.drawString(font, e.label, lx + 12, y + 8, ac, true);
+                    g.text(font, e.label, lx + 12, y + 8, ac, true);
                 } else if (!e.label.isEmpty()) {
                     if (ri % 2 == 0) McWidget.fill(g, lx + 6, y, lx + cw - 6, y + RH, 0x08FFFFFF);
-                    g.drawString(font, e.label, lx + 18, y + 5, 0xFFEECC66, false);
+                    g.text(font, e.label, lx + 18, y + 5, 0xFFEECC66, false);
                     int lw = font.width(e.label);
-                    g.drawString(font, " -- ", lx + 18 + lw, y + 5, 0xFF333350, false);
-                    g.drawString(font, e.desc, lx + 18 + lw + font.width(" -- "), y + 5, 0xFFAAAACC, false);
+                    g.text(font, " -- ", lx + 18 + lw, y + 5, 0xFF333350, false);
+                    g.text(font, e.desc, lx + 18 + lw + font.width(" -- "), y + 5, 0xFFAAAACC, false);
                     ri++;
                 }
             }
@@ -115,7 +115,7 @@ public class HelpScreen extends Screen {
         int bw = font.width(back) + 16, bx = width / 2 - bw / 2, by = botY + (FH - 16) / 2;
         boolean bh = mx >= bx && mx < bx + bw && my >= by && my < by + 16;
         McWidget.panel(g, bx, by, bw, 16, bh ? 0xFF1C1C38 : 0xFF111128, bh ? ac : 0xFF2A2A50);
-        g.drawString(font, back, bx + 8, by + 4, bh ? 0xFFE2E2EE : 0xFF8888BB, false);
+        g.text(font, back, bx + 8, by + 4, bh ? 0xFFE2E2EE : 0xFF8888BB, false);
     }
 
     @Override public boolean mouseClicked(MouseButtonEvent event, boolean bl) {

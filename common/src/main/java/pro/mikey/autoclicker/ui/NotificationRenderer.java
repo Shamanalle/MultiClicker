@@ -1,7 +1,7 @@
 package pro.mikey.autoclicker.ui;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -61,7 +61,7 @@ public class NotificationRenderer {
     }
 
     /** Called from HUD render event every frame. */
-    public void render(GuiGraphics gfx) {
+    public void render(GuiGraphicsExtractor gfx) {
         if (notifications.isEmpty())
             return;
 
@@ -111,12 +111,12 @@ public class NotificationRenderer {
             // Title
             int titleAlpha = (int) (alpha * 0xFF);
             int titleColor = (titleAlpha << 24) | (n.color & 0x00FFFFFF);
-            gfx.drawString(mc.font, n.title, nx + 6, ny + 4, titleColor, false);
+            gfx.text(mc.font, n.title, nx + 6, ny + 4, titleColor, false);
 
             // Text
             int textAlpha = (int) (alpha * 0xCC);
             int textColor = (textAlpha << 24) | 0x00CCCCDD;
-            gfx.drawString(mc.font, n.text, nx + 6, ny + 16, textColor, false);
+            gfx.text(mc.font, n.text, nx + 6, ny + 16, textColor, false);
 
             // Bottom separator
             int sepAlpha = (int) (alpha * 0x20);

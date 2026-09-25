@@ -1,6 +1,6 @@
 package pro.mikey.autoclicker.ui;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import pro.mikey.autoclicker.core.Setting;
 
 import java.util.*;
@@ -83,7 +83,7 @@ public class McNavPanel extends McWidget {
     // ══════════════════════════════════════════════════
 
     @Override
-    protected void draw(GuiGraphics g, int mx, int my, float dt) {
+    protected void draw(GuiGraphicsExtractor g, int mx, int my, float dt) {
         // Smooth scroll
         float f = 1f - (float) Math.pow(0.05, dt / 3.0);
         scroll += (targetScroll - scroll) * f;

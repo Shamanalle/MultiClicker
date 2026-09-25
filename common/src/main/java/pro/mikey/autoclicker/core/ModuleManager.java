@@ -147,7 +147,7 @@ public final class ModuleManager {
     // ── Render dispatch ───────────────────────────────────────────────
 
     /** Dispatch HUD overlay rendering (every render frame). */
-    public void onHudRender(Minecraft mc, net.minecraft.client.gui.GuiGraphics graphics,
+    public void onHudRender(Minecraft mc, net.minecraft.client.gui.GuiGraphicsExtractor graphics,
             net.minecraft.client.DeltaTracker delta) {
         for (Module m : modules) {
             try {

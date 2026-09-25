@@ -1,6 +1,6 @@
 package pro.mikey.autoclicker;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
@@ -541,7 +541,7 @@ public class OptionsScreen extends Screen {
     // ══════════════════════════════════════════
 
     @Override
-    public void render(GuiGraphics g, int mx, int my, float dt) {
+    public void extractRenderState(GuiGraphicsExtractor g, int mx, int my, float dt) {
         openAnim = Math.min(1f, openAnim + dt * 0.07f);
         float e = 1f - (1f - openAnim) * (1f - openAnim);
         McWidget.fill(g, 0, 0, width, height, ((int)(e * 0xE0) << 24) | 0x000A0A14);
@@ -553,11 +553,11 @@ public class OptionsScreen extends Screen {
         rSearch(g, mx, my);
     }
 
-    private void rHead(GuiGraphics g, int mx, int my, float dt) {
+    private void rHead(GuiGraphicsExtractor g, int mx, int my, float dt) {
         McWidget.gradV(g, 0, 0, width, HEAD, 0xFF111128, 0xFF0D0D20);
         McWidget.fill(g, 0, HEAD - 1, width, HEAD, 0xFF1E1E40);
         McWidget.fill(g, 0, 0, width, 1, 0x14FFFFFF);
-        g.drawString(font, "MultiClicker", 10, (HEAD - 9) / 2, 0xFFE2E2EE, true);
+        g.text(font, "MultiClicker", 10, (HEAD - 9) / 2, 0xFFE2E2EE, true);
 
         // ON/OFF pill
         boolean on = ac.isActiveState();
@@ -567,7 +567,7 @@ public class OptionsScreen extends Screen {
         int pillY = (HEAD - 14) / 2;
         McWidget.pill(g, stX, pillY, pillW, 14, on ? 0x2855FF99 : 0x14FFFFFF);
         McWidget.circle(g, stX + 5, HEAD / 2, 3, on ? 0xFF55FF99 : 0xFF666688);
-        g.drawString(font, st, stX + 11, (HEAD - 9) / 2, on ? 0xFF55FF99 : 0xFF666688, false);
+        g.text(font, st, stX + 11, (HEAD - 9) / 2, on ? 0xFF55FF99 : 0xFF666688, false);
 
         // Accent dots
         int dX = stX + pillW + 12;
@@ -585,34 +585,34 @@ public class OptionsScreen extends Screen {
         boolean hh = mx >= hx - 5 && mx <= hx + 12 && my >= 4 && my < HEAD - 4;
         McWidget.panel(g, hx - 4, (HEAD - 14) / 2, 14, 14,
             hh ? 0xFF1C1C38 : 0x00000000, hh ? McWidget.accent() : 0xFF2A2A50);
-        g.drawString(font, "?", hx, (HEAD - 9) / 2, hh ? McWidget.accent() : 0xFF7777AA, false);
+        g.text(font, "?", hx, (HEAD - 9) / 2, hh ? McWidget.accent() : 0xFF7777AA, false);
     }
 
-    private void rFoot(GuiGraphics g, int mx, int my) {
+    private void rFoot(GuiGraphicsExtractor g, int mx, int my) {
         int fy = height - FOOT;
         McWidget.fill(g, 0, fy, width, height, 0xFF0A0A14);
         McWidget.fill(g, 0, fy, width, fy + 1,
             (0x18 << 24) | (McWidget.accent() & 0x00FFFFFF));
         String tps = "TPS " + String.format("%.1f", ClientTPS.getTPS());
         String ping = "Ping " + ClientPing.getPing() + "ms";
-        g.drawString(font, tps, 10, fy + 5, 0xFF8888BB, false);
+        g.text(font, tps, 10, fy + 5, 0xFF8888BB, false);
         int sx = 10 + font.width(tps) + 8;
         McWidget.fill(g, sx, fy + 4, sx + 1, fy + FOOT - 4, 0x25FFFFFF);
-        g.drawString(font, ping, sx + 6, fy + 5, 0xFF8888BB, false);
+        g.text(font, ping, sx + 6, fy + 5, 0xFF8888BB, false);
         String ver = "v1.0";
-        g.drawString(font, ver, width - font.width(ver) - 10, fy + 5, 0xFF555577, false);
+        g.text(font, ver, width - font.width(ver) - 10, fy + 5, 0xFF555577, false);
     }
 
-    private void rSearch(GuiGraphics g, int mx, int my) {
+    private void rSearch(GuiGraphicsExtractor g, int mx, int my) {
         blink++;
         int sw = 110, sh = 14, sx = width - sw - 36, sy = (HEAD - sh) / 2;
         McWidget.panel(g, sx, sy, sw, sh,
             searchOn ? 0xC0181830 : 0x40181830,
             searchOn ? McWidget.accent() : 0x22FFFFFF);
         if (query.isEmpty() && !searchOn)
-            g.drawString(font, "Поиск...", sx + 5, sy + 3, 0xFF404065, false);
+            g.text(font, "Поиск...", sx + 5, sy + 3, 0xFF404065, false);
         else
-            g.drawString(font, query, sx + 5, sy + 3, 0xFFE2E2EE, false);
+            g.text(font, query, sx + 5, sy + 3, 0xFFE2E2EE, false);
         if (searchOn && (blink / 20) % 2 == 0)
             McWidget.fill(g, sx + 5 + font.width(query), sy + 2,
                 sx + 6 + font.width(query), sy + sh - 2, 0xFFE2E2EE);

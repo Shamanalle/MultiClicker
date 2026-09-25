@@ -2,7 +2,7 @@ package pro.mikey.autoclicker.ui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -62,7 +62,11 @@ public abstract class McWidget implements Renderable, GuiEventListener, Narratab
     // ═══ Rendering ═══
 
     @Override
-    public void render(GuiGraphics gfx, int mx, int my, float dt) {
+    public void extractRenderState(GuiGraphicsExtractor gfx, int mx, int my, float dt) {
+        render(gfx, mx, my, dt);
+    }
+
+    public void render(GuiGraphicsExtractor gfx, int mx, int my, float dt) {
         if (!visible) return;
         hovered = mx >= x && mx < x + w && my >= y && my < y + h;
         hoverAnim = spring(hoverAnim, hovered ? 1f : 0f, 0.3f, dt);
@@ -70,7 +74,7 @@ public abstract class McWidget implements Renderable, GuiEventListener, Narratab
         if (dimmed) fill(gfx, x, y, x + w, y + h, 0xA0000010);
     }
 
-    protected abstract void draw(GuiGraphics gfx, int mx, int my, float dt);
+    protected abstract void draw(GuiGraphicsExtractor gfx, int mx, int my, float dt);
 
     // ═══ Input ═══
 
@@ -112,7 +116,7 @@ public abstract class McWidget implements Renderable, GuiEventListener, Narratab
 
     @Override
     public boolean charTyped(CharacterEvent event) {
-        return charTyped((char) event.codepoint(), event.modifiers());
+        return charTyped((char) event.codepoint(), 0);
     }
     public boolean charTyped(char ch, int mods) { return false; }
     @Override public boolean isFocused() { return focused; }
@@ -129,27 +133,27 @@ public abstract class McWidget implements Renderable, GuiEventListener, Narratab
         return ac != null ? ac.getAccentColor() : 0xFF5599FF;
     }
 
-    /** Fill rect via 1x1 white blit. */
-    public static void fill(GuiGraphics g, int x1, int y1, int x2, int y2, int color) {
+    /** Fill rect. */
+    public static void fill(GuiGraphicsExtractor g, int x1, int y1, int x2, int y2, int color) {
         if (x2 <= x1 || y2 <= y1 || ((color >> 24) & 0xFF) == 0) return;
-        g.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, WHITE, x1, y1, 0f, 0f, x2 - x1, y2 - y1, x2 - x1, y2 - y1, color);
+        g.fill(x1, y1, x2, y2, color);
     }
 
     /** Draw text using Minecraft's built-in font. */
-    public static void txt(GuiGraphics g, String s, int x, int y, int color) {
-        g.drawString(font(), s, x, y, color, false);
+    public static void txt(GuiGraphicsExtractor g, String s, int x, int y, int color) {
+        g.text(font(), s, x, y, color, false);
     }
 
     /** Draw text with drop shadow. */
-    public static void txts(GuiGraphics g, String s, int x, int y, int color) {
-        g.drawString(font(), s, x, y, color, true);
+    public static void txts(GuiGraphicsExtractor g, String s, int x, int y, int color) {
+        g.text(font(), s, x, y, color, true);
     }
 
     /** Text width using Minecraft font. */
     public static int tw(String s) { return font().width(s); }
 
     /** Rounded panel with border (fake corners). */
-    public static void panel(GuiGraphics g, int x, int y, int w, int h, int bg, int brd) {
+    public static void panel(GuiGraphicsExtractor g, int x, int y, int w, int h, int bg, int brd) {
         fill(g, x + 2, y, x + w - 2, y + h, bg);
         fill(g, x, y + 2, x + 2, y + h - 2, bg);
         fill(g, x + w - 2, y + 2, x + w, y + h - 2, bg);
@@ -167,7 +171,7 @@ public abstract class McWidget implements Renderable, GuiEventListener, Narratab
         fill(g, x + w - 2, y + h - 2, x + w - 1, y + h - 1, brd);
     }
 
-    public static void gradV(GuiGraphics g, int x1, int y1, int x2, int y2, int cT, int cB) {
+    public static void gradV(GuiGraphicsExtractor g, int x1, int y1, int x2, int y2, int cT, int cB) {
         int h = y2 - y1;
         if (h <= 0) return;
         int seg = Math.min(h, 16);
@@ -179,14 +183,14 @@ public abstract class McWidget implements Renderable, GuiEventListener, Narratab
         }
     }
 
-    public static void circle(GuiGraphics g, int cx, int cy, int r, int color) {
+    public static void circle(GuiGraphicsExtractor g, int cx, int cy, int r, int color) {
         for (int dy = -r; dy <= r; dy++) {
             int dx = (int) Math.sqrt(r * r - dy * dy);
             fill(g, cx - dx, cy + dy, cx + dx + 1, cy + dy + 1, color);
         }
     }
 
-    public static void pill(GuiGraphics g, int x, int y, int w, int h, int color) {
+    public static void pill(GuiGraphicsExtractor g, int x, int y, int w, int h, int color) {
         int r = h / 2;
         if (r <= 0) { fill(g, x, y, x + w, y + h, color); return; }
         for (int dy = -r; dy <= r; dy++) {
@@ -195,7 +199,7 @@ public abstract class McWidget implements Renderable, GuiEventListener, Narratab
         }
     }
 
-    public static void shadow(GuiGraphics g, int x, int y, int w, int h, int layers) {
+    public static void shadow(GuiGraphicsExtractor g, int x, int y, int w, int h, int layers) {
         for (int i = layers; i >= 1; i--)
             fill(g, x + i, y + i, x + w + i, y + h + i, (5 * i) << 24);
     }
@@ -214,7 +218,7 @@ public abstract class McWidget implements Renderable, GuiEventListener, Narratab
     }
 
     /** Draw subtitle below label. */
-    protected void drawSub(GuiGraphics g, int lx, int ly) {
+    protected void drawSub(GuiGraphicsExtractor g, int lx, int ly) {
         if (subtitle != null && !subtitle.isEmpty()) {
             String s = subtitle;
             int maxW = w - 16;

@@ -1,6 +1,6 @@
 package pro.mikey.autoclicker.ui;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import pro.mikey.autoclicker.core.Setting;
 
 public class McDropdown extends McWidget {
@@ -13,7 +13,7 @@ public class McDropdown extends McWidget {
     }
 
     @Override
-    protected void draw(GuiGraphics g, int mx, int my, float dt) {
+    protected void draw(GuiGraphicsExtractor g, int mx, int my, float dt) {
         if (hoverAnim > 0.01f) fill(g, x, y, x + w, y + h, (int)(hoverAnim * 15) << 24 | 0x00FFFFFF);
 
         int ly = subtitle != null ? y + 5 : y + (h - 9) / 2;

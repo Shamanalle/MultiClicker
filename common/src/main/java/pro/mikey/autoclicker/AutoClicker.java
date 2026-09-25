@@ -160,10 +160,9 @@ public class AutoClicker {
             }
             combatStats.reset();
 
-            mc.player.displayClientMessage(
+            mc.player.sendOverlayMessage(
                     (isActive ? Language.MSG_HOLDING_KEYS : Language.MSG_RELEASED_KEYS)
-                            .getText().withStyle(isActive ? ChatFormatting.GREEN : ChatFormatting.RED),
-                    true);
+                            .getText().withStyle(isActive ? ChatFormatting.GREEN : ChatFormatting.RED));
 
             moduleManager.<CombatClickerModule>get("combat_clicker").ifPresent(c -> {
                 // #4 Toggle sound
