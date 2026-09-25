@@ -17,11 +17,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Determine Java Version
+        id: java-ver
+        run: |
+          if [[ "${{ github.ref }}" == *"26."* ]]; then
+            echo "version=25" >> $GITHUB_OUTPUT
+          else
+            echo "version=21" >> $GITHUB_OUTPUT
+          fi
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '25'
+          java-version: ${{ steps.java-ver.outputs.version }}
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
