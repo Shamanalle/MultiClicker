@@ -629,7 +629,7 @@ public class OptionsScreen extends Screen {
         // Help
         int hx = width - 22;
         if (mx >= hx - 5 && mx <= hx + 12 && my >= 4 && my < HEAD - 4 && btn == 0) {
-            minecraft.setScreen(new HelpScreen(this));
+            minecraft.gui.setScreen(new HelpScreen(this));
             return true;
         }
 

@@ -56,7 +56,7 @@ public class AutoWalkModule implements Module {
         if (!enabled.get() || mc.player == null)
             return false;
 
-        if (mc.screen != null) {
+        if (mc.gui.screen() != null) {
             mc.options.keyUp.setDown(false);
             mc.options.keyJump.setDown(false);
             return false;

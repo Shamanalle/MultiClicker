@@ -187,7 +187,7 @@ public class AutoClicker {
         }
 
         while (openConfig.consumeClick()) {
-            mc.setScreen(new OptionsScreen());
+            mc.gui.setScreen(new OptionsScreen());
         }
     }
 
@@ -232,8 +232,8 @@ public class AutoClicker {
             configManager.loadFrom(file.toPath());
             // Refresh screen if open
             Minecraft mc = Minecraft.getInstance();
-            if (mc.screen instanceof OptionsScreen) {
-                mc.setScreen(new OptionsScreen());
+            if (mc.gui.screen() instanceof OptionsScreen) {
+                mc.gui.setScreen(new OptionsScreen());
             }
         }
     }

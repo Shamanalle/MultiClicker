@@ -83,7 +83,7 @@ public class TrashDropModule implements Module {
             return false;
 
         // Do not drop while open in another container (chest, anvil, furnace) to prevent desync
-        if (mc.screen != null && !(mc.screen instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen)) {
+        if (mc.gui.screen() != null && !(mc.gui.screen() instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen)) {
             return false;
         }
 

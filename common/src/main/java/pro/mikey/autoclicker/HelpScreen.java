@@ -122,12 +122,12 @@ public class HelpScreen extends Screen {
         int botY = height - FH;
         String back = "< Назад";
         int bw = font.width(back) + 16, bx = width / 2 - bw / 2, by = botY + (FH - 16) / 2;
-        if (event.x() >= bx && event.x() < bx + bw && event.y() >= by && event.y() < by + 16) { minecraft.setScreen(parent); return true; }
+        if (event.x() >= bx && event.x() < bx + bw && event.y() >= by && event.y() < by + 16) { minecraft.gui.setScreen(parent); return true; }
         return super.mouseClicked(event, bl);
     }
     @Override public boolean mouseScrolled(double mx, double my, double dh, double dv) { tgtScroll -= dv * 30; return true; }
     @Override public boolean keyPressed(KeyEvent event) {
-        if (event.key() == 256) { minecraft.setScreen(parent); return true; }
+        if (event.key() == 256) { minecraft.gui.setScreen(parent); return true; }
         return super.keyPressed(event);
     }
     @Override public boolean isPauseScreen() { return false; }

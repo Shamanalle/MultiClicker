@@ -362,7 +362,7 @@ public class CombatClickerModule implements Module {
             return false;
 
         // #1 Pause in GUI
-        if (pauseInGui.get() && mc.screen != null) {
+        if (pauseInGui.get() && mc.gui.screen() != null) {
             return false;
         }
 
