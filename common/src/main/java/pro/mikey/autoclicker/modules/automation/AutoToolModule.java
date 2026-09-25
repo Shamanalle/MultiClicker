@@ -20,6 +20,8 @@ public class AutoToolModule implements Module {
 
     public final BooleanSetting enabled = new BooleanSetting("auto_tool.enabled", "Авто-Инструмент", false)
             .withDescription("Автоматически выбирает лучший инструмент для блока. Учитывает Efficiency");
+    public final BooleanSetting onlyWhenMining = new BooleanSetting("auto_tool.only_when_mining", "Только при копке", true)
+            .withDescription("Переключает инструмент только при зажатой ЛКМ/копке, чтобы хотбар не дёргался при взгляде");
     public final BooleanSetting saveTool = new BooleanSetting("auto_tool.save_tool", "Сохранять инструмент", false)
             .withDescription(
                     "Не выбирает инструмент с низкой прочностью. Защищает от поломки неритовых/алмазных инструментов");
@@ -28,7 +30,7 @@ public class AutoToolModule implements Module {
 
     @Override
     public List<Setting<?>> getSettings() {
-        return List.of(enabled, saveTool, saveThreshold);
+        return List.of(enabled, onlyWhenMining, saveTool, saveThreshold);
     }
 
     private int originalSlot = -1;
@@ -58,7 +60,7 @@ public class AutoToolModule implements Module {
         if (originalSlot != -1) {
             Minecraft mc = Minecraft.getInstance();
             if (mc != null && mc.player != null) {
-                InventoryUtils.setSelectedSlot(mc.player, originalSlot);
+                InventoryUtils.setSelectedSlot(mc, originalSlot);
             }
             originalSlot = -1;
         }
@@ -69,7 +71,18 @@ public class AutoToolModule implements Module {
         if (!enabled.get() || mc.player == null)
             return false;
 
-        // Select best tool when crosshair is on a block (no click needed)
+        boolean isMining = mc.options.keyAttack.isDown()
+                || (mc.gameMode != null && mc.gameMode.isDestroying());
+
+        if (onlyWhenMining.get() && !isMining) {
+            if (originalSlot != -1) {
+                InventoryUtils.setSelectedSlot(mc, originalSlot);
+                originalSlot = -1;
+            }
+            return false;
+        }
+
+        // Select best tool when crosshair is on a block
         if (mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult bhr
                 && mc.level != null) {
             BlockState state = mc.level.getBlockState(bhr.getBlockPos());
@@ -80,7 +93,7 @@ public class AutoToolModule implements Module {
                     if (currentSlot != bestSlot) {
                         if (originalSlot == -1)
                             originalSlot = currentSlot;
-                        InventoryUtils.setSelectedSlot(mc.player, bestSlot);
+                        InventoryUtils.setSelectedSlot(mc, bestSlot);
                     }
                 }
                 return false;
@@ -88,7 +101,7 @@ public class AutoToolModule implements Module {
         }
         // Looking at air/entity/nothing → revert to original slot
         if (originalSlot != -1) {
-            InventoryUtils.setSelectedSlot(mc.player, originalSlot);
+            InventoryUtils.setSelectedSlot(mc, originalSlot);
             originalSlot = -1;
         }
         return false;

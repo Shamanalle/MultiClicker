@@ -52,3 +52,7 @@ net/
 # OS artifacts
 Thumbs.db
 .DS_Store
+
+# Graphify cache
+graphify-out/cache/
+

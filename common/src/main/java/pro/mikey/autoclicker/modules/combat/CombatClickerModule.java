@@ -412,6 +412,8 @@ public class CombatClickerModule implements Module {
             // #7 Stop when inventory full
             if (mining.stopWhenFull.get() && mc.player.getInventory().getFreeSlot() == -1) {
                 mc.options.keyAttack.setDown(false);
+                if (mc.gameMode != null)
+                    mc.gameMode.stopDestroyBlock();
                 return false;
             }
             // #14 Mining filter check
@@ -419,6 +421,8 @@ public class CombatClickerModule implements Module {
                 net.minecraft.world.level.block.state.BlockState state = mc.level.getBlockState(bhr.getBlockPos());
                 if (!miningFilter.allows(state)) {
                     mc.options.keyAttack.setDown(false);
+                    if (mc.gameMode != null)
+                        mc.gameMode.stopDestroyBlock();
                     return false;
                 }
             }
@@ -553,12 +557,7 @@ public class CombatClickerModule implements Module {
                 return;
             }
             boolean isBlock = mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK;
-            if (mc.player.getAttackStrengthScale(0.5F) >= 1.0F) {
-                if (cooldownBufferTicks > 0) {
-                    cooldownBufferTicks--;
-                    key.setDown(false);
-                    return;
-                }
+            if (mc.player.getAttackStrengthScale(0.5F) >= 0.95F) {
                 if (isBlock) {
                     if (leftTimeout > 0) {
                         leftTimeout--;
@@ -575,8 +574,6 @@ public class CombatClickerModule implements Module {
                 }
             } else {
                 key.setDown(false);
-                int ping = ClientPing.getPing();
-                cooldownBufferTicks = (ping > 0) ? Math.min(5, ping / 100) : 0;
             }
         } else {
             if (mobMode.get() && !isPlayerLookingAtMob(mc)) {
@@ -611,7 +608,14 @@ public class CombatClickerModule implements Module {
             }
 
             totalClickCount++;
-            key.setDown(false);
+            if (leftClickMode.get() == ClickMode.HOLD) {
+                key.setDown(true);
+                leftHoldCounter = leftHoldDuration.get();
+            } else {
+                key.setDown(true);
+                leftClickPending = true;
+            }
+
             if (leftRandomize.get())
                 generateLeftCooldownDelay();
         }
@@ -764,8 +768,8 @@ public class CombatClickerModule implements Module {
                         if (swordSlot == OFFHAND_INVENTORY_SLOT) {
                             originalHotbarSlot = -1;
                         } else {
-                            originalHotbarSlot = ((InventoryAccessor) (Object) mc.player.getInventory()).getSelected();
-                            ((InventoryAccessor) (Object) mc.player.getInventory()).setSelected(swordSlot);
+                            originalHotbarSlot = InventoryUtils.getSelectedSlot(mc.player);
+                            InventoryUtils.setSelectedSlot(mc, swordSlot);
                         }
                         lootingSwapState = LootingSwapState.PHASE1_SWAP;
                         lootingSwapTimer = 0;
@@ -791,13 +795,16 @@ public class CombatClickerModule implements Module {
 
             // Execute attack
             if (method == SmartCombatModule.AttackMethod.LEGIT) {
+                if (respectCooldown.get() && mc.player.getAttackStrengthScale(0.5F) < 0.95F)
+                    return false;
                 KeyMapping.click(InputConstants.Type.MOUSE.getOrCreate(GLFW.GLFW_MOUSE_BUTTON_LEFT));
                 EventBus.get().emit(new EventBus.AttackEvent(mc.player, resolvedTarget));
                 return true;
             } else {
-                if (respectCooldown.get() && mc.player.getAttackStrengthScale(0.5F) < 1.0F)
+                if (respectCooldown.get() && mc.player.getAttackStrengthScale(0.5F) < 0.95F)
                     return false;
                 mc.gameMode.attack(mc.player, target);
+                mc.player.resetAttackStrengthTicker();
                 mc.player.swing(InteractionHand.MAIN_HAND);
                 EventBus.get().emit(new EventBus.AttackEvent(mc.player, resolvedTarget));
                 return true;
@@ -870,10 +877,13 @@ public class CombatClickerModule implements Module {
             case PHASE3_ATTACK -> {
                 if (savedLootingTarget != null && savedLootingTarget.isAlive() && mc.gameMode != null) {
                     mc.gameMode.attack(mc.player, savedLootingTarget);
+                    mc.player.resetAttackStrengthTicker();
                     mc.player.swing(lootingUseOffhand ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
+                    EventBus.get().emit(new EventBus.AttackEvent(mc.player, savedLootingTarget));
                 }
                 if (originalHotbarSlot != -1) {
-                    ((InventoryAccessor) (Object) mc.player.getInventory()).setSelected(originalHotbarSlot);
+                    InventoryUtils.setSelectedSlot(mc, originalHotbarSlot);
+                    originalHotbarSlot = -1;
                 }
                 lootingSwapState = LootingSwapState.OFF;
                 lootingUseOffhand = false;
@@ -894,7 +904,8 @@ public class CombatClickerModule implements Module {
 
         int timeoutSec = antiCheat != null ? antiCheat.entityProtTimeout.get() : 10;
         long timeoutMs = timeoutSec > 0 ? timeoutSec * 1000L : 10000L;
-        if (System.currentTimeMillis() - entityProtSentTime > timeoutMs) {
+        long elapsed = System.currentTimeMillis() - entityProtSentTime;
+        if (elapsed > timeoutMs) {
             entityProtHitId = -1;
             return;
         }
@@ -904,6 +915,14 @@ public class CombatClickerModule implements Module {
             if (forcedTime != null && forcedTime > 0)
                 return;
             entityProtHitId = -1;
+            return;
+        }
+
+        // Grace period: the attack packet takes round-trip time to reach server and return hurtTime.
+        // During the initial grace period (at least 150ms or ping + 60ms), do NOT clear entityProtHitId!
+        int ping = ClientPing.getPing();
+        long graceWindowMs = Math.max(150L, ping > 0 ? (ping + 60L) : 150L);
+        if (elapsed < graceWindowMs) {
             return;
         }
 

@@ -85,7 +85,7 @@ public class AutoEatModule implements Module {
             if (mc != null)
                 mc.options.keyUse.setDown(false);
             if (mc != null && mc.player != null && preEatSlot != -1) {
-                InventoryUtils.setSelectedSlot(mc.player, preEatSlot);
+                InventoryUtils.setSelectedSlot(mc, preEatSlot);
             }
         }
         state = State.IDLE;
@@ -117,12 +117,14 @@ public class AutoEatModule implements Module {
                 if (foodSlot == -1)
                     return false;
                 preEatSlot = InventoryUtils.getSelectedSlot(mc.player);
-                InventoryUtils.setSelectedSlot(mc.player, foodSlot);
+                InventoryUtils.setSelectedSlot(mc, foodSlot);
+                mc.options.keyAttack.setDown(false);
                 state = State.SWAPPING;
                 timer = 0;
                 return true;
             }
             case SWAPPING -> {
+                mc.options.keyAttack.setDown(false);
                 timer++;
                 if (timer >= 2) {
                     mc.options.keyUse.setDown(true);
@@ -133,6 +135,8 @@ public class AutoEatModule implements Module {
                 return true;
             }
             case EATING, EATING_OFFHAND -> {
+                mc.options.keyAttack.setDown(false);
+                mc.options.keyUse.setDown(true);
                 timer++;
                 if (timer > 80) {
                     // Safety timeout — eating took too long, abort
@@ -140,7 +144,7 @@ public class AutoEatModule implements Module {
                     currentlyEating = false;
                     state = State.IDLE;
                     if (preEatSlot != -1) {
-                        InventoryUtils.setSelectedSlot(mc.player, preEatSlot);
+                        InventoryUtils.setSelectedSlot(mc, preEatSlot);
                         preEatSlot = -1;
                     }
                 } else if (!mc.player.isUsingItem() && timer > 5) {
@@ -158,7 +162,7 @@ public class AutoEatModule implements Module {
                 return true;
             }
             case RETURN_SWAP -> {
-                InventoryUtils.setSelectedSlot(mc.player, preEatSlot);
+                InventoryUtils.setSelectedSlot(mc, preEatSlot);
                 preEatSlot = -1;
                 state = State.IDLE;
                 currentlyEating = false;

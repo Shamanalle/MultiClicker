@@ -179,8 +179,11 @@ public class AutoClicker {
                 }
             });
 
-            if (!isActive) {
+            if (isActive) {
+                moduleManager.enable();
+            } else {
                 moduleManager.disable();
+                stopAutoWalk(mc);
             }
         }
 

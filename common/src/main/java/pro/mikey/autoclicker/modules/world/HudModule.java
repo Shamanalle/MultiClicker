@@ -134,8 +134,8 @@ public class HudModule implements Module {
 
     @Override
     public int tickPriority() {
-        return -1;
-    } // No tick — rendering only
+        return 1000;
+    } // No tick logic — rendering only
 
     @Override
     public boolean onTick(Minecraft mc) {

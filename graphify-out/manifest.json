@@ -1,0 +1,440 @@
+{
+  "build.gradle": {
+    "mtime": 1790322042.254212,
+    "seen": 1790323067.8076289,
+    "ast_hash": "1efd9f56bf3286682d1db4d88b8ba02b",
+    "semantic_hash": "1efd9f56bf3286682d1db4d88b8ba02b"
+  },
+  "common/build.gradle": {
+    "mtime": 1790321994.6999118,
+    "seen": 1790323067.8076289,
+    "ast_hash": "0203467a5bf14627cb1ec2d5eb9bce5e",
+    "semantic_hash": "0203467a5bf14627cb1ec2d5eb9bce5e"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/AutoClicker.java": {
+    "mtime": 1773589493.021199,
+    "seen": 1790323067.8076289,
+    "ast_hash": "2b7b383e7df09be4177198598d0af9ba",
+    "semantic_hash": "2b7b383e7df09be4177198598d0af9ba"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/ClientPing.java": {
+    "mtime": 1772796072.8325286,
+    "seen": 1790323067.8076289,
+    "ast_hash": "e8af6f1ff7fa184a7913932a94ebcce7",
+    "semantic_hash": "e8af6f1ff7fa184a7913932a94ebcce7"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/ClientTPS.java": {
+    "mtime": 1771024395.8280241,
+    "seen": 1790323067.8076289,
+    "ast_hash": "1b28ce92d5efa9147d21c1ddecc14edd",
+    "semantic_hash": "1b28ce92d5efa9147d21c1ddecc14edd"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/CombatStats.java": {
+    "mtime": 1772400755.6889498,
+    "seen": 1790323067.8076289,
+    "ast_hash": "f8d8a3c6b98202d3968339a9b5f2ce1a",
+    "semantic_hash": "f8d8a3c6b98202d3968339a9b5f2ce1a"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/HelpScreen.java": {
+    "mtime": 1773579065.8998818,
+    "seen": 1790323067.8076289,
+    "ast_hash": "f0de800018a6c9131358e2890f98298f",
+    "semantic_hash": "f0de800018a6c9131358e2890f98298f"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/Language.java": {
+    "mtime": 1771790143.7806036,
+    "seen": 1790323067.8076289,
+    "ast_hash": "2aa16273d1c8bcd4f36a19a59b39b658",
+    "semantic_hash": "2aa16273d1c8bcd4f36a19a59b39b658"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/OptionsScreen.java": {
+    "mtime": 1773585409.1432154,
+    "seen": 1790323067.8076289,
+    "ast_hash": "a9a512e6f2bb247c333bb5bf4ee7d34e",
+    "semantic_hash": "a9a512e6f2bb247c333bb5bf4ee7d34e"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/PresetManager.java": {
+    "mtime": 1773574447.3711777,
+    "seen": 1790323067.8076289,
+    "ast_hash": "745d0dcd8bc0e17b4922de7fcd01c809",
+    "semantic_hash": "745d0dcd8bc0e17b4922de7fcd01c809"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/ProfileManager.java": {
+    "mtime": 1790322010.8257692,
+    "seen": 1790323067.8076289,
+    "ast_hash": "61a49392f79dd024afc2e57c2d26fde8",
+    "semantic_hash": "61a49392f79dd024afc2e57c2d26fde8"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/core/ConfigManager.java": {
+    "mtime": 1772447019.952989,
+    "seen": 1790323067.8076289,
+    "ast_hash": "245a5eaa0c2ff9e2b384c519bb945e4b",
+    "semantic_hash": "245a5eaa0c2ff9e2b384c519bb945e4b"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/core/EventBus.java": {
+    "mtime": 1772383246.8399367,
+    "seen": 1790323067.8076289,
+    "ast_hash": "6dd64023ac1f3bb4a7370a94f5eadada",
+    "semantic_hash": "6dd64023ac1f3bb4a7370a94f5eadada"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/core/Module.java": {
+    "mtime": 1772412831.721073,
+    "seen": 1790323067.8076289,
+    "ast_hash": "44b251cc8ea6a4ac2e5343688065a28f",
+    "semantic_hash": "44b251cc8ea6a4ac2e5343688065a28f"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/core/ModuleManager.java": {
+    "mtime": 1773574423.498626,
+    "seen": 1790323067.8076289,
+    "ast_hash": "22a095d73c0ddbdda3dc000c4701ba58",
+    "semantic_hash": "22a095d73c0ddbdda3dc000c4701ba58"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/core/Setting.java": {
+    "mtime": 1773599598.8939345,
+    "seen": 1790323067.8076289,
+    "ast_hash": "fc05353c27491fd48b5c0203f75b3671",
+    "semantic_hash": "fc05353c27491fd48b5c0203f75b3671"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/mixin/InventoryAccessor.java": {
+    "mtime": 1771792650.0615036,
+    "seen": 1790323067.8076289,
+    "ast_hash": "eefcae157987ce0ff3965d63d0ca50fc",
+    "semantic_hash": "eefcae157987ce0ff3965d63d0ca50fc"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/mixin/MixinArmorStand.java": {
+    "mtime": 1772388907.7290208,
+    "seen": 1790323067.8076289,
+    "ast_hash": "f3e5401cbb55354b17ae0429c6523a2e",
+    "semantic_hash": "f3e5401cbb55354b17ae0429c6523a2e"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/mixin/MixinClientPacketListener.java": {
+    "mtime": 1771024421.163818,
+    "seen": 1790323067.8076289,
+    "ast_hash": "0d786f7bb7209932504cc1b27c697034",
+    "semantic_hash": "0d786f7bb7209932504cc1b27c697034"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/mixin/MixinEntity.java": {
+    "mtime": 1773588517.523671,
+    "seen": 1790323067.8076289,
+    "ast_hash": "69b5f78cf8fc2162557cb2b6f75bc936",
+    "semantic_hash": "69b5f78cf8fc2162557cb2b6f75bc936"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/mixin/MixinFishingHook.java": {
+    "mtime": 1772385164.2850616,
+    "seen": 1790323067.8076289,
+    "ast_hash": "4e49a03073880958a34dc22c3171d1aa",
+    "semantic_hash": "4e49a03073880958a34dc22c3171d1aa"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/mixin/MixinGameRenderer.java": {
+    "mtime": 1772388942.9418907,
+    "seen": 1790323067.8076289,
+    "ast_hash": "fb8c25ca1f0fcbef20df57447b8ffedf",
+    "semantic_hash": "fb8c25ca1f0fcbef20df57447b8ffedf"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/mixin/MixinKeepAlive.java": {
+    "mtime": 1772796071.1103773,
+    "seen": 1790323067.8076289,
+    "ast_hash": "c29298c51861f8631ba10be5a8163211",
+    "semantic_hash": "c29298c51861f8631ba10be5a8163211"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/mixin/MixinLivingEntity.java": {
+    "mtime": 1772388945.100657,
+    "seen": 1790323067.8076289,
+    "ast_hash": "a0c1de78b7f4bb7515af8e69c04c2bca",
+    "semantic_hash": "a0c1de78b7f4bb7515af8e69c04c2bca"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/mixin/MixinMinecraft.java": {
+    "mtime": 1772388934.0521796,
+    "seen": 1790323067.8076289,
+    "ast_hash": "97813a9dc3e7192e3472a98985663a9e",
+    "semantic_hash": "97813a9dc3e7192e3472a98985663a9e"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/mixin/MixinMouseHandler.java": {
+    "mtime": 1772388901.7713318,
+    "seen": 1790323067.8076289,
+    "ast_hash": "d44b47ced21c5dd821b749d96b6fc14c",
+    "semantic_hash": "d44b47ced21c5dd821b749d96b6fc14c"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/mixin/MixinMultiPlayerGameMode.java": {
+    "mtime": 1772388896.013081,
+    "seen": 1790323067.8076289,
+    "ast_hash": "0111fe80ee01496f4b101248f8f936ef",
+    "semantic_hash": "0111fe80ee01496f4b101248f8f936ef"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/mixin/MixinPingPacketListener.java": {
+    "mtime": 1771870209.8263197,
+    "seen": 1790323067.8076289,
+    "ast_hash": "31801e37321827ca0dd9e05b5b9b4ae3",
+    "semantic_hash": "31801e37321827ca0dd9e05b5b9b4ae3"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/automation/AntiAfkModule.java": {
+    "mtime": 1773760960.807253,
+    "seen": 1790323067.8076289,
+    "ast_hash": "763e72611a8d39e0330820975b5120c2",
+    "semantic_hash": "763e72611a8d39e0330820975b5120c2"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/automation/AutoEatModule.java": {
+    "mtime": 1773589672.9488351,
+    "seen": 1790323067.8076289,
+    "ast_hash": "18e67f5efc371fc4f2a29cbd8261766c",
+    "semantic_hash": "18e67f5efc371fc4f2a29cbd8261766c"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/automation/AutoToolModule.java": {
+    "mtime": 1773760920.8939986,
+    "seen": 1790323067.8076289,
+    "ast_hash": "78cc5cbe744e51fe951fe7ad8d9fd649",
+    "semantic_hash": "78cc5cbe744e51fe951fe7ad8d9fd649"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/automation/AutoTotemModule.java": {
+    "mtime": 1773760927.530205,
+    "seen": 1790323067.8076289,
+    "ast_hash": "b97a67bb10f940eae2c56707f29e9fab",
+    "semantic_hash": "b97a67bb10f940eae2c56707f29e9fab"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/automation/SmartOffhandModule.java": {
+    "mtime": 1773760925.5096273,
+    "seen": 1790323067.8076289,
+    "ast_hash": "a6e326e4ab12d6887189630444eeaffe",
+    "semantic_hash": "a6e326e4ab12d6887189630444eeaffe"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/automation/TrashDropModule.java": {
+    "mtime": 1773760982.2644799,
+    "seen": 1790323067.8076289,
+    "ast_hash": "f848ad1ef8a0d046024db8e190c4d6fb",
+    "semantic_hash": "f848ad1ef8a0d046024db8e190c4d6fb"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/combat/AntiCheatModule.java": {
+    "mtime": 1772478786.108586,
+    "seen": 1790323067.8076289,
+    "ast_hash": "0d93ce69e732f3fd12a10b05ff39c652",
+    "semantic_hash": "0d93ce69e732f3fd12a10b05ff39c652"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/combat/CombatClickerModule.java": {
+    "mtime": 1773760917.016337,
+    "seen": 1790323067.8076289,
+    "ast_hash": "4f9eec62660f68a792d1b94f26f12b7c",
+    "semantic_hash": "4f9eec62660f68a792d1b94f26f12b7c"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/combat/CombatFeedbackModule.java": {
+    "mtime": 1772417304.8684201,
+    "seen": 1790323067.8076289,
+    "ast_hash": "f9fa74eaed8afab931e29eaba388767c",
+    "semantic_hash": "f9fa74eaed8afab931e29eaba388767c"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/combat/MobFilterModule.java": {
+    "mtime": 1772413945.859769,
+    "seen": 1790323067.8076289,
+    "ast_hash": "207f83fa03b5fb511b4f7313e6237fdc",
+    "semantic_hash": "207f83fa03b5fb511b4f7313e6237fdc"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/combat/NetworkGuardModule.java": {
+    "mtime": 1772478691.695549,
+    "seen": 1790323067.8076289,
+    "ast_hash": "314972415c6e2158ac70e2c5f7bcdb5e",
+    "semantic_hash": "314972415c6e2158ac70e2c5f7bcdb5e"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/combat/SmartCombatModule.java": {
+    "mtime": 1772477450.9929228,
+    "seen": 1790323067.8076289,
+    "ast_hash": "b0a9c25b9804887c23160bbeaecd8657",
+    "semantic_hash": "b0a9c25b9804887c23160bbeaecd8657"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/world/AutoFishModule.java": {
+    "mtime": 1773599623.6365018,
+    "seen": 1790323067.8076289,
+    "ast_hash": "0fb35d332ce82baeb645032d94386fad",
+    "semantic_hash": "0fb35d332ce82baeb645032d94386fad"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/world/AutoWalkModule.java": {
+    "mtime": 1773599630.4970512,
+    "seen": 1790323067.8076289,
+    "ast_hash": "042ace3f9687aacb6c1c98d86d713862",
+    "semantic_hash": "042ace3f9687aacb6c1c98d86d713862"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/world/HudModule.java": {
+    "mtime": 1773599550.7586582,
+    "seen": 1790323067.8076289,
+    "ast_hash": "af87a837414ae83273815480284a37ed",
+    "semantic_hash": "af87a837414ae83273815480284a37ed"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/world/MiningFilterModule.java": {
+    "mtime": 1773589688.8419175,
+    "seen": 1790323067.8076289,
+    "ast_hash": "516e2ac7516ba90f245f38b677e186df",
+    "semantic_hash": "516e2ac7516ba90f245f38b677e186df"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/world/MiningModule.java": {
+    "mtime": 1773574292.685029,
+    "seen": 1790323067.8076289,
+    "ast_hash": "ee2d487ef037312bb79bce5d81240e76",
+    "semantic_hash": "ee2d487ef037312bb79bce5d81240e76"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/modules/world/PanicModeModule.java": {
+    "mtime": 1773588798.0862842,
+    "seen": 1790323067.8076289,
+    "ast_hash": "6ccb63bdf29e90d7237aad75fa434861",
+    "semantic_hash": "6ccb63bdf29e90d7237aad75fa434861"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/ui/McDropdown.java": {
+    "mtime": 1773599600.941077,
+    "seen": 1790323067.8076289,
+    "ast_hash": "dfe813a692969fcea4adbd8c7243c0fa",
+    "semantic_hash": "dfe813a692969fcea4adbd8c7243c0fa"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/ui/McNavPanel.java": {
+    "mtime": 1773583889.5622137,
+    "seen": 1790323067.8076289,
+    "ast_hash": "cea2ebbab15788ade7e24d29bee56ddb",
+    "semantic_hash": "cea2ebbab15788ade7e24d29bee56ddb"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/ui/McScrollView.java": {
+    "mtime": 1773599619.070001,
+    "seen": 1790323067.8076289,
+    "ast_hash": "320cc7cb24f7ecf1e62ed109e06c875a",
+    "semantic_hash": "320cc7cb24f7ecf1e62ed109e06c875a"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/ui/McSection.java": {
+    "mtime": 1777146667.4244719,
+    "seen": 1790323067.8076289,
+    "ast_hash": "a2021261c8b283ac93e361fe142bd3be",
+    "semantic_hash": "a2021261c8b283ac93e361fe142bd3be"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/ui/McSlider.java": {
+    "mtime": 1773580849.7104464,
+    "seen": 1790323067.8076289,
+    "ast_hash": "8665baddae2a686d6f90b00a5bbfbdd8",
+    "semantic_hash": "8665baddae2a686d6f90b00a5bbfbdd8"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/ui/McStringListEditor.java": {
+    "mtime": 1777146651.722375,
+    "seen": 1790323067.8076289,
+    "ast_hash": "8bf39c97d3918755cc4e841cb13b5f76",
+    "semantic_hash": "8bf39c97d3918755cc4e841cb13b5f76"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/ui/McToggle.java": {
+    "mtime": 1773580851.7759912,
+    "seen": 1790323067.8076289,
+    "ast_hash": "2d9af833c42afbebe9617073299d29b1",
+    "semantic_hash": "2d9af833c42afbebe9617073299d29b1"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/ui/McWidget.java": {
+    "mtime": 1773599632.535187,
+    "seen": 1790323067.8076289,
+    "ast_hash": "a6284c33a009de447b8c7847d24621cb",
+    "semantic_hash": "a6284c33a009de447b8c7847d24621cb"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/ui/NotificationRenderer.java": {
+    "mtime": 1773577605.3375025,
+    "seen": 1790323067.8076289,
+    "ast_hash": "4b411dec7b1835c5fe3cd8947e15db1b",
+    "semantic_hash": "4b411dec7b1835c5fe3cd8947e15db1b"
+  },
+  "common/src/main/java/pro/mikey/autoclicker/util/InventoryUtils.java": {
+    "mtime": 1772383310.991198,
+    "seen": 1790323067.8076289,
+    "ast_hash": "209177e16157e23e1a30cf648290baf6",
+    "semantic_hash": "209177e16157e23e1a30cf648290baf6"
+  },
+  "common/src/main/resources/assets/multiclicker/font/default.json": {
+    "mtime": 1772442134.8949356,
+    "seen": 1790323067.8076289,
+    "ast_hash": "c20a63b9a09bf935ee7ff643288285f2",
+    "semantic_hash": "c20a63b9a09bf935ee7ff643288285f2"
+  },
+  "common/src/main/resources/assets/multiclicker/lang/en_us.json": {
+    "mtime": 1771928928.9764564,
+    "seen": 1790323067.8076289,
+    "ast_hash": "8ac074558b22bc23a1cef6ea910749b9",
+    "semantic_hash": "8ac074558b22bc23a1cef6ea910749b9"
+  },
+  "common/src/main/resources/assets/multiclicker/lang/es_es.json": {
+    "mtime": 1771927104.4585218,
+    "seen": 1790323067.8076289,
+    "ast_hash": "bcfb39fd49edb28e65d273e8c0b972ba",
+    "semantic_hash": "bcfb39fd49edb28e65d273e8c0b972ba"
+  },
+  "common/src/main/resources/assets/multiclicker/lang/ru_ru.json": {
+    "mtime": 1771929263.5360763,
+    "seen": 1790323067.8076289,
+    "ast_hash": "1a34724c2b963a4d3aa68a3ce92c944b",
+    "semantic_hash": "1a34724c2b963a4d3aa68a3ce92c944b"
+  },
+  "common/src/main/resources/multiclicker.mixins.json": {
+    "mtime": 1772795374.8755279,
+    "seen": 1790323067.8076289,
+    "ast_hash": "77f754549070aebd83fb1794edaa0686",
+    "semantic_hash": "77f754549070aebd83fb1794edaa0686"
+  },
+  "fabric/build.gradle": {
+    "mtime": 1770428872.8904138,
+    "seen": 1790323067.8076289,
+    "ast_hash": "efda17f2cb65e0ff73e5a8248c135ae5",
+    "semantic_hash": "efda17f2cb65e0ff73e5a8248c135ae5"
+  },
+  "fabric/src/main/java/pro/mikey/autoclicker/fabric/client/AutoClickerFabricClient.java": {
+    "mtime": 1773599569.4381523,
+    "seen": 1790323067.8076289,
+    "ast_hash": "1219e2b2acac60310c77091af5d4ba40",
+    "semantic_hash": "1219e2b2acac60310c77091af5d4ba40"
+  },
+  "fabric/src/main/java/pro/mikey/autoclicker/fabric/client/ModMenuAPIImpl.java": {
+    "mtime": 1772401047.317891,
+    "seen": 1790323067.8076289,
+    "ast_hash": "615305b0862cc8fec9b35a87ece3960c",
+    "semantic_hash": "615305b0862cc8fec9b35a87ece3960c"
+  },
+  "fabric/src/main/resources/fabric.mod.json": {
+    "mtime": 1771927391.5057602,
+    "seen": 1790323067.8076289,
+    "ast_hash": "1c1be1db0e313acd1fa47064857a565b",
+    "semantic_hash": "1c1be1db0e313acd1fa47064857a565b"
+  },
+  "gradlew": {
+    "mtime": 1770428872.7420785,
+    "seen": 1790323067.8076289,
+    "ast_hash": "1db6d150e9a9442ca929c1fa8b2fd25e",
+    "semantic_hash": "1db6d150e9a9442ca929c1fa8b2fd25e"
+  },
+  "neoforge/build.gradle": {
+    "mtime": 1770428872.9941015,
+    "seen": 1790323067.8076289,
+    "ast_hash": "d0f254853bc33678f9a015ec7651a20c",
+    "semantic_hash": "d0f254853bc33678f9a015ec7651a20c"
+  },
+  "neoforge/src/main/java/pro/mikey/autoclicker/neoforge/AutoClickerNeoForge.java": {
+    "mtime": 1790322001.967423,
+    "seen": 1790323067.8076289,
+    "ast_hash": "568456d4c8be56d33f1bbd0fd5101a94",
+    "semantic_hash": "568456d4c8be56d33f1bbd0fd5101a94"
+  },
+  "settings.gradle": {
+    "mtime": 1772224667.5752442,
+    "seen": 1790323067.8076289,
+    "ast_hash": "69ddb5246980a64ae5e3a4c61e35cdd4",
+    "semantic_hash": "69ddb5246980a64ae5e3a4c61e35cdd4"
+  },
+  "CHANGELOG.md": {
+    "mtime": 1790322084.1437259,
+    "seen": 1790323067.8076289,
+    "ast_hash": "12aa6a3ba81200acedf0b8b1d269ecad",
+    "semantic_hash": "12aa6a3ba81200acedf0b8b1d269ecad"
+  },
+  "README.md": {
+    "mtime": 1790322092.4586291,
+    "seen": 1790323067.8076289,
+    "ast_hash": "4ad62880b68f6b787a5ebfabaf6ca348",
+    "semantic_hash": "4ad62880b68f6b787a5ebfabaf6ca348"
+  },
+  "common/src/main/resources/assets/multiclicker/icon.png": {
+    "mtime": 1770428872.8666878,
+    "seen": 1790323067.8076289,
+    "ast_hash": "9bfef707e440af8b08a74e960e7af728",
+    "semantic_hash": "9bfef707e440af8b08a74e960e7af728"
+  },
+  "common/src/main/resources/assets/multiclicker/textures/gui/white.png": {
+    "mtime": 1771815235.4721594,
+    "seen": 1790323067.8076289,
+    "ast_hash": "a75db2c3e1deed40d807e8d2656674cd",
+    "semantic_hash": "a75db2c3e1deed40d807e8d2656674cd"
+  }
+}

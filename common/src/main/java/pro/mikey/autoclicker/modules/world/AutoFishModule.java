@@ -82,6 +82,16 @@ public class AutoFishModule implements Module {
         if (!enabled.get() || mc.player == null)
             return false;
 
+        if (mc.screen != null)
+            return false;
+
+        boolean hasRod = mc.player.getMainHandItem().getItem() instanceof net.minecraft.world.item.FishingRodItem
+                || mc.player.getOffhandItem().getItem() instanceof net.minecraft.world.item.FishingRodItem;
+        if (!hasRod) {
+            state = State.IDLE;
+            return false;
+        }
+
         switch (state) {
             case IDLE -> {
                 if (mc.player.fishing != null) {

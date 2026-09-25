@@ -7,6 +7,8 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import pro.mikey.autoclicker.mixin.InventoryAccessor;
 
 /**
@@ -44,9 +46,21 @@ public final class InventoryUtils {
         return ((InventoryAccessor) (Object) player.getInventory()).getSelected();
     }
 
-    /** Set the currently selected hotbar slot index. */
+    /** Set the currently selected hotbar slot index (0-8) and synchronize with server. */
     public static void setSelectedSlot(Player player, int slot) {
+        if (player == null || slot < 0 || slot > 8)
+            return;
         ((InventoryAccessor) (Object) player.getInventory()).setSelected(slot);
+        if (player instanceof LocalPlayer lp && lp.connection != null) {
+            lp.connection.send(new ServerboundSetCarriedItemPacket(slot));
+        }
+    }
+
+    /** Set the currently selected hotbar slot index (0-8) and synchronize with server. */
+    public static void setSelectedSlot(Minecraft mc, int slot) {
+        if (mc != null && mc.player != null) {
+            setSelectedSlot(mc.player, slot);
+        }
     }
 
     /**
@@ -75,7 +89,7 @@ public final class InventoryUtils {
      * using the F-key swap packet (ClickType.SWAP, button=40).
      */
     public static void swapToOffhand(Minecraft mc, int invSlot) {
-        if (mc.player == null || mc.gameMode == null)
+        if (mc.player == null || mc.gameMode == null || invSlot < 0 || invSlot >= 36)
             return;
         int containerSlot = (invSlot < 9) ? (36 + invSlot) : invSlot;
         mc.gameMode.handleInventoryMouseClick(

@@ -50,7 +50,7 @@ public class SmartOffhandModule implements Module {
 
     @Override
     public int tickPriority() {
-        return 26;
+        return 20;
     }
 
     @Override
@@ -64,6 +64,13 @@ public class SmartOffhandModule implements Module {
             return false;
         if (cooldown > 0) {
             cooldown--;
+            return false;
+        }
+
+        // Yield if AutoTotem is currently handling the offhand
+        var autoTotem = pro.mikey.autoclicker.AutoClicker.getInstance()
+                .getModuleManager().<AutoTotemModule>get("auto_totem").orElse(null);
+        if (autoTotem != null && autoTotem.isBusy()) {
             return false;
         }
 

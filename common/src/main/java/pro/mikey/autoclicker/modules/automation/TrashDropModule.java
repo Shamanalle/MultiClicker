@@ -82,6 +82,11 @@ public class TrashDropModule implements Module {
         if (items.get().isEmpty())
             return false;
 
+        // Do not drop while open in another container (chest, anvil, furnace) to prevent desync
+        if (mc.screen != null && !(mc.screen instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen)) {
+            return false;
+        }
+
         timer++;
         if (timer < 20)
             return false; // once per second
@@ -94,8 +99,13 @@ public class TrashDropModule implements Module {
             var stack = mc.player.getInventory().getItem(i);
             if (stack.isEmpty())
                 continue;
-            String itemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
-            boolean inList = items.get().stream().anyMatch(entry -> itemId.equals(entry.trim()));
+            var regKey = BuiltInRegistries.ITEM.getKey(stack.getItem());
+            String itemId = regKey.getPath().toLowerCase();
+            String fullId = regKey.toString().toLowerCase();
+            boolean inList = items.get().stream().anyMatch(entry -> {
+                String clean = entry.trim().toLowerCase();
+                return clean.equals(itemId) || clean.equals(fullId);
+            });
             boolean shouldDrop = (mode.get() == DropMode.BLACKLIST) ? inList : !inList;
             if (shouldDrop) {
                 // #11 keepMinStack: skip if stack count <= minimum

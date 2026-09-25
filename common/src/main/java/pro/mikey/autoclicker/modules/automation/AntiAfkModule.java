@@ -83,7 +83,7 @@ public class AntiAfkModule implements Module {
 
     @Override
     public int tickPriority() {
-        return 20;
+        return 120;
     }
 
     public boolean isLookJitterActive() {
@@ -114,7 +114,7 @@ public class AntiAfkModule implements Module {
         lookJitterActive = false;
         // Restore hotbar if we were mid-swap
         if (origHotbarSlot != -1 && mc != null && mc.player != null) {
-            InventoryUtils.setSelectedSlot(mc.player, origHotbarSlot);
+            InventoryUtils.setSelectedSlot(mc, origHotbarSlot);
             origHotbarSlot = -1;
         }
     }
@@ -195,7 +195,7 @@ public class AntiAfkModule implements Module {
             }
             case HOTBAR_CHANGE -> {
                 origHotbarSlot = InventoryUtils.getSelectedSlot(mc.player);
-                InventoryUtils.setSelectedSlot(mc.player, (origHotbarSlot + 1) % 9);
+                InventoryUtils.setSelectedSlot(mc, (origHotbarSlot + 1) % 9);
             }
             default -> {
             }
@@ -240,7 +240,7 @@ public class AntiAfkModule implements Module {
             case HOTBAR_CHANGE -> {
                 stateTimer++;
                 if (stateTimer >= 2) {
-                    InventoryUtils.setSelectedSlot(mc.player, origHotbarSlot);
+                    InventoryUtils.setSelectedSlot(mc, origHotbarSlot);
                     origHotbarSlot = -1;
                     finishAction();
                 }

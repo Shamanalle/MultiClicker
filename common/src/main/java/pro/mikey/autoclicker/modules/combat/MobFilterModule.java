@@ -15,6 +15,8 @@ import java.util.List;
  */
 public class MobFilterModule implements Module {
 
+    public final BooleanSetting allowPlayers = new BooleanSetting("mob_filter.allow_players", "Игроки", true)
+            .withDescription("Атаковать других игроков. Отключите для чисто моб-ферм");
     public final BooleanSetting filterBabies = new BooleanSetting("mob_filter.filter_babies", "Игнор. детёнышей",
             false).withDescription("Пропускает детёнышей мобов (isBaby). Полезно для ферм");
     public final BooleanSetting filterAdults = new BooleanSetting("mob_filter.filter_adults", "Игнор. взрослых", false)
@@ -28,7 +30,7 @@ public class MobFilterModule implements Module {
 
     @Override
     public List<Setting<?>> getSettings() {
-        return List.of(filterBabies, filterAdults, allowHostile, allowPassive, allowNeutral);
+        return List.of(allowPlayers, filterBabies, filterAdults, allowHostile, allowPassive, allowNeutral);
     }
 
     @Override
@@ -52,6 +54,10 @@ public class MobFilterModule implements Module {
     }
 
     public boolean passes(LivingEntity e) {
+        if (e instanceof net.minecraft.world.entity.player.Player) {
+            return allowPlayers.get();
+        }
+
         if (filterBabies.get() && e.isBaby())
             return false;
         if (filterAdults.get() && !e.isBaby())

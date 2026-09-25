@@ -265,6 +265,7 @@ public class OptionsScreen extends Screen {
         // Section 3: Моб-фильтр
         if (mf != null) {
             McSection s3 = new McSection(0, 0, cw, "Моб-фильтр", 0xFFFF5577, null)
+                .add(mf.allowPlayers)
                 .add(mf.filterBabies)
                 .add(mf.filterAdults)
                 .add(mf.allowHostile)
@@ -391,6 +392,7 @@ public class OptionsScreen extends Screen {
         AutoToolModule t = mm.getModule(AutoToolModule.class);
         if (t == null) return;
         McSection s = new McSection(0, 0, cw, "Авто-Инструмент", 0xFFCC8833, t.enabled)
+            .addIf(t.onlyWhenMining, t.enabled, true)
             .addIf(t.saveTool, t.enabled, true)
             .addIf(t.saveThreshold, t.saveTool, true)
             .build();

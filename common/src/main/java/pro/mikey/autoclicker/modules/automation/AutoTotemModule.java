@@ -26,11 +26,11 @@ public class AutoTotemModule implements Module {
     }
 
     private enum State {
-        IDLE, PLACE_OFFHAND, DONE
+        IDLE, WAIT_CONFIRMATION
     }
 
     private State state = State.IDLE;
-    private int foundSlot = -1;
+    private int cooldown = 0;
     private net.minecraft.world.item.Item lastOffhand = null;
 
     @Override
@@ -50,13 +50,17 @@ public class AutoTotemModule implements Module {
 
     @Override
     public int tickPriority() {
-        return 25;
+        return 15;
+    }
+
+    public boolean isBusy() {
+        return enabled.get() && (state != State.IDLE || cooldown > 0);
     }
 
     @Override
     public void onDisable() {
         state = State.IDLE;
-        foundSlot = -1;
+        cooldown = 0;
         lastOffhand = null;
     }
 
@@ -65,30 +69,33 @@ public class AutoTotemModule implements Module {
         if (!enabled.get() || mc.player == null)
             return false;
 
+        if (cooldown > 0) {
+            cooldown--;
+        }
+
         var offhand = mc.player.getOffhandItem();
         boolean totemInOffhand = offhand.getItem() == Items.TOTEM_OF_UNDYING;
         boolean totemConsumed = (lastOffhand == Items.TOTEM_OF_UNDYING && !totemInOffhand);
         lastOffhand = offhand.isEmpty() ? null : offhand.getItem();
 
-        switch (state) {
-            case IDLE -> {
-                if (totemInOffhand)
-                    return false;
-                float hp = mc.player.getHealth() / mc.player.getMaxHealth() * 100f;
-                if (hp <= hpThreshold.get() || totemConsumed) {
-                    int slot = InventoryUtils.findItem(mc.player, Items.TOTEM_OF_UNDYING);
-                    if (slot == -1)
-                        return false;
-                    foundSlot = slot;
-                    state = State.PLACE_OFFHAND;
-                }
+        if (totemInOffhand) {
+            state = State.IDLE;
+            return false;
+        }
+
+        if (cooldown > 0) {
+            return false;
+        }
+
+        float hp = mc.player.getHealth() / mc.player.getMaxHealth() * 100f;
+        if (hp <= hpThreshold.get() || totemConsumed) {
+            int slot = InventoryUtils.findItem(mc.player, Items.TOTEM_OF_UNDYING);
+            if (slot != -1) {
+                InventoryUtils.swapToOffhand(mc, slot);
+                cooldown = 8; // Debounce to allow server round-trip packet sync
+                state = State.WAIT_CONFIRMATION;
+                return true;
             }
-            case PLACE_OFFHAND -> {
-                InventoryUtils.swapToOffhand(mc, foundSlot);
-                foundSlot = -1;
-                state = State.DONE;
-            }
-            case DONE -> state = State.IDLE;
         }
         return false;
     }
