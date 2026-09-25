@@ -18,11 +18,15 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
 import pro.mikey.autoclicker.AutoClicker;
+import pro.mikey.autoclicker.OptionsScreen;
+import pro.mikey.autoclicker.modules.world.HudModule;
+import pro.mikey.autoclicker.ui.NotificationRenderer;
 
 @Mod(AutoClicker.MOD_ID)
 @EventBusSubscriber(value = Dist.CLIENT, modid = AutoClicker.MOD_ID)
 public final class AutoClickerNeoForge {
     private static final AutoClicker autoClicker = new AutoClicker();
+
     public AutoClickerNeoForge() {
         autoClicker.onInitialize();
         NeoForge.EVENT_BUS.addListener(this::onClientTick);
@@ -30,31 +34,29 @@ public final class AutoClickerNeoForge {
     }
 
     @SubscribeEvent
-    public static void onClientStarted(FMLLoadCompleteEvent event){
+    public static void onClientStarted(FMLLoadCompleteEvent event) {
         autoClicker.clientReady(Minecraft.getInstance());
     }
 
     @SubscribeEvent
-    public static void registerBindings(RegisterKeyMappingsEvent event){
+    public static void registerBindings(RegisterKeyMappingsEvent event) {
         event.register(AutoClicker.toggleHolding);
         event.register(AutoClicker.openConfig);
     }
 
-    public void onClientTick(ClientTickEvent.Post event){
+    public void onClientTick(ClientTickEvent.Post event) {
         autoClicker.clientTickEvent(Minecraft.getInstance());
     }
 
-    public void onHudRender(RenderGuiEvent.Pre event){
-        autoClicker.renderGameOverlayEvent(event.getGuiGraphics(), event.getPartialTick());
+    public void onHudRender(RenderGuiEvent.Post event) {
+        autoClicker.getModuleManager().<HudModule>get("hud")
+                .ifPresent(hud -> hud.render(event.getGuiGraphics(), event.getPartialTick()));
+        NotificationRenderer.getInstance().render(event.getGuiGraphics());
     }
 
     @SubscribeEvent
-    public static void constructMod(FMLConstructModEvent event){
-        ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class, () -> new IConfigScreenFactory() {
-            @Override
-            public @NotNull Screen createScreen(@NotNull ModContainer arg, @NotNull Screen arg2) {
-                return (autoClicker.getConfigScreen());
-            }
-        });
+    public static void constructMod(FMLConstructModEvent event) {
+        ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class,
+                () -> (container, screen) -> new OptionsScreen());
     }
 }

@@ -3,8 +3,6 @@ plugins {
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
     id 'maven-publish'
-    id 'pro.mikey.plugins.insaniam' version "0.1-SNAPSHOT"
-    id "me.modmuss50.mod-publish-plugin" version "0.7.4"
 }
 
 architectury {
@@ -83,16 +81,3 @@ subprojects {
     }
 }
 
-def changelogData = insaniamUtils.createChangelog {
-    file = file('CHANGELOG.md')
-    versionPattern = ~/## \[[^]]+]/
-    fallbackValue = "No changelog provided"
-    version = project.mod_version
-}
-
-// Publishing configuration removed
-/*
-publishMods {
-    // ...
-}
-*/
