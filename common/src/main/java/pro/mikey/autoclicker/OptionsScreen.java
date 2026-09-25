@@ -2,6 +2,9 @@ package pro.mikey.autoclicker;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import pro.mikey.autoclicker.core.ModuleManager;
 import pro.mikey.autoclicker.core.Setting;
@@ -620,7 +623,9 @@ public class OptionsScreen extends Screen {
     // ══════════════════════════════════════════
 
     @Override
-    public boolean mouseClicked(double mx, double my, int btn) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
+        double mx = event.x(), my = event.y();
+        int btn = event.button();
         // Help
         int hx = width - 22;
         if (mx >= hx - 5 && mx <= hx + 12 && my >= 4 && my < HEAD - 4 && btn == 0) {
@@ -657,27 +662,27 @@ public class OptionsScreen extends Screen {
 
         // Nav
         if (nav != null && mx >= 0 && mx < NAV_W && my >= HEAD && my < height - FOOT) {
-            if (nav.mouseClicked(mx, my, btn)) return true;
+            if (nav.mouseClicked(event, bl)) return true;
         }
 
         // Content
         if (content != null && mx >= NAV_W && my >= HEAD && my < height - FOOT) {
-            if (content.mouseClicked(mx, my, btn)) return true;
+            if (content.mouseClicked(event, bl)) return true;
         }
 
-        return super.mouseClicked(mx, my, btn);
+        return super.mouseClicked(event, bl);
     }
 
     @Override
-    public boolean mouseReleased(double mx, double my, int btn) {
-        if (content != null && content.mouseReleased(mx, my, btn)) return true;
-        return super.mouseReleased(mx, my, btn);
+    public boolean mouseReleased(MouseButtonEvent event) {
+        if (content != null && content.mouseReleased(event)) return true;
+        return super.mouseReleased(event);
     }
 
     @Override
-    public boolean mouseDragged(double mx, double my, int btn, double dx, double dy) {
-        if (content != null && content.mouseDragged(mx, my, btn, dx, dy)) return true;
-        return super.mouseDragged(mx, my, btn, dx, dy);
+    public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+        if (content != null && content.mouseDragged(event, dx, dy)) return true;
+        return super.mouseDragged(event, dx, dy);
     }
 
     @Override
@@ -688,8 +693,9 @@ public class OptionsScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int key, int scan, int mods) {
-        if (content != null && content.keyPressed(key, scan, mods)) return true;
+    public boolean keyPressed(KeyEvent event) {
+        if (content != null && content.keyPressed(event)) return true;
+        int key = event.key();
         if (key == 256) {
             if (searchOn) { searchOn = false; query = ""; return true; }
             onClose();
@@ -699,14 +705,15 @@ public class OptionsScreen extends Screen {
             query = query.substring(0, query.length() - 1);
             return true;
         }
-        return super.keyPressed(key, scan, mods);
+        return super.keyPressed(event);
     }
 
     @Override
-    public boolean charTyped(char c, int mods) {
-        if (content != null && content.charTyped(c, mods)) return true;
+    public boolean charTyped(CharacterEvent event) {
+        if (content != null && content.charTyped(event)) return true;
+        char c = (char) event.codepoint();
         if (searchOn && c >= 32) { query += c; return true; }
-        return super.charTyped(c, mods);
+        return super.charTyped(event);
     }
 
     @Override

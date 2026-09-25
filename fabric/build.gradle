@@ -28,7 +28,9 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
 
     // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
+    modImplementation("net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version") {
+        exclude group: "net.fabricmc.fabric-api", module: "fabric-content-registries-v0"
+    }
 
     modApi "com.terraformersmc:modmenu:${project.modmenu}"
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }

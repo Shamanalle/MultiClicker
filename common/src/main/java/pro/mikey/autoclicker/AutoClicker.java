@@ -32,9 +32,9 @@ public class AutoClicker {
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
     public static final KeyMapping openConfig = new KeyMapping("keybinding.open-gui", GLFW.GLFW_KEY_O,
-            "category.autoclicker-fabric");
+            KeyMapping.Category.MISC);
     public static final KeyMapping toggleHolding = new KeyMapping("keybinding.toggle-hold", GLFW.GLFW_KEY_I,
-            "category.autoclicker-fabric");
+            KeyMapping.Category.MISC);
 
     private static AutoClicker INSTANCE;
 

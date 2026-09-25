@@ -7,6 +7,9 @@ import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.resources.ResourceLocation;
 import pro.mikey.autoclicker.AutoClicker;
 
@@ -72,17 +75,46 @@ public abstract class McWidget implements Renderable, GuiEventListener, Narratab
     // ═══ Input ═══
 
     @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
+        if (!visible || dimmed) return false;
+        double mx = event.x(), my = event.y();
+        if (mx >= x && mx < x + w && my >= y && my < y + h) return onClick(mx, my, event.button());
+        return false;
+    }
+
     public boolean mouseClicked(double mx, double my, int btn) {
         if (!visible || dimmed) return false;
         if (mx >= x && mx < x + w && my >= y && my < y + h) return onClick(mx, my, btn);
         return false;
     }
+
     protected boolean onClick(double mx, double my, int btn) { return false; }
-    @Override public boolean mouseReleased(double mx, double my, int btn) { return false; }
-    @Override public boolean mouseDragged(double mx, double my, int btn, double dx, double dy) { return false; }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        return mouseReleased(event.x(), event.y(), event.button());
+    }
+    public boolean mouseReleased(double mx, double my, int btn) { return false; }
+
+    @Override
+    public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+        return mouseDragged(event.x(), event.y(), event.button(), dx, dy);
+    }
+    public boolean mouseDragged(double mx, double my, int btn, double dx, double dy) { return false; }
+
     @Override public boolean mouseScrolled(double mx, double my, double dh, double dv) { return false; }
-    @Override public boolean keyPressed(int key, int scan, int mods) { return false; }
-    @Override public boolean charTyped(char ch, int mods) { return false; }
+
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        return keyPressed(event.key(), event.scancode(), event.modifiers());
+    }
+    public boolean keyPressed(int key, int scan, int mods) { return false; }
+
+    @Override
+    public boolean charTyped(CharacterEvent event) {
+        return charTyped((char) event.codepoint(), event.modifiers());
+    }
+    public boolean charTyped(char ch, int mods) { return false; }
     @Override public boolean isFocused() { return focused; }
     @Override public void setFocused(boolean f) { focused = f; }
     @Override public NarrationPriority narrationPriority() { return NarrationPriority.NONE; }

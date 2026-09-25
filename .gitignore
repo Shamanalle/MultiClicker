@@ -59,3 +59,7 @@ graphify-out/cache/
 # Distribution artifacts
 dist/
 
+# Run config templates and Loom temp files
+*_run_config_template.xml
+log4j2.*.xml
+certs/

@@ -3,6 +3,8 @@ package pro.mikey.autoclicker;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import pro.mikey.autoclicker.core.Module;
 import pro.mikey.autoclicker.core.Setting;
 import pro.mikey.autoclicker.ui.McWidget;
@@ -116,17 +118,17 @@ public class HelpScreen extends Screen {
         g.drawString(font, back, bx + 8, by + 4, bh ? 0xFFE2E2EE : 0xFF8888BB, false);
     }
 
-    @Override public boolean mouseClicked(double mx, double my, int btn) {
+    @Override public boolean mouseClicked(MouseButtonEvent event, boolean bl) {
         int botY = height - FH;
         String back = "< Назад";
         int bw = font.width(back) + 16, bx = width / 2 - bw / 2, by = botY + (FH - 16) / 2;
-        if (mx >= bx && mx < bx + bw && my >= by && my < by + 16) { minecraft.setScreen(parent); return true; }
-        return super.mouseClicked(mx, my, btn);
+        if (event.x() >= bx && event.x() < bx + bw && event.y() >= by && event.y() < by + 16) { minecraft.setScreen(parent); return true; }
+        return super.mouseClicked(event, bl);
     }
     @Override public boolean mouseScrolled(double mx, double my, double dh, double dv) { tgtScroll -= dv * 30; return true; }
-    @Override public boolean keyPressed(int key, int scan, int mods) {
-        if (key == 256) { minecraft.setScreen(parent); return true; }
-        return super.keyPressed(key, scan, mods);
+    @Override public boolean keyPressed(KeyEvent event) {
+        if (event.key() == 256) { minecraft.setScreen(parent); return true; }
+        return super.keyPressed(event);
     }
     @Override public boolean isPauseScreen() { return false; }
 
