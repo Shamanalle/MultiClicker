@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -29,12 +30,14 @@ public class ClickerModule extends Module {
     public final BoolSetting attackCooldown;
     public final EnumSetting<AttackTarget> attackTarget;
     public final BoolSetting pauseWhileUsing;
+    public final BoolSetting lootingSwap;
 
     public final ClickChannel use;
     public final ClickChannel jump;
 
     public final IntSetting startDelay;
     public final BoolSetting background;
+    public final BoolSetting lockCamera;
     public final IntSetting attackLimit;
     public final IntSetting timeLimit;
 
@@ -42,6 +45,7 @@ public class ClickerModule extends Module {
     private int attackCount;
     /** The player's own "pause on lost focus" option, restored when the clicker stops. */
     private Boolean savedPauseOnLostFocus;
+    private final LootingSwap swap = new LootingSwap();
 
     public ClickerModule() {
         super("clicker", Category.CLICKER, false, true);
@@ -49,12 +53,14 @@ public class ClickerModule extends Module {
         attackCooldown = register(new BoolSetting("attack_cooldown", true).visibleWhen(attack.enabled::get));
         attackTarget = register(new EnumSetting<>("attack_target", AttackTarget.ENTITIES).visibleWhen(attack.enabled::get));
         pauseWhileUsing = register(new BoolSetting("pause_while_using", true).visibleWhen(attack.enabled::get));
+        lootingSwap = register(new BoolSetting("looting_swap", false).visibleWhen(attack.enabled::get));
 
         use = new ClickChannel(this, "use", false, ClickChannel.Mode.CLICK, 4);
         jump = new ClickChannel(this, "jump", false, ClickChannel.Mode.CLICK, 10);
 
         startDelay = register(new IntSetting("start_delay", 0, 0, 200, Unit.TICKS).zeroMeans("options.off"));
         background = register(new BoolSetting("background", true));
+        lockCamera = register(new BoolSetting("lock_camera", false));
         attackLimit = register(new IntSetting("attack_limit", 0, 0, 5000, Unit.NONE).zeroMeans("multiclicker.value.unlimited"));
         timeLimit = register(new IntSetting("time_limit", 0, 0, 600, Unit.MINUTES).zeroMeans("multiclicker.value.unlimited"));
     }
@@ -71,6 +77,16 @@ public class ClickerModule extends Module {
         starts.add(jump.enabled);
         starts.add(startDelay);
         return starts;
+    }
+
+    /** True while a Looting weapon is selected for a finishing blow (other slot changes must wait). */
+    public boolean isSwappingWeapon() {
+        return swap.isActive();
+    }
+
+    /** Mouse movement does not turn the camera while the mod works, so the aim cannot drift. */
+    public boolean isCameraLocked() {
+        return lockCamera.get() && isRunning() && Minecraft.getInstance().screen == null;
     }
 
     /** True while the attack key is held for continuous block breaking. */
@@ -93,6 +109,7 @@ public class ClickerModule extends Module {
     @Override
     public void stop(Minecraft mc) {
         resetChannels(mc);
+        swap.restore(mc, mc.player);
         restorePauseOnLostFocus(mc);
     }
 
@@ -115,6 +132,9 @@ public class ClickerModule extends Module {
         MultiClicker mod = MultiClicker.get();
         if (mc.screen != null || player.isDeadOrDying() || player.isSpectator()) {
             resetChannels(mc);
+            if (swap.isActive()) {
+                swap.restore(mc, player);
+            }
             return;
         }
         if (startDelayLeft > 0) {
@@ -147,6 +167,10 @@ public class ClickerModule extends Module {
         boolean validEntity = target != null && mod.targetFilter().isValidTarget(mc, target);
         boolean charged = player.getAttackStrengthScale(0.5F) >= 1.0F;
 
+        if (tickLootingSwap(mc, player, mod, eating, validEntity ? target : null)) {
+            return;
+        }
+
         boolean allowed = !eating && !(pauseWhileUsing.get() && player.isUsingItem());
         if (allowed) {
             if (target != null) {
@@ -168,6 +192,32 @@ public class ClickerModule extends Module {
                 mod.stats().recordAttack(target);
             }
         }
+    }
+
+    /**
+     * Runs the Looting finishing-blow logic.
+     *
+     * @return {@code true} if it handled the attack key this tick
+     */
+    private boolean tickLootingSwap(Minecraft mc, LocalPlayer player, MultiClicker mod, boolean eating,
+                                    Entity validTarget) {
+        if (!swap.isActive()) {
+            boolean canStart = lootingSwap.get() && !eating && validTarget instanceof LivingEntity living
+                    && !(pauseWhileUsing.get() && player.isUsingItem())
+                    && swap.tryStart(mc, player, living);
+            if (!canStart) {
+                return false;
+            }
+            attack.reset(mc.options.keyAttack);
+            return true;
+        }
+        LootingSwap.Result result = swap.tick(mc, player, eating);
+        if (result == LootingSwap.Result.ATTACKED) {
+            attackCount++;
+            mod.stats().recordClick();
+            mod.stats().recordAttack(validTarget != null ? validTarget : ((EntityHitResult) mc.hitResult).getEntity());
+        }
+        return result != LootingSwap.Result.IDLE;
     }
 
     /** Stops the mod once a configured limit is reached. */

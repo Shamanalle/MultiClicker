@@ -7,6 +7,7 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import pro.mikey.autoclicker.MultiClicker;
 import pro.mikey.autoclicker.module.Category;
 import pro.mikey.autoclicker.module.Module;
 import pro.mikey.autoclicker.setting.BoolSetting;
@@ -72,7 +73,8 @@ public class AutoEatModule extends Module {
             return;
         }
         if (mc.screen != null || player.isCreative() || player.isSpectator()
-                || player.getFoodData().getFoodLevel() > hunger.get() || player.isUsingItem()) {
+                || player.getFoodData().getFoodLevel() > hunger.get() || player.isUsingItem()
+                || MultiClicker.get().clicker().isSwappingWeapon()) {
             return;
         }
         int slot = findFood(player);
@@ -121,24 +123,28 @@ public class AutoEatModule extends Module {
         float bestScore = 0;
         for (int slot = 0; slot < Inventories.HOTBAR_SIZE; slot++) {
             ItemStack stack = player.getInventory().getItem(slot);
-            if (!isFood(stack)) {
-                continue;
-            }
-            if (avoidHarmful.get() && HARMFUL_FOOD.contains(stack.getItem())
-                    || keepValuable.get() && VALUABLE_FOOD.contains(stack.getItem())) {
-                continue;
-            }
-            FoodProperties food = stack.get(DataComponents.FOOD);
-            float score = food.nutrition() + food.saturation();
-            if (score > bestScore) {
-                bestScore = score;
+            if (isAcceptableFood(stack, avoidHarmful.get(), keepValuable.get()) && foodScore(stack) > bestScore) {
+                bestScore = foodScore(stack);
                 bestSlot = slot;
             }
         }
         return bestSlot;
     }
 
-    private static boolean isFood(ItemStack stack) {
+    public static boolean isFood(ItemStack stack) {
         return !stack.isEmpty() && stack.has(DataComponents.FOOD);
+    }
+
+    /** Food that is safe to eat automatically under the given rules. */
+    public static boolean isAcceptableFood(ItemStack stack, boolean avoidHarmful, boolean keepValuable) {
+        return isFood(stack)
+                && !(avoidHarmful && HARMFUL_FOOD.contains(stack.getItem()))
+                && !(keepValuable && VALUABLE_FOOD.contains(stack.getItem()));
+    }
+
+    /** Higher is better: nutrition plus saturation. */
+    public static float foodScore(ItemStack stack) {
+        FoodProperties food = stack.get(DataComponents.FOOD);
+        return food == null ? 0 : food.nutrition() + food.saturation();
     }
 }
