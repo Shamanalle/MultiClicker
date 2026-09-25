@@ -56,3 +56,6 @@ Thumbs.db
 # Graphify cache
 graphify-out/cache/
 
+# Distribution artifacts
+dist/
+
