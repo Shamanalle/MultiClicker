@@ -30,7 +30,9 @@ dependencies {
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
 
-    modApi "com.terraformersmc:modmenu:${project.modmenu}"
+    // Mod Menu is optional: compile against its API and run it in the dev environment only.
+    modCompileOnly "com.terraformersmc:modmenu:${project.modmenu}"
+    modLocalRuntime "com.terraformersmc:modmenu:${project.modmenu}"
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
 }
