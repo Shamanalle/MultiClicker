@@ -86,8 +86,11 @@ public interface Module {
     default String getKeyBindName() {
         int key = getKeyBind();
         if (key <= 0) return "NONE";
-        String name = org.lwjgl.glfw.GLFW.glfwGetKeyName(key, 0);
-        return name != null ? name.toUpperCase() : "KEY_" + key;
+        try {
+            return com.mojang.blaze3d.platform.InputConstants.Type.KEYBOARD.getOrCreate(key).getDisplayName().getString();
+        } catch (Exception e) {
+            return "KEY_" + key;
+        }
     }
 
     // ── Category enum ────────────────────────────────────────────────

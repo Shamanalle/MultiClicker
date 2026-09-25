@@ -9,10 +9,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
+import net.minecraft.world.item.component.SwingAnimation;
 import pro.mikey.autoclicker.util.InventoryUtils;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import org.lwjgl.glfw.GLFW;
 import pro.mikey.autoclicker.core.EventBus;
 import pro.mikey.autoclicker.core.Module;
 import pro.mikey.autoclicker.core.Setting;
@@ -797,7 +797,7 @@ public class CombatClickerModule implements Module {
             if (method == SmartCombatModule.AttackMethod.LEGIT) {
                 if (respectCooldown.get() && mc.player.getAttackStrengthScale(0.5F) < 0.95F)
                     return false;
-                KeyMapping.click(InputConstants.Type.MOUSE.getOrCreate(GLFW.GLFW_MOUSE_BUTTON_LEFT));
+                KeyMapping.click(InputConstants.Type.MOUSE.getOrCreate(InputConstants.MOUSE_BUTTON_LEFT));
                 EventBus.get().emit(new EventBus.AttackEvent(mc.player, resolvedTarget));
                 return true;
             } else {
@@ -805,13 +805,13 @@ public class CombatClickerModule implements Module {
                     return false;
                 mc.gameMode.attack(mc.player, target);
                 mc.player.resetAttackStrengthTicker();
-                mc.player.swing(InteractionHand.MAIN_HAND);
+                mc.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
                 EventBus.get().emit(new EventBus.AttackEvent(mc.player, resolvedTarget));
                 return true;
             }
         } else {
             if (!mobMode.get()) {
-                KeyMapping.click(InputConstants.Type.MOUSE.getOrCreate(GLFW.GLFW_MOUSE_BUTTON_LEFT));
+                KeyMapping.click(InputConstants.Type.MOUSE.getOrCreate(InputConstants.MOUSE_BUTTON_LEFT));
                 return true;
             }
             return false;
@@ -878,7 +878,7 @@ public class CombatClickerModule implements Module {
                 if (savedLootingTarget != null && savedLootingTarget.isAlive() && mc.gameMode != null) {
                     mc.gameMode.attack(mc.player, savedLootingTarget);
                     mc.player.resetAttackStrengthTicker();
-                    mc.player.swing(lootingUseOffhand ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
+                    mc.player.swing(lootingUseOffhand ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
                     EventBus.get().emit(new EventBus.AttackEvent(mc.player, savedLootingTarget));
                 }
                 if (originalHotbarSlot != -1) {

@@ -110,7 +110,7 @@ public abstract class McWidget implements Renderable, GuiEventListener, Narratab
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        return keyPressed(event.key(), event.scancode(), event.modifiers());
+        return keyPressed(event.key(), event.keycode(), event.modifiers());
     }
     public boolean keyPressed(int key, int scan, int mods) { return false; }
 

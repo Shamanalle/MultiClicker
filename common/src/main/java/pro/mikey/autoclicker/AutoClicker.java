@@ -7,7 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 import pro.mikey.autoclicker.core.ConfigManager;
 import pro.mikey.autoclicker.core.ModuleManager;
 import pro.mikey.autoclicker.modules.combat.CombatClickerModule;
@@ -31,9 +31,9 @@ public class AutoClicker {
     public static final String MOD_ID = "multiclicker";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
-    public static final KeyMapping openConfig = new KeyMapping("keybinding.open-gui", GLFW.GLFW_KEY_O,
+    public static final KeyMapping openConfig = new KeyMapping("keybinding.open-gui", InputConstants.KEY_O,
             KeyMapping.Category.MISC);
-    public static final KeyMapping toggleHolding = new KeyMapping("keybinding.toggle-hold", GLFW.GLFW_KEY_I,
+    public static final KeyMapping toggleHolding = new KeyMapping("keybinding.toggle-hold", InputConstants.KEY_I,
             KeyMapping.Category.MISC);
 
     private static AutoClicker INSTANCE;

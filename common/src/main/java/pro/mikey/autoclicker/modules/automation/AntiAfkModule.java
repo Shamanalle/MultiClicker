@@ -3,6 +3,7 @@ package pro.mikey.autoclicker.modules.automation;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.component.SwingAnimation;
 import pro.mikey.autoclicker.core.Module;
 import pro.mikey.autoclicker.core.Setting;
 import pro.mikey.autoclicker.core.Setting.*;
@@ -234,7 +235,7 @@ public class AntiAfkModule implements Module {
                 stateTimer++;
             }
             case SWINGING -> {
-                mc.player.swing(InteractionHand.MAIN_HAND);
+                mc.player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
                 finishAction();
             }
             case HOTBAR_CHANGE -> {
