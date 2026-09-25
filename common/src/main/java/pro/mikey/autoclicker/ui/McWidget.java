@@ -10,7 +10,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import pro.mikey.autoclicker.AutoClicker;
 
 /**
@@ -34,7 +34,7 @@ public abstract class McWidget implements Renderable, GuiEventListener, Narratab
     public static final int C_WARN      = 0xFFFFCC44;
 
     // ═══ White pixel for rendering ═══
-    private static final ResourceLocation WHITE = ResourceLocation.fromNamespaceAndPath("multiclicker", "textures/gui/white.png");
+    private static final Identifier WHITE = Identifier.fromNamespaceAndPath("multiclicker", "textures/gui/white.png");
 
     // ═══ Fields ═══
     protected int x, y, w, h;
