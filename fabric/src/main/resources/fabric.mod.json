@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "multiclicker",
+  "version": "${version}",
+  "name": "Multi Clicker",
+  "description": "Automatically left and right clicks for you, how kind!",
+  "authors": [
+    "Multi Clicker Team"
+  ],
+  "license": "MIT",
+  "icon": "assets/multiclicker/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "pro.mikey.autoclicker.fabric.client.AutoClickerFabricClient"
+    ],
+    "modmenu": [
+      "pro.mikey.autoclicker.fabric.client.ModMenuAPIImpl"
+    ]
+  },
+  "mixins": [
+    "multiclicker.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "fabric": "*",
+    "minecraft": ">=1.21",
+    "java": ">=21"
+  }
+}

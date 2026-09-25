@@ -1,0 +1,54 @@
+# Gradle
+.gradle/
+build/
+*/build/
+bin/
+*/bin/
+out/
+run/
+.architectury-transformer/
+
+# IDE & Editor
+.idea/
+*.iml
+.vscode/
+*.ipr
+*.iws
+.settings/
+.classpath
+.project
+.agent/
+
+# Logs & build dumps
+*.log
+*.log.txt
+*.diff
+build_*.txt
+build_*.log
+temp*.log
+error.log
+out.txt
+deps.txt
+rendertype.txt
+inventory_methods.txt
+levelrenderer_methods.txt
+old-esp*
+old-log*
+combined_mod.txt
+
+# Scratch scripts & decompiled dumps
+local_proxy.ps1
+Patcher.*
+PrintRenderTypes.java
+RenderPipelines.java
+GuiGraphics.java
+Test.java
+Test2.java
+intermediary/
+intermediary.zip
+sources_temp/
+net/
+
+# OS artifacts
+Thumbs.db
+.DS_Store

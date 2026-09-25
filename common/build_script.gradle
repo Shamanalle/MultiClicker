@@ -1,0 +1,21 @@
+tasks.register("printLevelRenderer") {
+    doLast {
+        def jarFile = configurations.compileClasspath.find { it.name.contains("minecraft-merged") || it.name.contains("minecraft-mapped") || it.name.contains("minecraft-project") }
+        if (jarFile) {
+            println "Found jar: " + jarFile
+            def cl = new java.net.URLClassLoader([jarFile.toURI().toURL()] as java.net.URL[])
+            try {
+                def clazz = cl.loadClass("net.minecraft.client.renderer.LevelRenderer")
+                clazz.declaredMethods.each {
+                    if (it.name == "renderLevel" || it.name.contains("renderLevel")) {
+                        println "METHOD: " + it.name + " " + it.getParameterTypes().collect { it.name }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace()
+            }
+        } else {
+            println "Jar not found"
+        }
+    }
+}
