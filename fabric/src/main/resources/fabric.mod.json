@@ -2,20 +2,27 @@
   "schemaVersion": 1,
   "id": "multiclicker",
   "version": "${version}",
-  "name": "Multi Clicker",
-  "description": "Automatically left and right clicks for you, how kind!",
+  "name": "MultiClicker",
+  "description": "Configurable auto clicker with helpers for AFK farms, mining and fishing: attack/use/jump channels, target filter, auto eat, auto totem, auto fish, anti-AFK, HUD and a modern settings menu.",
   "authors": [
     "Multi Clicker Team"
   ],
+  "contributors": [
+    "Michael Hillcox (original AutoClicker)"
+  ],
+  "contact": {
+    "sources": "https://github.com/Shamanalle/MultiClicker",
+    "issues": "https://github.com/Shamanalle/MultiClicker/issues"
+  },
   "license": "MIT",
   "icon": "assets/multiclicker/icon.png",
   "environment": "client",
   "entrypoints": {
     "client": [
-      "pro.mikey.autoclicker.fabric.client.AutoClickerFabricClient"
+      "pro.mikey.autoclicker.fabric.MultiClickerFabric"
     ],
     "modmenu": [
-      "pro.mikey.autoclicker.fabric.client.ModMenuAPIImpl"
+      "pro.mikey.autoclicker.fabric.ModMenuIntegration"
     ]
   },
   "mixins": [
@@ -23,8 +30,11 @@
   ],
   "depends": {
     "fabricloader": ">=0.16.0",
-    "fabric": "*",
-    "minecraft": ">=1.21",
+    "fabric-api": "*",
+    "minecraft": "1.21.8",
     "java": ">=21"
+  },
+  "suggests": {
+    "modmenu": "*"
   }
 }

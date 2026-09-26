@@ -1,23 +1,16 @@
 {
   "required": true,
+  "minVersion": "0.8",
   "package": "pro.mikey.autoclicker.mixin",
   "compatibilityLevel": "JAVA_21",
-  "minVersion": "0.8",
   "client": [
-    "MixinMultiPlayerGameMode",
-    "MixinLivingEntity",
-    "MixinEntity",
-    "MixinClientPacketListener",
-    "MixinPingPacketListener",
-    "MixinArmorStand",
-    "MixinMouseHandler",
-    "InventoryAccessor",
-    "MixinGameRenderer",
-    "MixinMinecraft",
-    "MixinFishingHook",
-    "MixinKeepAlive"
+    "ClientPacketListenerMixin",
+    "EntityMixin",
+    "FishingHookAccessor",
+    "KeyMappingAccessor",
+    "MinecraftMixin",
+    "MouseHandlerMixin"
   ],
-  "mixins": [],
   "injectors": {
     "defaultRequire": 1
   }

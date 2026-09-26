@@ -2,7 +2,6 @@ plugins {
     id 'dev.architectury.loom' version '1.10-SNAPSHOT' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
-    id 'maven-publish'
 }
 
 architectury {
@@ -20,16 +19,13 @@ subprojects {
 
     apply plugin: 'dev.architectury.loom'
     apply plugin: 'architectury-plugin'
-    apply plugin: 'maven-publish'
 
     base {
-        // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
         archivesName = "$rootProject.archives_name-$project.name"
     }
 
     repositories {
-        maven { url "https://maven.terraformersmc.com/releases/"}
-        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url "https://maven.terraformersmc.com/releases/" }
     }
 
     dependencies {
@@ -50,34 +46,8 @@ subprojects {
     }
 
     jar {
-        from("LICENSE") {
-            rename { "${it}_${project.archivesBaseName}" }
-        }
-    }
-
-    // Configure Maven publishing.
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                groupId project.group
-                artifactId project.archivesBaseName
-                version project.version
-                from components.java
-            }
-        }
-
-        repositories {
-            def token = providers.environmentVariable("SAPS_TOKEN")
-            if (token.isPresent()) {
-                maven {
-                    url "https://maven.saps.dev/releases"
-                    credentials {
-                        username = "mikeymods"
-                        password = token.get()
-                    }
-                }
-            }
+        from(rootProject.file("LICENSE")) {
+            rename { "${it}_${rootProject.archives_name}" }
         }
     }
 }
-
