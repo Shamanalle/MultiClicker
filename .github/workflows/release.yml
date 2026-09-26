@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (for example v2.0.0); created from the selected branch if missing'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build with Gradle
+        run: |
+          chmod +x gradlew
+          ./gradlew build --no-daemon
+
+      - name: Prepare release
+        id: prep
+        run: |
+          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          version="$(sed -n 's/^mod_version *= *//p' gradle.properties | tr -d '[:space:]')"
+          if [ "${tag#v}" != "$version" ]; then
+            echo "::error::Tag $tag does not match mod_version $version"
+            exit 1
+          fi
+          jar="fabric/build/libs/MultiClicker-fabric-$version.jar"
+          test -f "$jar"
+          # Release notes: the CHANGELOG section of this version.
+          awk -v v="$version" '
+            /^## \[/ { if (found) exit; if (index($0, "[" v "]")) { found = 1; next } }
+            found
+          ' CHANGELOG.md > release-notes.md
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "jar=$jar" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.prep.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: MultiClicker ${{ steps.prep.outputs.version }} (Fabric 1.21.8)
+          body_path: release-notes.md
+          files: ${{ steps.prep.outputs.jar }}
+          fail_on_unmatched_files: true
