@@ -96,24 +96,24 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             setLanguage(context, "ru_ru");
             menuScreenshots(context, "ru");
             reset(context, server);
-            hud(context, server, "ru_", true);
+            hud(context, server, "ru_");
             deactivate(context);
-
-            // Every other translation: the densest pages and the HUD, to catch strings that do not fit.
-            for (String code : TRANSLATIONS) {
-                setLanguage(context, code);
-                languageScreenshots(context, server, code);
-            }
 
             // The pictures on the project page, 1280x720 (GUI scale 3), in English and Russian.
             context.getInput().resizeWindow(1280, 720);
             context.waitTicks(2);
+            readmeScreenshots(context, server, "ru");
             setLanguage(context, "en_us");
             readmeScreenshots(context, server, "en");
-            setLanguage(context, "ru_ru");
-            readmeScreenshots(context, server, "ru");
             context.getInput().resizeWindow(854, 480);
-            deactivate(context);
+            context.waitTicks(2);
+
+            // Every other translation: the densest pages, to catch strings that do not fit. Menus only:
+            // a dozen resource reloads already strain the software renderer of the CI machine.
+            for (String code : TRANSLATIONS) {
+                setLanguage(context, code);
+                languageScreenshots(context, code);
+            }
             context.setScreen(() -> null);
         }
         setLanguage(context, "en_us");
@@ -451,10 +451,10 @@ public class MultiClickerGameTest implements FabricClientGameTest {
     }
 
     private void hudScreenshots(ClientGameTestContext context, TestServerContext server) {
-        hud(context, server, "", true);
+        hud(context, server, "");
     }
 
-    private void hud(ClientGameTestContext context, TestServerContext server, String prefix, boolean allStyles) {
+    private void hud(ClientGameTestContext context, TestServerContext server, String prefix) {
         // Bare hands: the husk survives long enough for the screenshots.
         give(server, 1, new ItemStack(Items.TOTEM_OF_UNDYING, 2));
         server.runCommand("summon minecraft:husk 0.5 -60 3.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b}");
@@ -469,9 +469,6 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         activate(context);
         context.waitTicks(30);
         context.takeScreenshot(prefix + "hud_active_outline");
-        if (!allStyles) {
-            return;
-        }
         context.runOnClient(mc -> MultiClicker.get().highlight().style.set(HighlightModule.Style.GLOW));
         context.waitTicks(5);
         context.takeScreenshot(prefix + "hud_active_glow");
@@ -480,7 +477,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         context.takeScreenshot(prefix + "hud_active_filled");
     }
 
-    private void languageScreenshots(ClientGameTestContext context, TestServerContext server, String code) {
+    private void languageScreenshots(ClientGameTestContext context, String code) {
         for (Category category : List.of(Category.CLICKER, Category.SURVIVAL, Category.AUTOMATION)) {
             context.setScreen(() -> new ConfigScreen(null));
             context.runOnClient(mc -> ((ConfigScreen) mc.screen).showCategory(category));
@@ -490,9 +487,6 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         context.setScreen(() -> new ProfilesScreen(new ConfigScreen(null)));
         parkCursor(context);
         context.takeScreenshot("lang_" + code + "_profiles");
-        reset(context, server);
-        hud(context, server, "lang_" + code + "_", false);
-        deactivate(context);
     }
 
     // --- Project page -----------------------------------------------------------------------------
