@@ -303,5 +303,7 @@
   "multiclicker.message.safety.health": "мало здоровья (%s HP)",
   "multiclicker.message.safety.damage": "получен урон",
   "multiclicker.message.safety.player": "рядом игрок %s",
-  "multiclicker.message.safety.disconnected": "[MultiClicker] Аварийный выход: %s"
+  "multiclicker.message.safety.disconnected": "[MultiClicker] Аварийный выход: %s",
+  "modmenu.summaryTranslation.multiclicker": "Автокликер с помощниками для AFK-ферм, копания и рыбалки.",
+  "modmenu.descriptionTranslation.multiclicker": "Настраиваемый автокликер для атаки, использования и прыжка с помощниками для AFK-ферм, копания и рыбалки: фильтр целей, добивание «Добычей», авто-еда, умная вторая рука, авто-инструмент, авто-рыбалка, анти-АФК, аварийная остановка, HUD и подсветка цели."
 }

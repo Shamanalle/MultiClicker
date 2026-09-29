@@ -9,6 +9,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -87,6 +88,8 @@ public class ConfigScreen extends Screen {
     @Nullable
     private Object hoverKey;
     private long hoverSince;
+    /** Whether the hovered setting's name is cut off, so the tooltip has to repeat it in full. */
+    private boolean hoveredNameCut;
 
     public ConfigScreen(@Nullable Screen parent) {
         super(Component.translatable("multiclicker.gui.title"));
@@ -503,15 +506,17 @@ public class ConfigScreen extends Screen {
             }
             Setting<?> setting = row.setting;
             boolean overRow = mouseInView && mouseX >= x + 1 && mouseX < x + w - 1 && mouseY >= row.y && mouseY < row.y + ROW;
-            if (overRow) {
-                g.fill(x + 1, row.y, x + w - 1, row.y + ROW, Theme.ROW_HOVER);
-                hovered = setting;
-            }
             SettingControl control = control(setting);
             control.fit(font, (w - 20) * 11 / 20);
             int controlW = control.width(font);
             int controlX = x + w - 10 - controlW;
-            String label = Draw.ellipsize(font, setting.name().getString(), controlX - x - 20);
+            String name = setting.name().getString();
+            String label = Draw.ellipsize(font, name, controlX - x - 20);
+            if (overRow) {
+                g.fill(x + 1, row.y, x + w - 1, row.y + ROW, Theme.ROW_HOVER);
+                hovered = setting;
+                hoveredNameCut = !label.equals(name);
+            }
             Draw.text(g, font, label, x + 10, row.y + 5, enabled ? Theme.TEXT : Theme.TEXT_DIM);
             control.render(g, font, controlX, row.y, ROW, mouseX, mouseY, delta);
         }
@@ -536,6 +541,14 @@ public class ConfigScreen extends Screen {
         Component text = null;
         if (hovered instanceof Setting<?> setting) {
             text = setting.description();
+            if (hoveredNameCut) {
+                List<FormattedCharSequence> lines = new ArrayList<>(font.split(setting.name(), 220));
+                if (text != null) {
+                    lines.addAll(font.split(text.copy().withStyle(ChatFormatting.GRAY), 220));
+                }
+                g.setTooltipForNextFrame(font, lines, mouseX, mouseY);
+                return;
+            }
         } else if (hovered instanceof Module module) {
             text = module.description();
         } else if (hovered instanceof Category entry) {
