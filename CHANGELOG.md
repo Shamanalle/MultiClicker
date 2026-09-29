@@ -2,6 +2,38 @@
 
 All notable changes to **MultiClicker** will be documented in this file.
 
+## [2.0.1] - 2026-09-29
+Everything below was found and checked by playing the mod in a real game (new in-game tests).
+
+### Fixed
+- Looting finishing blow never triggered: the client does not know the held weapon's attack
+  damage bonus, so the kill was never predicted. The damage is now computed from its parts.
+- Toggle sprint / toggle sneak: auto walk flipped sprint on every tick and anti-AFK left the
+  player sneaking. Keys in toggle mode now get back exactly the state they had.
+- Auto eat opened the chest, door or villager trade in the crosshair (and fed carrots to pigs):
+  food is now eaten directly, without interacting with what you look at.
+- Auto eat could send an attack with the food already in hand; modules now take turns with the
+  hotbar (auto eat, Looting swap, auto tool) and give a slot back only if you did not pick
+  another one meanwhile.
+- Offhand took the hotbar food auto eat needed; it no longer swaps behind an open screen
+  (except an emergency totem) and keeps the torch while auto tool holds a shovel.
+- Auto fish only counts catches that were reeled in and keeps waiting when the fish got away.
+- Inventory cleaner no longer drops items while you sort your inventory.
+
+### Added
+- 11 more languages: Ukrainian, German, French, Spanish, Portuguese (Brazil), Polish, Italian,
+  Turkish, Chinese (Simplified), Japanese and Korean. Enchantments, items and mobs are called
+  the way the game calls them in each language. The Mod Menu description is translated too.
+
+### Changed
+- Auto fish works with the rod in either hand, whatever the other hand holds.
+- A setting name that does not fit is shown in full in its tooltip.
+- Menu: the title no longer overlaps the categories; the sidebar fits Russian names and turns into
+  icons on small screens; sliders shrink so setting names stay readable; module descriptions wrap
+  to two lines; search also finds English names in any language.
+- The HUD module list no longer shows the mining rules.
+- A one-time chat hint shows the menu and toggle keys the first time you join a world.
+
 ## [2.0.0] - 2026-09-25
 Full rewrite of the mod.
 

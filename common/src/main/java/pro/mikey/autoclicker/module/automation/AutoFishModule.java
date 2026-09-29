@@ -3,6 +3,7 @@ package pro.mikey.autoclicker.module.automation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.ItemStack;
@@ -18,7 +19,11 @@ import pro.mikey.autoclicker.util.Inventories;
 
 import java.util.Random;
 
-/** Reels in when a fish bites and casts the rod again. */
+/**
+ * Reels in when a fish bites and casts the rod again. The rod is used directly (not through the
+ * use key), so it works from either hand, never clicks the block in front of the player and does
+ * not fight with the use clicker.
+ */
 public class AutoFishModule extends Module {
     private static final Random RANDOM = new Random();
     /** How long to wait for the hook entity to appear after casting. */
@@ -43,7 +48,6 @@ public class AutoFishModule extends Module {
     private int timer;
     private int waitTicks;
     private int castGrace;
-    private boolean pressed;
     private int catches;
 
     public AutoFishModule() {
@@ -67,21 +71,14 @@ public class AutoFishModule extends Module {
 
     @Override
     public void stop(Minecraft mc) {
-        if (pressed) {
-            Input.release(mc.options.keyUse);
-            pressed = false;
-        }
         state = State.WAITING;
     }
 
     @Override
     public void tick(Minecraft mc) {
-        if (pressed) {
-            Input.release(mc.options.keyUse);
-            pressed = false;
-        }
         LocalPlayer player = mc.player;
-        if (mc.screen != null || !isHoldingRod(player)) {
+        // Eating takes the main hand for a moment; the fishing state continues afterwards.
+        if (mc.screen != null || !isHoldingRod(player) || MultiClicker.get().autoEat().isBusy()) {
             return;
         }
         if (Inventories.isNearlyBroken(rod(player), protectRod.get())) {
@@ -107,16 +104,19 @@ public class AutoFishModule extends Module {
                     timer = reaction.get() + randomDelay();
                 } else if (autoCast.get() && timeout.get() > 0 && waitTicks > timeout.get() * 20) {
                     // Nothing bites (hook stuck or in a bad spot): pull it in and try again.
-                    useRod(mc);
+                    useRod(mc, player);
                     state = State.RECASTING;
                     timer = recastDelay.get();
                 }
             }
             case REELING -> {
-                if (hook == null) {
+                if (hook == null || !((FishingHookAccessor) hook).multiclicker$isBiting()) {
+                    // The fish got away before the reaction delay ran out: keep waiting on the same cast.
                     state = State.WAITING;
                 } else if (--timer <= 0) {
-                    useRod(mc);
+                    if (!useRod(mc, player)) {
+                        return; // hands busy this tick: try again on the next one
+                    }
                     catches++;
                     if (catchLimit.get() > 0 && catches >= catchLimit.get()) {
                         MultiClicker.get().setActive(false,
@@ -132,7 +132,7 @@ public class AutoFishModule extends Module {
                     return;
                 }
                 if (player.fishing == null && autoCast.get()) {
-                    useRod(mc);
+                    useRod(mc, player);
                     castGrace = CAST_GRACE;
                 }
                 state = State.WAITING;
@@ -141,24 +141,25 @@ public class AutoFishModule extends Module {
         }
     }
 
-    private void useRod(Minecraft mc) {
-        Input.click(mc.options.keyUse);
-        pressed = true;
+    private static boolean useRod(Minecraft mc, LocalPlayer player) {
+        return Input.useItem(mc, isRod(player.getMainHandItem()) ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND);
     }
 
     private int randomDelay() {
         return jitter.get() > 0 ? RANDOM.nextInt(jitter.get() + 1) : 0;
     }
 
-    /** The rod must be in the main hand, or in the offhand with an empty main hand. */
+    /** A rod in either hand works: it is used directly, whatever the other hand holds. */
     private static boolean isHoldingRod(LocalPlayer player) {
-        return player.getMainHandItem().getItem() instanceof FishingRodItem
-                || player.getMainHandItem().isEmpty() && player.getOffhandItem().getItem() instanceof FishingRodItem;
+        return isRod(player.getMainHandItem()) || isRod(player.getOffhandItem());
+    }
+
+    private static boolean isRod(ItemStack stack) {
+        return stack.getItem() instanceof FishingRodItem;
     }
 
     private static ItemStack rod(LocalPlayer player) {
-        return player.getMainHandItem().getItem() instanceof FishingRodItem
-                ? player.getMainHandItem() : player.getOffhandItem();
+        return isRod(player.getMainHandItem()) ? player.getMainHandItem() : player.getOffhandItem();
     }
 
     @Override

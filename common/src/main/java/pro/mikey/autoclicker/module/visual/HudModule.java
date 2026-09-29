@@ -160,7 +160,8 @@ public class HudModule extends Module {
         if (showModules.get()) {
             List<Line> moduleLines = new ArrayList<>();
             for (Module module : mod.modules()) {
-                boolean listed = module.enabledSetting() != null && module.isEnabled()
+                // Helpers that act on their own; rule modules (target filter, mining rules) and visuals are not listed.
+                boolean listed = module.enabledSetting() != null && module.isEnabled() && module != mod.mining()
                         && module.category() != Category.VISUAL && module.category() != Category.COMBAT;
                 if (!listed) {
                     continue;

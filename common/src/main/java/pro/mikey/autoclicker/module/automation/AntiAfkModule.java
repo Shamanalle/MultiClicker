@@ -4,6 +4,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
+import pro.mikey.autoclicker.MultiClicker;
 import pro.mikey.autoclicker.module.Category;
 import pro.mikey.autoclicker.module.Module;
 import pro.mikey.autoclicker.setting.BoolSetting;
@@ -71,7 +72,8 @@ public class AntiAfkModule extends Module {
         if (sneak.get()) pool.add(Action.SNEAK);
         if (swing.get()) pool.add(Action.SWING);
         if (rotate.get()) pool.add(Action.ROTATE);
-        if (step.get()) pool.add(Action.STEP);
+        // Stepping back and forth would fight auto walk, which already keeps the player active.
+        if (step.get() && !MultiClicker.get().autoWalk().isRunning()) pool.add(Action.STEP);
         if (!pool.isEmpty()) {
             current = pool.get(RANDOM.nextInt(pool.size()));
             actionTick = 0;

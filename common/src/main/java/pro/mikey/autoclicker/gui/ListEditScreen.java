@@ -50,21 +50,21 @@ public class ListEditScreen extends PanelScreen {
     protected void init() {
         super.init();
         int inner = panelW - 20;
-        int addW = 54;
+        int addW = Math.max(54, font.width(Component.translatable("multiclicker.gui.list.add")) + 16);
         input = field(panelX + 10, panelY + 38, inner - addW - 6, Component.translatable("multiclicker.gui.list.hint"));
         input.setMaxLength(100);
         button(Component.translatable("multiclicker.gui.list.add"), FlatButton.Style.PRIMARY, this::addFromInput)
-                .bounds(panelX + panelW - 10 - addW, panelY + 34, addW, 17);
+                .bounds(panelX + panelW - 10 - addW, panelY + 38, addW, 17);
 
         boolean items = setting.kind() == ListSetting.Kind.ITEM;
         button(Component.translatable(items ? "multiclicker.gui.list.add_held" : "multiclicker.gui.list.add_looked"),
                 FlatButton.Style.NORMAL, items ? this::addHeldItem : this::addLookedAtBlock)
-                .bounds(panelX + 10, panelY + 57, inner, 16);
+                .bounds(panelX + 10, panelY + 61, inner, 16);
 
         listX = panelX + 10;
-        listY = panelY + 80;
+        listY = panelY + 84;
         listW = inner;
-        listH = panelH - 80 - 36;
+        listH = panelH - 84 - 36;
         button(Component.translatable("gui.done"), FlatButton.Style.PRIMARY, this::onClose)
                 .bounds(panelX + panelW / 2 - 50, panelY + panelH - 26, 100, 18);
         setInitialFocus(input);

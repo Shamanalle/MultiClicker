@@ -7,7 +7,9 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -35,7 +37,9 @@ public class ConfigScreen extends Screen {
     private static final int HEADER = 30;
     private static final int FOOTER = 16;
     private static final int SIDEBAR_ITEM = 20;
+    private static final int COMPACT_SIDEBAR = 28;
     private static final int CARD_HEADER = 32;
+    private static final int DESCRIPTION_LINE = 10;
     private static final int ROW = 18;
     private static final int SUBHEADER = 17;
     private static final int CARD_GAP = 6;
@@ -63,6 +67,8 @@ public class ConfigScreen extends Screen {
     private int panelW;
     private int panelH;
     private int sidebarW;
+    private boolean compactSidebar;
+    private boolean showVersion;
     private int viewX;
     private int viewY;
     private int viewW;
@@ -82,11 +88,30 @@ public class ConfigScreen extends Screen {
     @Nullable
     private Object hoverKey;
     private long hoverSince;
+    /** Whether the hovered setting's name is cut off, so the tooltip has to repeat it in full. */
+    private boolean hoveredNameCut;
 
     public ConfigScreen(@Nullable Screen parent) {
         super(Component.translatable("multiclicker.gui.title"));
         this.parent = parent;
         this.masterAnim = new Anim(mod.isActive() ? 1 : 0);
+    }
+
+    /** Shows a category and clears the search. */
+    public void showCategory(Category target) {
+        category = lastCategory = target;
+        query = "";
+        if (search != null) {
+            search.setValue("");
+        }
+        rebuild();
+    }
+
+    /** Fills the search field, as if the player typed the text. */
+    public void search(String text) {
+        if (search != null) {
+            search.setValue(text);
+        }
     }
 
     // --- Model ----------------------------------------------------------------------------------
@@ -96,6 +121,9 @@ public class ConfigScreen extends Screen {
         final List<Row> rows;
         @Nullable
         final ToggleControl toggle;
+        List<String> description = List.of();
+        int descriptionWidth = -1;
+        int headerHeight = CARD_HEADER;
         int y;
         int height;
 
@@ -140,7 +168,8 @@ public class ConfigScreen extends Screen {
                 }
                 addRows(module, rows, null);
             } else {
-                boolean moduleMatches = matches(module.name(), q) || matches(module.description(), q);
+                boolean moduleMatches = matches(module.name(), q) || matches(module.description(), q)
+                        || matchesId(module.id(), q);
                 addRows(module, rows, moduleMatches ? null : q);
                 if (rows.isEmpty() && !moduleMatches) {
                     continue;
@@ -154,11 +183,12 @@ public class ConfigScreen extends Screen {
     private void addRows(Module module, List<Row> rows, @Nullable String filter) {
         List<Setting<?>> groupStarts = module instanceof ClickerModule clicker ? clicker.groupStarts() : List.of();
         for (Setting<?> setting : module.settings()) {
-            if (setting == module.enabledSetting()) {
+            if (setting == module.enabledSetting() || setting.isInternal()) {
                 continue;
             }
             if (filter != null) {
-                if (matches(setting.name(), filter) || setting.description() != null && matches(setting.description(), filter)) {
+                if (matches(setting.name(), filter) || setting.description() != null && matches(setting.description(), filter)
+                        || matchesId(setting.key(), filter)) {
                     rows.add(new Row(setting, null));
                 }
                 continue;
@@ -175,15 +205,27 @@ public class ConfigScreen extends Screen {
         return text.getString().toLowerCase(Locale.ROOT).contains(query);
     }
 
+    /** The English ids ("auto_eat", "attack_interval") also match, whatever the game language. */
+    private static boolean matchesId(String id, String query) {
+        return id.replace('_', ' ').contains(query) || id.contains(query);
+    }
+
     // --- Setup ----------------------------------------------------------------------------------
 
     @Override
     protected void init() {
-        panelW = Math.min(width - 24, 540);
+        panelW = Math.min(width - 24, 560);
         panelH = Math.min(height - 24, 340);
         panelX = (width - panelW) / 2;
         panelY = (height - panelH) / 2;
-        sidebarW = panelW < 420 ? 96 : 118;
+        // The sidebar fits its longest label; on small screens it shrinks to icons with tooltips.
+        int widestLabel = font.width(I18n.get("multiclicker.gui.profiles"));
+        for (Category entry : Category.values()) {
+            widestLabel = Math.max(widestLabel, font.width(entry.title().getString()));
+        }
+        int fullSidebar = Mth.clamp(widestLabel + 46, 96, 150);
+        compactSidebar = panelW - fullSidebar < 240;
+        sidebarW = compactSidebar ? COMPACT_SIDEBAR : fullSidebar;
         viewX = panelX + sidebarW;
         viewY = panelY + HEADER;
         viewW = panelW - sidebarW;
@@ -191,8 +233,11 @@ public class ConfigScreen extends Screen {
 
         masterW = Math.max(font.width(I18n.get("multiclicker.gui.active")), font.width(I18n.get("multiclicker.gui.inactive"))) + 24;
         masterX = panelX + panelW - masterW - 8;
-        int titleEnd = panelX + 15 + font.width(title.copy().withStyle(ChatFormatting.BOLD)) + 5
-                + font.width("v" + mod.version()) + 12;
+        int titleEnd = panelX + 15 + font.width(title.copy().withStyle(ChatFormatting.BOLD)) + 12;
+        showVersion = masterX - 8 - (titleEnd + font.width("v" + mod.version()) + 5) >= 110;
+        if (showVersion) {
+            titleEnd += font.width("v" + mod.version()) + 5;
+        }
         searchW = Mth.clamp(masterX - 8 - titleEnd, 60, 150);
         searchX = masterX - 8 - searchW;
 
@@ -232,9 +277,10 @@ public class ConfigScreen extends Screen {
         lastFrameNanos = now;
 
         Draw.box(g, panelX, panelY, panelW, panelH, 4, Theme.PANEL, Theme.CARD_BORDER);
-        Draw.rect(g, panelX + 1, panelY + 1, sidebarW - 1, panelH - 2, 3, Theme.SIDEBAR);
-        g.fill(panelX + sidebarW, panelY + 1, panelX + sidebarW + 1, panelY + panelH - 1, Theme.DIVIDER);
-        g.fill(panelX + sidebarW + 1, panelY + HEADER - 1, panelX + panelW - 1, panelY + HEADER, Theme.DIVIDER);
+        Draw.rect(g, panelX + 1, panelY + HEADER, sidebarW - 1, panelH - HEADER - 1, 3, Theme.SIDEBAR);
+        g.fill(panelX + 1, panelY + HEADER, panelX + sidebarW + 1, panelY + HEADER + 4, Theme.SIDEBAR);
+        g.fill(panelX + sidebarW, panelY + HEADER, panelX + sidebarW + 1, panelY + panelH - 1, Theme.DIVIDER);
+        g.fill(panelX + 1, panelY + HEADER - 1, panelX + panelW - 1, panelY + HEADER, Theme.DIVIDER);
 
         Object hovered = null;
         renderHeader(g, mouseX, mouseY, delta);
@@ -251,8 +297,10 @@ public class ConfigScreen extends Screen {
         int accent = Theme.accent();
         Draw.rect(g, panelX + 8, panelY + 10, 3, 10, 1, accent);
         g.drawString(font, title.copy().withStyle(ChatFormatting.BOLD), panelX + 15, textY, Theme.TEXT, false);
-        Draw.text(g, font, "v" + mod.version(), panelX + 15 + font.width(title.copy().withStyle(ChatFormatting.BOLD)) + 5,
-                textY, Theme.TEXT_MUTED);
+        if (showVersion) {
+            Draw.text(g, font, "v" + mod.version(), panelX + 15 + font.width(title.copy().withStyle(ChatFormatting.BOLD)) + 5,
+                    textY, Theme.TEXT_MUTED);
+        }
 
         boolean searchFocused = search.isFocused();
         Draw.box(g, searchX, panelY + 7, searchW, 16, 3, Theme.CONTROL,
@@ -273,8 +321,16 @@ public class ConfigScreen extends Screen {
         return mouseX >= masterX && mouseX < masterX + masterW && mouseY >= panelY + 7 && mouseY < panelY + 23;
     }
 
+    private int sidebarTop() {
+        return panelY + HEADER + 6;
+    }
+
+    private int profilesItemY() {
+        return panelY + panelH - SIDEBAR_ITEM - 6;
+    }
+
     private Object renderSidebar(GuiGraphics g, int mouseX, int mouseY, float delta, Object hovered) {
-        int y = panelY + 8;
+        int y = sidebarTop();
         int accent = Theme.accent();
         for (Category entry : Category.values()) {
             boolean selected = query.isEmpty() && entry == category;
@@ -282,33 +338,46 @@ public class ConfigScreen extends Screen {
             float h = categoryHover.computeIfAbsent(entry, c -> new Anim(0)).update(over || selected ? 1 : 0, delta, 18);
             if (h > 0) {
                 int fill = selected ? Theme.alpha(accent, 0.16F) : Theme.alpha(0xFFFFFFFF, 0.05F * h);
-                Draw.rect(g, panelX + 5, y, sidebarW - 10, SIDEBAR_ITEM - 2, 3, fill);
+                Draw.rect(g, panelX + 4, y, sidebarW - 8, SIDEBAR_ITEM - 2, 3, fill);
             }
             if (selected) {
-                Draw.rect(g, panelX + 5, y + 4, 2, SIDEBAR_ITEM - 10, 1, accent);
+                Draw.rect(g, panelX + 4, y + 4, 2, SIDEBAR_ITEM - 10, 1, accent);
             }
-            int textColor = selected ? Theme.TEXT : Theme.mix(Theme.TEXT_DIM, Theme.TEXT, h);
-            Draw.text(g, font, entry.icon(), panelX + 12, y + 5, selected ? accent : Theme.TEXT_MUTED);
             int count = enabledCount(entry);
-            String countText = count > 0 ? Integer.toString(count) : "";
-            int maxLabel = sidebarW - 38 - font.width(countText);
-            Draw.text(g, font, Draw.ellipsize(font, entry.title().getString(), maxLabel), panelX + 24, y + 5, textColor);
-            if (count > 0) {
-                Draw.textRight(g, font, countText, panelX + sidebarW - 10, y + 5, Theme.alpha(accent, selected ? 1 : 0.7F));
+            if (compactSidebar) {
+                Draw.textCentered(g, font, entry.icon(), panelX + sidebarW / 2, y + 5,
+                        selected ? accent : count > 0 ? Theme.TEXT_DIM : Theme.TEXT_MUTED);
+                if (over) {
+                    hovered = entry;
+                }
+            } else {
+                int textColor = selected ? Theme.TEXT : Theme.mix(Theme.TEXT_DIM, Theme.TEXT, h);
+                Draw.text(g, font, entry.icon(), panelX + 12, y + 5, selected ? accent : Theme.TEXT_MUTED);
+                String countText = count > 0 ? Integer.toString(count) : "";
+                int maxLabel = sidebarW - 38 - font.width(countText);
+                Draw.text(g, font, Draw.ellipsize(font, entry.title().getString(), maxLabel), panelX + 24, y + 5, textColor);
+                if (count > 0) {
+                    Draw.textRight(g, font, countText, panelX + sidebarW - 10, y + 5, Theme.alpha(accent, selected ? 1 : 0.7F));
+                }
             }
             y += SIDEBAR_ITEM;
         }
 
-        int profilesY = panelY + panelH - SIDEBAR_ITEM - 6;
+        int profilesY = profilesItemY();
         g.fill(panelX + 8, profilesY - 5, panelX + sidebarW - 8, profilesY - 4, Theme.DIVIDER);
         boolean over = isOverSidebarItem(mouseX, mouseY, profilesY);
         float h = profilesHover.update(over ? 1 : 0, delta, 18);
         if (h > 0) {
-            Draw.rect(g, panelX + 5, profilesY, sidebarW - 10, SIDEBAR_ITEM - 2, 3, Theme.alpha(0xFFFFFFFF, 0.05F * h));
+            Draw.rect(g, panelX + 4, profilesY, sidebarW - 8, SIDEBAR_ITEM - 2, 3, Theme.alpha(0xFFFFFFFF, 0.05F * h));
         }
-        Draw.text(g, font, "☰", panelX + 12, profilesY + 5, Theme.mix(Theme.TEXT_MUTED, accent, h));
-        Draw.text(g, font, Draw.ellipsize(font, I18n.get("multiclicker.gui.profiles"), sidebarW - 34),
-                panelX + 24, profilesY + 5, Theme.mix(Theme.TEXT_DIM, Theme.TEXT, h));
+        int iconColor = Theme.mix(Theme.TEXT_MUTED, accent, h);
+        if (compactSidebar) {
+            Draw.textCentered(g, font, "☰", panelX + sidebarW / 2, profilesY + 5, iconColor);
+        } else {
+            Draw.text(g, font, "☰", panelX + 12, profilesY + 5, iconColor);
+            Draw.text(g, font, Draw.ellipsize(font, I18n.get("multiclicker.gui.profiles"), sidebarW - 34),
+                    panelX + 24, profilesY + 5, Theme.mix(Theme.TEXT_DIM, Theme.TEXT, h));
+        }
         if (over) {
             hovered = "profiles";
         }
@@ -316,7 +385,7 @@ public class ConfigScreen extends Screen {
     }
 
     private boolean isOverSidebarItem(double mouseX, double mouseY, int itemY) {
-        return mouseX >= panelX + 5 && mouseX < panelX + sidebarW - 5 && mouseY >= itemY && mouseY < itemY + SIDEBAR_ITEM - 2;
+        return mouseX >= panelX + 4 && mouseX < panelX + sidebarW - 4 && mouseY >= itemY && mouseY < itemY + SIDEBAR_ITEM - 2;
     }
 
     private int enabledCount(Category entry) {
@@ -342,7 +411,9 @@ public class ConfigScreen extends Screen {
         int y = viewY + CARD_MARGIN - Math.round(scroll);
         for (Card card : cards) {
             card.y = y;
-            int height = CARD_HEADER;
+            layoutDescription(card, cardW);
+            card.headerHeight = CARD_HEADER + (card.description.size() - 1) * DESCRIPTION_LINE;
+            int height = card.headerHeight;
             boolean anyRow = false;
             for (Row row : card.rows) {
                 row.visible = row.setting == null || row.setting.isVisible();
@@ -376,6 +447,24 @@ public class ConfigScreen extends Screen {
         return hovered;
     }
 
+    /** Wraps the module description into at most two lines (the rest is in the tooltip). */
+    private void layoutDescription(Card card, int cardW) {
+        int textW = cardW - 20 - (card.toggle != null ? 30 : 0);
+        if (card.descriptionWidth == textW) {
+            return;
+        }
+        card.descriptionWidth = textW;
+        List<String> lines = new ArrayList<>();
+        font.getSplitter().splitLines(card.module.description().getString(), textW, Style.EMPTY)
+                .forEach(line -> lines.add(line.getString().strip()));
+        if (lines.size() > 2) {
+            String rest = String.join(" ", lines.subList(1, lines.size()));
+            lines.subList(1, lines.size()).clear();
+            lines.add(Draw.ellipsize(font, rest, textW));
+        }
+        card.description = lines.isEmpty() ? List.of("") : lines;
+    }
+
     private Object drawCard(GuiGraphics g, Card card, int x, int w, int mouseX, int mouseY, boolean mouseInView, float delta,
                             Object hovered) {
         Module module = card.module;
@@ -389,12 +478,13 @@ public class ConfigScreen extends Screen {
         int textRight = x + w - 10 - (card.toggle != null ? 30 : 0);
         g.drawString(font, Component.literal(Draw.ellipsize(font, module.name().getString(), textRight - x - 12))
                 .withStyle(ChatFormatting.BOLD), x + 10, card.y + 7, enabled ? Theme.TEXT : Theme.TEXT_DIM, false);
-        Draw.text(g, font, Draw.ellipsize(font, module.description().getString(), textRight - x - 10), x + 10, card.y + 19,
-                Theme.TEXT_MUTED);
+        for (int i = 0; i < card.description.size(); i++) {
+            Draw.text(g, font, card.description.get(i), x + 10, card.y + 19 + i * DESCRIPTION_LINE, Theme.TEXT_MUTED);
+        }
         if (card.toggle != null) {
             card.toggle.render(g, font, x + w - 32, card.y + 4, 24, mouseX, mouseY, delta);
         }
-        if (mouseInView && mouseX >= x && mouseX < textRight && mouseY >= card.y && mouseY < card.y + CARD_HEADER) {
+        if (mouseInView && mouseX >= x && mouseX < textRight && mouseY >= card.y && mouseY < card.y + card.headerHeight) {
             hovered = module;
         }
 
@@ -416,14 +506,17 @@ public class ConfigScreen extends Screen {
             }
             Setting<?> setting = row.setting;
             boolean overRow = mouseInView && mouseX >= x + 1 && mouseX < x + w - 1 && mouseY >= row.y && mouseY < row.y + ROW;
+            SettingControl control = control(setting);
+            control.fit(font, (w - 20) * 11 / 20);
+            int controlW = control.width(font);
+            int controlX = x + w - 10 - controlW;
+            String name = setting.name().getString();
+            String label = Draw.ellipsize(font, name, controlX - x - 20);
             if (overRow) {
                 g.fill(x + 1, row.y, x + w - 1, row.y + ROW, Theme.ROW_HOVER);
                 hovered = setting;
+                hoveredNameCut = !label.equals(name);
             }
-            SettingControl control = control(setting);
-            int controlW = control.width(font);
-            int controlX = x + w - 10 - controlW;
-            String label = Draw.ellipsize(font, setting.name().getString(), controlX - x - 20);
             Draw.text(g, font, label, x + 10, row.y + 5, enabled ? Theme.TEXT : Theme.TEXT_DIM);
             control.render(g, font, controlX, row.y, ROW, mouseX, mouseY, delta);
         }
@@ -448,10 +541,22 @@ public class ConfigScreen extends Screen {
         Component text = null;
         if (hovered instanceof Setting<?> setting) {
             text = setting.description();
+            if (hoveredNameCut) {
+                List<FormattedCharSequence> lines = new ArrayList<>(font.split(setting.name(), 220));
+                if (text != null) {
+                    lines.addAll(font.split(text.copy().withStyle(ChatFormatting.GRAY), 220));
+                }
+                g.setTooltipForNextFrame(font, lines, mouseX, mouseY);
+                return;
+            }
         } else if (hovered instanceof Module module) {
             text = module.description();
+        } else if (hovered instanceof Category entry) {
+            text = entry.title();
         } else if ("profiles".equals(hovered)) {
-            text = Component.translatable("multiclicker.gui.profiles.desc");
+            text = compactSidebar
+                    ? Component.translatable("multiclicker.gui.profiles").append(" — ").append(Component.translatable("multiclicker.gui.profiles.desc"))
+                    : Component.translatable("multiclicker.gui.profiles.desc");
         }
         if (text != null) {
             g.setTooltipForNextFrame(font, font.split(text, 220), mouseX, mouseY);
@@ -483,7 +588,7 @@ public class ConfigScreen extends Screen {
             mod.setActive(!mod.isActive(), null);
             return true;
         }
-        int y = panelY + 8;
+        int y = sidebarTop();
         for (Category entry : Category.values()) {
             if (isOverSidebarItem(mouseX, mouseY, y)) {
                 category = lastCategory = entry;
@@ -495,7 +600,7 @@ public class ConfigScreen extends Screen {
             }
             y += SIDEBAR_ITEM;
         }
-        if (isOverSidebarItem(mouseX, mouseY, panelY + panelH - SIDEBAR_ITEM - 6)) {
+        if (isOverSidebarItem(mouseX, mouseY, profilesItemY())) {
             playClick();
             minecraft.setScreen(new ProfilesScreen(this));
             return true;
@@ -513,7 +618,7 @@ public class ConfigScreen extends Screen {
             for (Card card : cards) {
                 BoolSetting enabled = card.module.enabledSetting();
                 boolean overHeader = mouseX >= cardX && mouseX < cardX + cardW
-                        && mouseY >= card.y && mouseY < card.y + CARD_HEADER;
+                        && mouseY >= card.y && mouseY < card.y + card.headerHeight;
                 if (enabled != null && overHeader && (button == 0 || button == 1)) {
                     // The whole header acts as the module switch.
                     if (button == 0) {

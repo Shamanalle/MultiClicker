@@ -23,6 +23,10 @@ public abstract class SettingControl {
 
     public abstract int width(Font font);
 
+    /** Lets the control shrink to at most {@code maxWidth} on narrow screens (if it can). */
+    public void fit(Font font, int maxWidth) {
+    }
+
     /** Draws the control with its left edge at {@code x}, vertically centered on the row. */
     public final void render(GuiGraphics g, Font font, int x, int rowY, int rowHeight, int mouseX, int mouseY, float delta) {
         this.width = width(font);

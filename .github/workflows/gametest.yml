@@ -1,0 +1,82 @@
+name: In-game tests
+
+on:
+  push:
+    branches:
+      - main
+      - 'claude/**'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  gametest:
+    name: Client game tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install virtual display
+        run: sudo apt-get update -q && sudo apt-get install -y -q xvfb libgl1-mesa-dri
+
+      - name: Run client game tests
+        run: |
+          set -o pipefail
+          chmod +x gradlew
+          xvfb-run -a -s "-screen 0 1920x1080x24" ./gradlew :fabric:runClientGameTest --no-daemon | tee gametest.log
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gametest-screenshots
+          path: fabric/build/run/clientGameTest/screenshots
+          if-no-files-found: ignore
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gametest-logs
+          path: fabric/build/run/clientGameTest/logs
+          if-no-files-found: ignore
+
+      # On request ("[screenshots]" in the commit message) the screenshots are committed to the tested
+      # claude/* branch, for reviewers without access to the artifact storage; [skip ci] keeps this
+      # from triggering another run.
+      - name: Commit screenshots to the branch
+        if: >-
+          always() && github.event_name == 'push' && startsWith(github.ref_name, 'claude/')
+          && contains(github.event.head_commit.message, '[screenshots]')
+        run: |
+          shots=fabric/build/run/clientGameTest/screenshots
+          [ -d "$shots" ] || exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch -q origin "$GITHUB_REF_NAME"
+          git checkout -q -B screenshots "origin/$GITHUB_REF_NAME"
+          rm -rf ci-screenshots
+          mkdir ci-screenshots
+          cp "$shots"/*.png ci-screenshots/
+          git add ci-screenshots
+          git commit -q -m "Game test screenshots for ${GITHUB_SHA::7} [skip ci]"
+          git push -q origin "HEAD:$GITHUB_REF_NAME"
+
+      - name: Test summary
+        if: always()
+        run: grep -E "MultiClicker game tests|\[(PASS|FAIL)\]|Minecraft has crashed|Exception" gametest.log | tail -n 60 || true
