@@ -67,6 +67,8 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             scenario(context, server, "target filter skips named mobs and armor stands", this::targetFilter);
             scenario(context, server, "looting finishing blow", this::lootingSwap);
             scenario(context, server, "auto eat eats without touching the chest in front", this::autoEat);
+            scenario(context, server, "fighting and eating take turns", this::fightAndEat);
+            scenario(context, server, "mining, auto tool and auto eat take turns", this::mineAndEat);
             scenario(context, server, "offhand priorities", this::offhand);
             scenario(context, server, "toggle sprint and toggle sneak stay intact", this::toggleKeys);
             scenario(context, server, "mining with auto tool, also without mouse focus", this::mining);
@@ -195,6 +197,54 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         check(!openedContainer[0], "eating opened the chest in front of the player");
         check(context.computeOnClient(mc -> mc.player.getInventory().getSelectedSlot()) == 0, "the sword slot was not selected again");
         check(context.computeOnClient(mc -> mc.player.getInventory().getItem(4).getCount()) < 4, "no bread was eaten");
+    }
+
+    private void fightAndEat(ClientGameTestContext context, TestServerContext server) {
+        give(server, 0, new ItemStack(Items.WOODEN_SWORD));
+        give(server, 5, new ItemStack(Items.COOKED_BEEF, 4));
+        server.runCommand("summon minecraft:husk 0.5 -60 2.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Health:1024f,attributes:[{id:\"minecraft:max_health\",base:1024}]}");
+        server.runOnServer(s -> player(s).getFoodData().setFoodLevel(6));
+        context.runOnClient(mc -> MultiClicker.get().autoEat().enabledSetting().set(true));
+        context.waitTicks(5);
+
+        activate(context);
+        int[] lastAttacks = {0};
+        String[] badAttack = {null};
+        waitUntil(context, "the player to eat while fighting", 200, mc -> {
+            int attacks = MultiClicker.get().stats().attacks();
+            if (attacks > lastAttacks[0] && !mc.player.getMainHandItem().is(Items.WOODEN_SWORD)) {
+                badAttack[0] = mc.player.getMainHandItem().toString();
+            }
+            lastAttacks[0] = attacks;
+            return mc.player.getFoodData().getFoodLevel() > 14;
+        });
+        check(badAttack[0] == null, "attacked while holding " + badAttack[0]);
+        int attacksAfterEating = context.computeOnClient(mc -> MultiClicker.get().stats().attacks());
+        waitUntil(context, "attacks to continue after eating", 60,
+                mc -> MultiClicker.get().stats().attacks() > attacksAfterEating);
+        check(context.computeOnClient(mc -> mc.player.getInventory().getSelectedSlot()) == 0, "the sword is not selected");
+    }
+
+    private void mineAndEat(ClientGameTestContext context, TestServerContext server) {
+        give(server, 0, new ItemStack(Items.WOODEN_SWORD));
+        give(server, 2, new ItemStack(Items.STONE_PICKAXE));
+        give(server, 5, new ItemStack(Items.BREAD, 4));
+        server.runCommand("fill 0 -60 2 0 -59 5 minecraft:stone");
+        server.runOnServer(s -> player(s).getFoodData().setFoodLevel(6));
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.clicker().attack.mode.set(ClickChannel.Mode.HOLD);
+            mod.clicker().attackTarget.set(ClickerModule.AttackTarget.ENTITIES_AND_BLOCKS);
+            mod.autoTool().enabledSetting().set(true);
+            mod.autoEat().enabledSetting().set(true);
+        });
+        context.waitTicks(3);
+
+        activate(context);
+        waitUntil(context, "the player to eat while mining", 200, mc -> mc.player.getFoodData().getFoodLevel() > 14);
+        waitUntil(context, "the pickaxe to be selected again", 40, mc -> mc.player.getMainHandItem().is(Items.STONE_PICKAXE));
+        int broken = context.computeOnClient(mc -> countAir(mc, 0, -59, 2, 5));
+        waitUntil(context, "mining to continue after eating", 100, mc -> countAir(mc, 0, -59, 2, 5) > broken);
     }
 
     private void offhand(ClientGameTestContext context, TestServerContext server) {
@@ -522,6 +572,16 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             }
         }
         return null;
+    }
+
+    private static int countAir(Minecraft mc, int x, int y, int fromZ, int toZ) {
+        int air = 0;
+        for (int z = fromZ; z <= toZ; z++) {
+            if (mc.level.getBlockState(new BlockPos(x, y, z)).isAir()) {
+                air++;
+            }
+        }
+        return air;
     }
 
     private static int countItems(Minecraft mc, Predicate<ItemStack> filter) {
