@@ -242,7 +242,7 @@
   "multiclicker.gui.profiles": "Profiller",
   "multiclicker.gui.profiles.desc": "Hazır ayarlar ve kayıtlı düzenler",
   "multiclicker.gui.nothing_found": "Hiçbir şey bulunamadı",
-  "multiclicker.gui.hint": "%s — aç/kapat · Sağ tık — sıfırla · Tekerlek — ince ayar",
+  "multiclicker.gui.hint": "%s: aç/kapat · Sağ tık: sıfırla · Tekerlek: ince ayar",
   "multiclicker.gui.edit_list": "Düzenle (%s)",
   "multiclicker.gui.list_entries": "%s kayıt",
   "multiclicker.gui.list.hint": "Kimlik, ör. cobblestone",

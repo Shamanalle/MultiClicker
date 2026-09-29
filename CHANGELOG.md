@@ -20,8 +20,14 @@ Everything below was found and checked by playing the mod in a real game (new in
 - Auto fish only counts catches that were reeled in and keeps waiting when the fish got away.
 - Inventory cleaner no longer drops items while you sort your inventory.
 
+### Added
+- 11 more languages: Ukrainian, German, French, Spanish, Portuguese (Brazil), Polish, Italian,
+  Turkish, Chinese (Simplified), Japanese and Korean. Enchantments, items and mobs are called
+  the way the game calls them in each language. The Mod Menu description is translated too.
+
 ### Changed
 - Auto fish works with the rod in either hand, whatever the other hand holds.
+- A setting name that does not fit is shown in full in its tooltip.
 - Menu: the title no longer overlaps the categories; the sidebar fits Russian names and turns into
   icons on small screens; sliders shrink so setting names stay readable; module descriptions wrap
   to two lines; search also finds English names in any language.
