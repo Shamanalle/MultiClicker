@@ -165,7 +165,8 @@ public class ConfigScreen extends Screen {
                 }
                 addRows(module, rows, null);
             } else {
-                boolean moduleMatches = matches(module.name(), q) || matches(module.description(), q);
+                boolean moduleMatches = matches(module.name(), q) || matches(module.description(), q)
+                        || matchesId(module.id(), q);
                 addRows(module, rows, moduleMatches ? null : q);
                 if (rows.isEmpty() && !moduleMatches) {
                     continue;
@@ -183,7 +184,8 @@ public class ConfigScreen extends Screen {
                 continue;
             }
             if (filter != null) {
-                if (matches(setting.name(), filter) || setting.description() != null && matches(setting.description(), filter)) {
+                if (matches(setting.name(), filter) || setting.description() != null && matches(setting.description(), filter)
+                        || matchesId(setting.key(), filter)) {
                     rows.add(new Row(setting, null));
                 }
                 continue;
@@ -198,6 +200,11 @@ public class ConfigScreen extends Screen {
 
     private static boolean matches(Component text, String query) {
         return text.getString().toLowerCase(Locale.ROOT).contains(query);
+    }
+
+    /** The English ids ("auto_eat", "attack_interval") also match, whatever the game language. */
+    private static boolean matchesId(String id, String query) {
+        return id.replace('_', ' ').contains(query) || id.contains(query);
     }
 
     // --- Setup ----------------------------------------------------------------------------------

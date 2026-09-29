@@ -461,6 +461,8 @@ public class MultiClickerGameTest implements FabricClientGameTest {
     // --- Menus ----------------------------------------------------------------------------------
 
     private void menuScreenshots(ClientGameTestContext context, String prefix) {
+        // Park the cursor in the corner so no tooltip covers the screenshots.
+        context.getInput().setCursorPos(0, 0);
         for (Category category : Category.values()) {
             context.setScreen(() -> new ConfigScreen(null));
             context.runOnClient(mc -> ((ConfigScreen) mc.screen).showCategory(category));
