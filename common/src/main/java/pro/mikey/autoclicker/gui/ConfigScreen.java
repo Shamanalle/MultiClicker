@@ -221,7 +221,7 @@ public class ConfigScreen extends Screen {
             widestLabel = Math.max(widestLabel, font.width(entry.title().getString()));
         }
         int fullSidebar = Mth.clamp(widestLabel + 46, 96, 150);
-        compactSidebar = panelW - fullSidebar < 300;
+        compactSidebar = panelW - fullSidebar < 240;
         sidebarW = compactSidebar ? COMPACT_SIDEBAR : fullSidebar;
         viewX = panelX + sidebarW;
         viewY = panelY + HEADER;
