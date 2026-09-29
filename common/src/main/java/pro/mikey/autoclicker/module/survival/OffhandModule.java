@@ -70,6 +70,7 @@ public class OffhandModule extends Module {
         if (player.isCreative() || player.isSpectator() || !Inventories.canClickInventory(mc)) {
             return;
         }
+        MultiClicker mod = MultiClicker.get();
         ItemStack offhand = player.getOffhandItem();
         float health = player.getHealth() / player.getMaxHealth() * 100.0F;
         int hunger = player.getFoodData().getFoodLevel();
@@ -81,11 +82,13 @@ public class OffhandModule extends Module {
             if (want.matcher.test(offhand)) {
                 return; // The best item we want is already there.
             }
-            // Only an emergency totem may interrupt eating, blocking or drawing a bow.
-            if (want != Want.TOTEM && player.isUsingItem()) {
+            // Only an emergency totem may interrupt eating, blocking or drawing a bow, or happen
+            // while the player has the inventory open.
+            if (want != Want.TOTEM && (player.isUsingItem() || mc.screen != null)) {
                 return;
             }
-            int slot = find(player, want);
+            // Auto eat eats from the hotbar: leave the food there for it.
+            int slot = find(player, want, want == Want.FOOD && mod.autoEat().isEnabled());
             if (slot != -1) {
                 Inventories.swapWithOffhand(mc, slot);
                 cooldown = SWAP_COOLDOWN;
@@ -101,7 +104,9 @@ public class OffhandModule extends Module {
                     || offhand.is(Items.TOTEM_OF_UNDYING) && health <= totemHealth.get() + TOTEM_HYSTERESIS);
             case FOOD -> foodHunger.get() > 0 && !MultiClicker.get().autoEat().isBusy()
                     && (hunger <= foodHunger.get() || Want.FOOD.matcher.test(offhand) && hunger < FULL_HUNGER);
-            case TORCH -> torchWithPickaxe.get() && player.getMainHandItem().is(ItemTags.PICKAXES);
+            // Keep the torch while auto tool briefly holds a shovel or an axe during a mining session.
+            case TORCH -> torchWithPickaxe.get() && (player.getMainHandItem().is(ItemTags.PICKAXES)
+                    || Want.TORCH.matcher.test(offhand) && MultiClicker.get().autoTool().isToolSelected());
             case SHIELD -> shield.get();
         };
     }
@@ -110,13 +115,13 @@ public class OffhandModule extends Module {
      * Finds a matching stack, preferring the main inventory over the hotbar and never taking the
      * item the player is holding. Food picks the most nourishing stack.
      */
-    private static int find(LocalPlayer player, Want want) {
+    private static int find(LocalPlayer player, Want want, boolean skipHotbar) {
         int selected = player.getInventory().getSelectedSlot();
         int best = -1;
         float bestScore = -1;
         for (int i = 0; i < Inventories.MAIN_SIZE; i++) {
             int slot = (i + Inventories.HOTBAR_SIZE) % Inventories.MAIN_SIZE; // 9..35, then 0..8
-            if (slot == selected) {
+            if (slot == selected || skipHotbar && slot < Inventories.HOTBAR_SIZE) {
                 continue;
             }
             ItemStack stack = player.getInventory().getItem(slot);

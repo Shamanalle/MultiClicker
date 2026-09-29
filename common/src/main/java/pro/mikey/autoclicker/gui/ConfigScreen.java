@@ -89,6 +89,23 @@ public class ConfigScreen extends Screen {
         this.masterAnim = new Anim(mod.isActive() ? 1 : 0);
     }
 
+    /** Shows a category and clears the search. */
+    public void showCategory(Category target) {
+        category = lastCategory = target;
+        query = "";
+        if (search != null) {
+            search.setValue("");
+        }
+        rebuild();
+    }
+
+    /** Fills the search field, as if the player typed the text. */
+    public void search(String text) {
+        if (search != null) {
+            search.setValue(text);
+        }
+    }
+
     // --- Model ----------------------------------------------------------------------------------
 
     private static final class Card {
