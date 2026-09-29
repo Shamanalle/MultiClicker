@@ -294,6 +294,7 @@
   "multiclicker.hud.sync": "по зарядке",
   "multiclicker.message.on": "MultiClicker включён",
   "multiclicker.message.off": "MultiClicker выключен",
+  "multiclicker.message.welcome": "%s — настройки, %s — включить и выключить.",
   "multiclicker.message.attack_limit": "достигнут лимит атак (%s)",
   "multiclicker.message.time_limit": "достигнут лимит времени (%s мин)",
   "multiclicker.message.module_error": "ошибка в модуле %s — подробности в логе",

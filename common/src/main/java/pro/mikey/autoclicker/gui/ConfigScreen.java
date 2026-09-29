@@ -180,7 +180,7 @@ public class ConfigScreen extends Screen {
     private void addRows(Module module, List<Row> rows, @Nullable String filter) {
         List<Setting<?>> groupStarts = module instanceof ClickerModule clicker ? clicker.groupStarts() : List.of();
         for (Setting<?> setting : module.settings()) {
-            if (setting == module.enabledSetting()) {
+            if (setting == module.enabledSetting() || setting.isInternal()) {
                 continue;
             }
             if (filter != null) {
