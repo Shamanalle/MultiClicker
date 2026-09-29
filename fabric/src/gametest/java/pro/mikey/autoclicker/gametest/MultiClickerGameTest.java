@@ -86,8 +86,16 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             menuScreenshots(context, "640x480");
             context.getInput().resizeWindow(854, 480);
             context.waitTicks(2);
+
+            // Russian strings are longer than English ones: check the layout with them too.
+            setLanguage(context, "ru_ru");
+            menuScreenshots(context, "ru");
+            reset(context, server);
+            hud(context, server, "ru_");
+            context.runOnClient(mc -> MultiClicker.get().setActive(false, null));
             context.setScreen(() -> null);
         }
+        setLanguage(context, "en_us");
 
         LOGGER.info("MultiClicker game tests: {} passed, {} failed", passed.size(), failures.size());
         passed.forEach(name -> LOGGER.info("[PASS] {}", name));
@@ -374,6 +382,10 @@ public class MultiClickerGameTest implements FabricClientGameTest {
     }
 
     private void hudScreenshots(ClientGameTestContext context, TestServerContext server) {
+        hud(context, server, "");
+    }
+
+    private void hud(ClientGameTestContext context, TestServerContext server, String prefix) {
         // Bare hands: the husk survives long enough for the screenshots.
         give(server, 1, new ItemStack(Items.TOTEM_OF_UNDYING, 2));
         server.runCommand("summon minecraft:husk 0.5 -60 3.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b}");
@@ -384,16 +396,16 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             mod.antiAfk().enabledSetting().set(true);
         });
         context.waitTicks(5);
-        context.takeScreenshot("hud_inactive");
+        context.takeScreenshot(prefix + "hud_inactive");
         activate(context);
         context.waitTicks(30);
-        context.takeScreenshot("hud_active_outline");
+        context.takeScreenshot(prefix + "hud_active_outline");
         context.runOnClient(mc -> MultiClicker.get().highlight().style.set(HighlightModule.Style.GLOW));
         context.waitTicks(5);
-        context.takeScreenshot("hud_active_glow");
+        context.takeScreenshot(prefix + "hud_active_glow");
         context.runOnClient(mc -> MultiClicker.get().highlight().style.set(HighlightModule.Style.FILLED));
         context.waitTicks(5);
-        context.takeScreenshot("hud_active_filled");
+        context.takeScreenshot(prefix + "hud_active_filled");
     }
 
     // --- Menus ----------------------------------------------------------------------------------
@@ -449,6 +461,16 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         server.runCommand("tp @a 0.5 -60 0.5 0 0");
         context.runOnClient(mc -> mc.player.getInventory().setSelectedSlot(0));
         context.waitTicks(5);
+    }
+
+    private static void setLanguage(ClientGameTestContext context, String code) {
+        context.runOnClient(mc -> {
+            mc.options.languageCode = code;
+            mc.getLanguageManager().setSelected(code);
+            mc.reloadResourcePacks();
+        });
+        context.waitFor(mc -> mc.getOverlay() == null, 1200);
+        context.waitTicks(2);
     }
 
     private static void activate(ClientGameTestContext context) {
