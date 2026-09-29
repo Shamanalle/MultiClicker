@@ -36,8 +36,9 @@ jobs:
 
       - name: Run client game tests
         run: |
+          set -o pipefail
           chmod +x gradlew
-          xvfb-run -a -s "-screen 0 1920x1080x24" ./gradlew :fabric:runClientGameTest --no-daemon --stacktrace
+          xvfb-run -a -s "-screen 0 1920x1080x24" ./gradlew :fabric:runClientGameTest --no-daemon | tee gametest.log
 
       - name: Upload screenshots
         if: always()
@@ -72,3 +73,7 @@ jobs:
           git add ci-screenshots
           git commit -q -m "Game test screenshots for ${GITHUB_SHA::7} [skip ci]"
           git push -q origin "HEAD:$GITHUB_REF_NAME"
+
+      - name: Test summary
+        if: always()
+        run: grep -E "MultiClicker game tests|\[(PASS|FAIL)\]|Minecraft has crashed|Exception" gametest.log | tail -n 60 || true
