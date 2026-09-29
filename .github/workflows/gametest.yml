@@ -56,10 +56,13 @@ jobs:
           path: fabric/build/run/clientGameTest/logs
           if-no-files-found: ignore
 
-      # Screenshots are committed to the tested claude/* branch (the artifact storage host is not
-      # reachable from the agent's environment); [skip ci] keeps this from triggering another run.
+      # On request ("[screenshots]" in the commit message) the screenshots are committed to the tested
+      # claude/* branch, for reviewers without access to the artifact storage; [skip ci] keeps this
+      # from triggering another run.
       - name: Commit screenshots to the branch
-        if: always() && github.event_name == 'push' && startsWith(github.ref_name, 'claude/')
+        if: >-
+          always() && github.event_name == 'push' && startsWith(github.ref_name, 'claude/')
+          && contains(github.event.head_commit.message, '[screenshots]')
         run: |
           shots=fabric/build/run/clientGameTest/screenshots
           [ -d "$shots" ] || exit 0

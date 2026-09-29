@@ -461,25 +461,29 @@ public class MultiClickerGameTest implements FabricClientGameTest {
     // --- Menus ----------------------------------------------------------------------------------
 
     private void menuScreenshots(ClientGameTestContext context, String prefix) {
-        // Park the cursor in the corner so no tooltip covers the screenshots.
-        context.getInput().setCursorPos(0, 0);
         for (Category category : Category.values()) {
             context.setScreen(() -> new ConfigScreen(null));
             context.runOnClient(mc -> ((ConfigScreen) mc.screen).showCategory(category));
-            context.waitTicks(8);
+            parkCursor(context);
             context.takeScreenshot(prefix + "_menu_" + category.name().toLowerCase());
         }
         context.runOnClient(mc -> ((ConfigScreen) mc.screen).search("eat"));
         context.waitTicks(8);
         context.takeScreenshot(prefix + "_menu_search");
         context.setScreen(() -> new ProfilesScreen(new ConfigScreen(null)));
-        context.waitTicks(8);
+        parkCursor(context);
         context.takeScreenshot(prefix + "_profiles");
         context.setScreen(() -> new ListEditScreen(new ConfigScreen(null), MultiClicker.get().inventoryCleaner().items));
-        context.waitTicks(8);
+        parkCursor(context);
         context.takeScreenshot(prefix + "_list_editor");
         context.setScreen(() -> null);
         context.waitTicks(2);
+    }
+
+    /** Opening a screen centers the cursor; move it to a corner so no tooltip covers the screenshot. */
+    private static void parkCursor(ClientGameTestContext context) {
+        context.getInput().setCursorPos(1, 1);
+        context.waitTicks(8);
     }
 
     // --- Helpers --------------------------------------------------------------------------------
