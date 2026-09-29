@@ -70,10 +70,11 @@ public final class MultiClicker {
     private final List<Module> modules = List.of(clicker, targetFilter, safety, offhand, autoEat, autoFish,
             antiAfk, autoWalk, inventoryCleaner, mining, autoTool, hud, highlight, ui);
     /**
-     * Tick order. The clicker runs before the modules that borrow its keys (auto eat, auto fish),
-     * so their input wins within the same tick.
+     * Tick order. Safety first, so nothing else runs once it stops the mod. Auto eat decides before
+     * the clicker, so the clicker already pauses on the tick a meal starts. Auto tool runs after the
+     * clicker, so the tool is selected before vanilla processes the click of the same tick.
      */
-    private final List<Module> tickOrder = List.of(safety, clicker, autoEat, offhand, autoFish, autoTool,
+    private final List<Module> tickOrder = List.of(safety, autoEat, clicker, offhand, autoFish, autoTool,
             inventoryCleaner, antiAfk, autoWalk);
 
     private final ConfigManager config;
@@ -129,6 +130,22 @@ public final class MultiClicker {
 
     public AntiAfkModule antiAfk() {
         return antiAfk;
+    }
+
+    public AutoWalkModule autoWalk() {
+        return autoWalk;
+    }
+
+    public OffhandModule offhand() {
+        return offhand;
+    }
+
+    public SafetyModule safety() {
+        return safety;
+    }
+
+    public InventoryCleanerModule inventoryCleaner() {
+        return inventoryCleaner;
     }
 
     public MiningModule mining() {

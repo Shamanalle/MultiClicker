@@ -15,4 +15,8 @@ public interface KeyMappingAccessor {
 
     @Accessor("clickCount")
     void multiclicker$setClickCount(int clickCount);
+
+    /** Writes the pressed state directly, bypassing the toggle logic of sprint / sneak keys. */
+    @Accessor("isDown")
+    void multiclicker$setDown(boolean down);
 }

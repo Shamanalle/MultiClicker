@@ -79,8 +79,12 @@ final class LootingSwap {
             return false;
         }
         int selected = player.getInventory().getSelectedSlot();
-        int bestLevel = EnchantmentHelper.getItemEnchantmentLevel(looting, player.getMainHandItem());
+        int currentLevel = EnchantmentHelper.getItemEnchantmentLevel(looting, player.getMainHandItem());
+        float health = target.getHealth() + target.getAbsorptionAmount();
+        // Among the weapons with more Looting than the held item that kill with one hit: highest
+        // Looting first, then the highest damage.
         int bestSlot = -1;
+        int bestLevel = currentLevel;
         float bestDamage = 0;
         for (int slot = 0; slot < Inventories.HOTBAR_SIZE; slot++) {
             ItemStack stack = player.getInventory().getItem(slot);
@@ -88,17 +92,17 @@ final class LootingSwap {
                 continue;
             }
             int level = EnchantmentHelper.getItemEnchantmentLevel(looting, stack);
-            if (level <= 0 || level < bestLevel) {
+            if (level <= currentLevel || level < bestLevel) {
                 continue;
             }
             float damage = estimateDamage(player, stack, target, enchantments);
-            if (level > bestLevel || damage > bestDamage) {
+            if (damage >= health && (level > bestLevel || damage > bestDamage)) {
                 bestSlot = slot;
                 bestLevel = level;
                 bestDamage = damage;
             }
         }
-        if (bestSlot == -1 || target.getHealth() + target.getAbsorptionAmount() > bestDamage) {
+        if (bestSlot == -1) {
             return false;
         }
         previousSlot = selected;

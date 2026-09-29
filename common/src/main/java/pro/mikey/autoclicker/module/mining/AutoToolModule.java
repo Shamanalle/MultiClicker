@@ -11,6 +11,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import pro.mikey.autoclicker.MultiClicker;
 import pro.mikey.autoclicker.module.Category;
 import pro.mikey.autoclicker.module.Module;
 import pro.mikey.autoclicker.setting.BoolSetting;
@@ -29,19 +30,37 @@ public class AutoToolModule extends Module {
             .zeroMeans("options.off"));
 
     private int previousSlot = -1;
+    private int toolSlot = -1;
     private int idleTicks;
 
     public AutoToolModule() {
         super("auto_tool", Category.MINING, true, false);
     }
 
+    /** True while a tool picked by this module is selected (the player is mining). */
+    public boolean isToolSelected() {
+        return isRunning() && toolSlot != -1;
+    }
+
     @Override
     public void tick(Minecraft mc) {
         LocalPlayer player = mc.player;
+        MultiClicker mod = MultiClicker.get();
+        if (mod.autoEat().isBusy() || mod.clicker().isSwappingWeapon()) {
+            // Another module has the hotbar right now; it switches back to our tool when done.
+            idleTicks = 0;
+            return;
+        }
+        int current = player.getInventory().getSelectedSlot();
+        if (toolSlot != -1 && current != toolSlot) {
+            // The player picked another slot: that choice wins, do not switch back later.
+            previousSlot = -1;
+            toolSlot = -1;
+        }
         boolean mining = mc.screen == null && mc.options.keyAttack.isDown()
                 && mc.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK;
         if (!mining) {
-            if (previousSlot != -1 && ++idleTicks >= SWITCH_BACK_DELAY) {
+            if (toolSlot != -1 && ++idleTicks >= SWITCH_BACK_DELAY) {
                 restore(player);
             }
             return;
@@ -52,11 +71,11 @@ public class AutoToolModule extends Module {
             return;
         }
         int best = findBestTool(mc, state);
-        int current = player.getInventory().getSelectedSlot();
         if (best != -1 && best != current) {
-            if (previousSlot == -1 && switchBack.get()) {
-                previousSlot = current;
+            if (toolSlot == -1) {
+                previousSlot = switchBack.get() ? current : -1;
             }
+            toolSlot = best;
             Inventories.selectSlot(player, best);
         }
     }
@@ -67,13 +86,15 @@ public class AutoToolModule extends Module {
             restore(mc.player);
         }
         previousSlot = -1;
+        toolSlot = -1;
     }
 
     private void restore(LocalPlayer player) {
-        if (previousSlot != -1) {
+        if (previousSlot != -1 && player.getInventory().getSelectedSlot() == toolSlot) {
             Inventories.selectSlot(player, previousSlot);
-            previousSlot = -1;
         }
+        previousSlot = -1;
+        toolSlot = -1;
         idleTicks = 0;
     }
 

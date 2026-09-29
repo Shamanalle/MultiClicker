@@ -9,7 +9,8 @@
     "FishingHookAccessor",
     "KeyMappingAccessor",
     "MinecraftMixin",
-    "MouseHandlerMixin"
+    "MouseHandlerMixin",
+    "ToggleKeyMappingAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
