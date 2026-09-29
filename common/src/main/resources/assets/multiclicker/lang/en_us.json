@@ -294,6 +294,7 @@
   "multiclicker.hud.sync": "on charge",
   "multiclicker.message.on": "MultiClicker enabled",
   "multiclicker.message.off": "MultiClicker disabled",
+  "multiclicker.message.welcome": "%s opens the settings, %s starts and stops.",
   "multiclicker.message.attack_limit": "attack limit reached (%s)",
   "multiclicker.message.time_limit": "time limit reached (%s min)",
   "multiclicker.message.module_error": "error in module %s — see the log",

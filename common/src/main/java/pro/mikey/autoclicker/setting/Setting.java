@@ -25,6 +25,7 @@ public abstract class Setting<T> {
 
     private Module module;
     private BooleanSupplier visibility = () -> true;
+    private boolean internal;
     private final List<Runnable> listeners = new ArrayList<>();
 
     protected Setting(String key, T defaultValue) {
@@ -91,7 +92,18 @@ public abstract class Setting<T> {
     }
 
     public boolean isVisible() {
-        return visibility.getAsBoolean();
+        return !internal && visibility.getAsBoolean();
+    }
+
+    /** Marks a value that is saved with the config but never shown in the menu. */
+    @SuppressWarnings("unchecked")
+    public <S extends Setting<T>> S internal() {
+        this.internal = true;
+        return (S) this;
+    }
+
+    public boolean isInternal() {
+        return internal;
     }
 
     public void onChange(Runnable listener) {

@@ -194,6 +194,9 @@ public final class MultiClicker {
         while (toggleKey.consumeClick()) {
             setActive(!active, null);
         }
+        if (!ui.welcomeShown.get() && mc.player != null && mc.screen == null) {
+            showWelcome(mc);
+        }
         if (active && (mc.player == null || mc.level == null)) {
             setActive(false, null);
         }
@@ -211,6 +214,16 @@ public final class MultiClicker {
         if (saveCountdown > 0 && --saveCountdown == 0) {
             saveConfig();
         }
+    }
+
+    /** First time in a world: tell the player which keys open the menu and start the mod. */
+    private void showWelcome(Minecraft mc) {
+        ui.welcomeShown.set(true);
+        mc.player.displayClientMessage(Component.literal("MultiClicker: ").withStyle(ChatFormatting.GOLD)
+                .append(Component.translatable("multiclicker.message.welcome",
+                        menuKey.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.YELLOW),
+                        toggleKey.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.YELLOW))
+                        .withStyle(ChatFormatting.GRAY)), false);
     }
 
     private void tickModule(Minecraft mc, Module module) {
