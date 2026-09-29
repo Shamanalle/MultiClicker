@@ -1,105 +1,118 @@
+<div align="center">
+
+<img src="common/src/main/resources/assets/multiclicker/icon.png" width="96" alt="MultiClicker icon">
+
 # MultiClicker
 
-[![Minecraft](https://img.shields.io/badge/Minecraft-1.21.8-blue.svg)](https://minecraft.net/)
-[![Fabric](https://img.shields.io/badge/Fabric-Loader%20%E2%89%A5%200.16-green.svg)](https://fabricmc.net/)
-[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://adoptium.net/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+**Auto clicker for Fabric with helpers for AFK farms, mining and fishing.**
 
-Настраиваемый автокликер для Fabric с помощниками для AFK-ферм, копания и рыбалки.
-Все действия выполняются через обычные клавиши игры, поэтому перезарядка атаки, ломание блоков
-и синхронизация с сервером работают так же, как при ручной игре.
+[![Minecraft 1.21.8](https://img.shields.io/badge/Minecraft-1.21.8-62b47a)](https://minecraft.net/)
+[![Fabric](https://img.shields.io/badge/loader-Fabric-dbd0b4)](https://fabricmc.net/)
+[![Release](https://img.shields.io/github/v/release/Shamanalle/MultiClicker?color=4c8bf5)](https://github.com/Shamanalle/MultiClicker/releases/latest)
+[![In-game tests](https://github.com/Shamanalle/MultiClicker/actions/workflows/gametest.yml/badge.svg)](https://github.com/Shamanalle/MultiClicker/actions/workflows/gametest.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
-*A configurable Fabric auto clicker with helpers for AFK farms, mining and fishing. The game is
-fully translated into English and Russian.*
+**English** · [Русский](README.ru.md)
 
-## Возможности
+![A mob farm with MultiClicker: the status panel and the highlighted target](docs/images/en/hud.png)
 
-| Категория | Модуль | Что делает |
+</div>
+
+- **Plays like a hand on the mouse.** The mod presses the game's own keys, so the attack cooldown,
+  block breaking and server sync work exactly as in normal play. Keys you hold yourself are never
+  released.
+- **The helpers don't fight each other.** Auto eat, auto tool, the offhand and the clicker take turns
+  with the hotbar. None of them swaps an item out from under another, and each gives your slot back.
+- **Tested in a real game.** Every push starts Minecraft in CI and plays 14 scenarios in a real
+  world: fights, eating, mining, fishing, safety stops.
+
+## Features
+
+| | Module | What it does |
 |:--|:--|:--|
-| Кликер | **Автокликер** | Три независимых канала — атака (ЛКМ), использование (ПКМ), прыжок. Режимы «Клик» и «Удержание», интервал, время удержания, случайная задержка, ожидание перезарядки оружия, выбор целей (существа / + блоки / всё), добивание оружием с Добычей, фиксация камеры, лимиты по атакам и времени, задержка старта, работа в фоне |
-| Бой | **Фильтр целей** | Игроки, враждебные, нейтральные, мирные мобы, прочие сущности; не трогать детёнышей, мобов с биркой, питомцев, невидимых. Стойки для брони по умолчанию никогда не атакуются |
-| Выживание | **Безопасность** | Остановка или выход с сервера при низком здоровье, любом уроне или игроке рядом |
-| | **Вторая рука** | Держит во второй руке самое нужное по приоритету: тотем (мало здоровья) → еда (голод) → факел (в руке кирка) → щит. Не дёргает предметы туда-сюда у порогов и не меняет их, пока вы едите или блокируете |
-| | **Авто-еда** | Ест лучшую еду из хотбара, пропускает вредную и золотую еду, возвращает слот; кликер ждёт, пока вы едите |
-| Автоматизация | **Авто-рыбалка** | Подсекает при поклёвке, снова забрасывает, перезабрасывает при долгом ожидании, бережёт удочку, лимит улова |
-| | **Анти-АФК** | Прыжок, присед, взмах рукой, поворот камеры или шаг через случайные интервалы |
-| | **Авто-ходьба** | Идёт вперёд, по желанию бежит и перепрыгивает препятствия |
-| | **Очистка инвентаря** | Выбрасывает предметы из списка, не трогая хотбар |
-| Копание | **Правила копания** | Белый/чёрный список блоков, стоп при полном инвентаре, защита инструмента от поломки |
-| | **Авто-инструмент** | Берёт самый быстрый подходящий инструмент (учитывает Эффективность) и возвращает слот |
-| Визуал | **HUD** | Панель состояния: каналы кликера, клики в секунду, атаки, убийства, время, пинг/TPS/FPS, активные модули |
-| | **Подсветка цели** | Контур, заливка или свечение вокруг существа, которое будет атаковано |
-| | **Интерфейс** | Цвет акцента, звук и сообщение при переключении |
+| **Clicker** | Auto clicker | Separate attack, use and jump channels. Each can click or hold, with its own interval, hold time and random delay. It can wait for a full weapon charge, strike the killing blow with your Looting weapon, lock the camera, stop after an attack or time limit, and keep running while the window is in the background. |
+| **Combat** | Target filter | Players, hostile, neutral and passive mobs, other entities. It can skip babies, named mobs, pets and invisible mobs. Armor stands are never hit by default. |
+| **Survival** | Safety | Stops the mod, or leaves the server, when your health is low, when you take any damage, or when a player comes near. |
+| | Offhand | Keeps the most needed item in the offhand, in this order: totem when health is low, food when you're hungry, a torch while you hold a pickaxe, otherwise a shield. |
+| | Auto eat | Eats the best safe food from the hotbar and gives your slot back. It skips harmful and golden food and never opens the chest in front of you. |
+| **Automation** | Auto fish | Reels in on a bite and casts again. It recasts after a long wait, protects the rod and has a catch limit. |
+| | Anti-AFK | Jumps, sneaks, swings, looks around or takes a step at random intervals. |
+| | Auto walk | Walks forward. It can sprint and jump over obstacles. |
+| | Inventory cleaner | Throws out junk from a list and never touches the hotbar. |
+| **Mining** | Mining rules | Whitelist or blacklist of blocks. It can stop when the inventory is full and protect the tool from breaking. |
+| | Auto tool | Picks the fastest hotbar tool for the block, taking Efficiency into account, then switches back. |
+| **Visuals** | HUD · Target highlight | A status panel with channels, clicks per second, attacks, kills, time, ping, TPS and FPS. The next target is outlined, filled or glowing. |
 
-Меню настроек: категории, карточки модулей, поиск (просто начните печатать), подсказки при
-наведении, сброс любой настройки правой кнопкой мыши, точная настройка ползунков колесом мыши или
-стрелками. Редактор списков показывает иконки предметов и блоков и умеет добавлять предмет из руки
-или блок в прицеле. Раздел «Профили» содержит готовые пресеты (моб-ферма, копание, рыбалка) и
-сохранение собственных профилей.
+## Screenshots
 
-## Управление
+| | |
+|:--:|:--:|
+| ![Clicker settings](docs/images/en/menu_clicker.png) | ![Survival modules](docs/images/en/menu_survival.png) |
+| Settings: every module is a card, with a tooltip for every option | Survival: safety, offhand and auto eat |
+| ![Presets and profiles](docs/images/en/profiles.png) | ![Block list editor](docs/images/en/list_editor.png) |
+| Ready-made presets and your own profiles | List editor: item icons, add the held item or the block you look at |
 
-| Клавиша | Действие |
+The menu adapts to the window. On small screens the sidebar shrinks to icons.
+
+## Installation
+
+1. Install [Fabric Loader](https://fabricmc.net/use/) for Minecraft **1.21.8**.
+2. Put [Fabric API](https://modrinth.com/mod/fabric-api) and
+   [`MultiClicker-fabric-<version>.jar`](https://github.com/Shamanalle/MultiClicker/releases/latest)
+   into the `mods` folder.
+3. Optional: [Mod Menu](https://modrinth.com/mod/modmenu), which adds a settings button to the mod list.
+
+## Controls
+
+| Key | Action |
 |:--:|:--|
-| <kbd>I</kbd> | Включить / выключить мод |
-| <kbd>O</kbd> | Открыть меню настроек |
+| <kbd>I</kbd> | Turn the mod on / off |
+| <kbd>O</kbd> | Open the settings |
 
-Клавиши меняются в стандартном меню «Управление». Меню также открывается через
-[Mod Menu](https://modrinth.com/mod/modmenu).
+You can rebind them under *Options → Controls → Key Binds → MultiClicker*.
 
-## Советы
+In the menu:
+- Start typing to search.
+- Right-click a setting to reset it.
+- Use the mouse wheel or the arrow keys to fine-tune sliders.
 
-- **AFK-копание.** Кликер атаки → режим «Удержание», цели «Существа + блоки», или просто пресет «Копание».
-- **Моб-ферма.** Включите «Ждать перезарядку» — удары будут с максимальным уроном; фильтр целей не даст ударить питомцев и мобов с биркой.
-- **Добивание Добычей.** Держите в хотбаре оружие с Добычей и включите «Добивать Добычей». Мод считает урон следующего удара (атрибуты, эффекты, Острота/Небесная кара/Бич членистоногих, броня и Сопротивление цели) и, если удар убьёт, заранее берёт это оружие, ждёт его зарядки, бьёт и возвращает слот. Смена предмета сбрасывает зарядку, поэтому удар делается только после неё.
-- **Свёрнутое окно.** Опция «Работать в фоне» (включена по умолчанию) не даёт игре встать на паузу, пока мод работает, — можно переключиться на другие программы. После выключения мода настройка игры возвращается как была.
-- Пока открыт любой экран (инвентарь, чат, меню), кликер стоит на паузе и отпускает клавиши.
+## Quick start
 
-## Установка
+- **Mob farm.** Choose *Profiles → Mob farm*, look at the spawn spot and press <kbd>I</kbd>. Every
+  hit lands on full charge, and pets and named mobs are left alone.
+- **Looting.** Keep a Looting sword in the hotbar and turn on *Looting finishing blow*. Before the
+  hit that kills, the mod switches to that sword, waits for it to charge, strikes and switches back.
+- **AFK mining.** Choose *Profiles → Mining*. The clicker holds attack, auto tool picks the pickaxe,
+  and the clicker stops when the inventory is full.
+- **Fishing.** Choose *Profiles → Fishing*, hold a rod and press <kbd>I</kbd>.
 
-1. Установите [Fabric Loader](https://fabricmc.net/use/) для Minecraft **1.21.8**.
-2. Положите в папку `mods` [Fabric API](https://modrinth.com/mod/fabric-api) и `MultiClicker-fabric-<версия>.jar`.
-3. По желанию — [Mod Menu](https://modrinth.com/mod/modmenu).
+The clicker pauses and lets go of the keys whenever a screen is open: inventory, chat or menu.
 
-Настройки хранятся в `config/multiclicker.json`, профили — в `config/multiclicker/profiles/`.
+> Many multiplayer servers don't allow auto clickers. Check the rules before using the mod online.
 
-## Сборка
+## Languages
 
-Нужен JDK 21.
+English, Русский, Українська, Deutsch, Français, Español, Português (Brasil), Polski, Italiano,
+Türkçe, 简体中文, 日本語, 한국어. Items, enchantments and mobs use the game's own names in each
+language.
 
-```bash
-./gradlew build
-```
+## Configuration
 
-Готовый файл: `fabric/build/libs/MultiClicker-fabric-<версия>.jar`.
+Settings are saved in `config/multiclicker.json` and profiles in `config/multiclicker/profiles/`.
 
-### Игровые тесты
+## Building
 
-`fabric/src/gametest` — отдельный тестовый мод (в релизный jar не попадает). Он создаёт мир и
-проверяет модули в настоящей игре: атаку с перезарядкой, фильтр целей, добивание «Добычей»,
-авто-еду (в том числе вместе с боем и копанием), вторую руку, режим переключения спринта и
-приседания, копание с авто-инструментом без фокуса мыши, безопасность, профили и авто-рыбалку.
-Заодно снимает скриншоты меню и HUD на разных размерах окна и на русском.
+You need JDK 21.
 
 ```bash
-./gradlew :fabric:runClientGameTest
+./gradlew build                       # → fabric/build/libs/MultiClicker-fabric-<version>.jar
+./gradlew :fabric:runClientGameTest   # starts the game and plays every scenario
 ```
 
-В CI тесты запускаются на каждый пуш (`.github/workflows/gametest.yml`).
+- `common/` holds the mod itself: modules, settings, the menu and the config.
+- `fabric/` holds the Fabric entry point.
+- `fabric/src/gametest/` holds the in-game tests, which are not part of the release jar.
 
-### Структура проекта
+## License
 
-```
-common/   — логика мода, не зависящая от загрузчика
-  module/   модули (clicker, combat, survival, automation, mining, visual)
-  setting/  типизированные настройки с сериализацией и локализацией
-  gui/      меню настроек и виджеты
-  config/   сохранение, профили, пресеты
-  mixin/    миксины: доступ к клавишам и поплавку, копание в фоне, свечение цели, TPS
-fabric/   — точка входа Fabric: события тика, HUD, отрисовка мира, Mod Menu
-  src/gametest/  игровые тесты
-```
-
-## Лицензия
-
-[MIT](LICENSE).
+[MIT](LICENSE). Based on AutoClicker by Michael Hillcox.
