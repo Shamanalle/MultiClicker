@@ -11,13 +11,15 @@ import pro.mikey.autoclicker.setting.IntSetting;
 
 /** A slider with the formatted value next to it. Drag, scroll over the track or use arrow keys. */
 public class SliderControl extends SettingControl {
-    private static final int TRACK_WIDTH = 80;
+    private static final int MAX_TRACK = 80;
+    private static final int MIN_TRACK = 32;
     private static final int GAP = 8;
 
     private final IntSetting setting;
     private final Anim fill;
     private final Anim hover = new Anim(0);
     private int valueWidth = -1;
+    private int trackWidth = MAX_TRACK;
     private boolean dragging;
 
     public SliderControl(IntSetting setting) {
@@ -27,6 +29,12 @@ public class SliderControl extends SettingControl {
 
     private float progress() {
         return (float) (setting.get() - setting.min()) / Math.max(1, setting.max() - setting.min());
+    }
+
+    @Override
+    public void fit(Font font, int maxWidth) {
+        width(font);
+        trackWidth = Mth.clamp(maxWidth - GAP - valueWidth, MIN_TRACK, MAX_TRACK);
     }
 
     @Override
@@ -41,11 +49,11 @@ public class SliderControl extends SettingControl {
             widest = Math.max(widest, font.width(setting.format(setting.max())));
             valueWidth = Math.min(widest, 90);
         }
-        return TRACK_WIDTH + GAP + valueWidth;
+        return trackWidth + GAP + valueWidth;
     }
 
     private boolean overTrack(double mouseX, double mouseY) {
-        return mouseX >= x - 2 && mouseX < x + TRACK_WIDTH + 2 && mouseY >= y - 3 && mouseY < y + height + 3;
+        return mouseX >= x - 2 && mouseX < x + trackWidth + 2 && mouseY >= y - 3 && mouseY < y + height + 3;
     }
 
     @Override
@@ -53,10 +61,10 @@ public class SliderControl extends SettingControl {
         float hovered = hover.update(dragging || overTrack(mouseX, mouseY) ? 1 : 0, delta, 20);
         float shown = fill.update(progress(), delta, dragging ? 40 : 16);
         int trackY = y + height / 2 - 2;
-        Draw.rect(g, x, trackY, TRACK_WIDTH, 4, 2, Theme.mix(Theme.CONTROL, Theme.CONTROL_HOVER, hovered));
-        int filled = Math.round(TRACK_WIDTH * shown);
+        Draw.rect(g, x, trackY, trackWidth, 4, 2, Theme.mix(Theme.CONTROL, Theme.CONTROL_HOVER, hovered));
+        int filled = Math.round(trackWidth * shown);
         Draw.rect(g, x, trackY, Math.max(filled, 2), 4, 2, Theme.accent());
-        int knobX = Mth.clamp(x + filled - 3, x, x + TRACK_WIDTH - 6);
+        int knobX = Mth.clamp(x + filled - 3, x, x + trackWidth - 6);
         Draw.rect(g, knobX, y + 1, 6, height - 2, 2, 0xFFFFFFFF);
         String text = Draw.ellipsize(font, setting.displayValue(), valueWidth);
         Draw.textRight(g, font, text, x + width, y + 2, setting.isDefault() ? Theme.TEXT_DIM : Theme.TEXT);
@@ -108,7 +116,7 @@ public class SliderControl extends SettingControl {
     }
 
     private void setFromMouse(double mouseX) {
-        double t = Mth.clamp((mouseX - x) / TRACK_WIDTH, 0.0, 1.0);
+        double t = Mth.clamp((mouseX - x) / trackWidth, 0.0, 1.0);
         setting.set((int) Math.round(setting.min() + t * (setting.max() - setting.min())));
     }
 }
