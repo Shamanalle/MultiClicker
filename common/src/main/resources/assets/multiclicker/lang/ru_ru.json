@@ -242,7 +242,7 @@
   "multiclicker.gui.profiles": "Профили",
   "multiclicker.gui.profiles.desc": "Пресеты и сохранённые настройки",
   "multiclicker.gui.nothing_found": "Ничего не найдено",
-  "multiclicker.gui.hint": "%s — вкл/выкл · ПКМ — сброс · колесо над ползунком — точно",
+  "multiclicker.gui.hint": "%s — вкл/выкл · ПКМ — сброс · Колесо — точнее",
   "multiclicker.gui.edit_list": "Изменить (%s)",
   "multiclicker.gui.list_entries": "Записей: %s",
   "multiclicker.gui.list.hint": "ID, например cobblestone",

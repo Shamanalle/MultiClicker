@@ -242,7 +242,7 @@
   "multiclicker.gui.profiles": "Profiles",
   "multiclicker.gui.profiles.desc": "Presets and saved setups",
   "multiclicker.gui.nothing_found": "Nothing found",
-  "multiclicker.gui.hint": "%s — on/off · RMB — reset · wheel over a slider — fine tune",
+  "multiclicker.gui.hint": "%s — on/off · Right-click — reset · Scroll — adjust",
   "multiclicker.gui.edit_list": "Edit (%s)",
   "multiclicker.gui.list_entries": "%s entries",
   "multiclicker.gui.list.hint": "Id, e.g. cobblestone",
