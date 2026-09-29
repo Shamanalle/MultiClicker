@@ -9,6 +9,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -33,7 +34,7 @@ import pro.mikey.autoclicker.util.Inventories;
  * mod waits until it is fully charged, hits once and switches back.</p>
  *
  * <p>The damage prediction mirrors vanilla melee damage at full charge without a critical hit:
- * attack damage attribute (including Strength / Weakness), Sharpness / Smite / Bane of Arthropods,
+ * base attack damage, the weapon's attack damage, Strength / Weakness, Sharpness / Smite / Bane of Arthropods,
  * then the target's armor, toughness and Resistance. Health includes absorption hearts.</p>
  */
 final class LootingSwap {
@@ -171,9 +172,10 @@ final class LootingSwap {
 
     static float estimateDamage(LocalPlayer player, ItemStack weapon, LivingEntity target,
                                 Registry<Enchantment> enchantments) {
-        // The attribute already includes the held item and effects; swap the held item's part for the weapon's.
-        double base = player.getAttributeValue(Attributes.ATTACK_DAMAGE)
-                - addedAttackDamage(player.getMainHandItem()) + addedAttackDamage(weapon);
+        // Built from parts: the client never receives the attack damage attribute with the held
+        // item's modifiers (only the server applies them), so the attribute value alone is wrong.
+        double base = player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE) + addedAttackDamage(weapon)
+                + effectLevel(player, MobEffects.STRENGTH) * 3.0 - effectLevel(player, MobEffects.WEAKNESS) * 4.0;
         float damage = (float) Math.max(0, base) + enchantmentBonus(weapon, target, enchantments);
 
         float armor = target.getArmorValue();
@@ -187,6 +189,11 @@ final class LootingSwap {
             damage *= Math.max(0.0F, 1.0F - (resistance.getAmplifier() + 1) * 0.2F);
         }
         return damage;
+    }
+
+    private static int effectLevel(LivingEntity entity, Holder<MobEffect> effect) {
+        MobEffectInstance instance = entity.getEffect(effect);
+        return instance == null ? 0 : instance.getAmplifier() + 1;
     }
 
     private static double addedAttackDamage(ItemStack stack) {

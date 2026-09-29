@@ -10,6 +10,9 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   gametest:
     name: Client game tests
@@ -51,3 +54,21 @@ jobs:
           name: gametest-logs
           path: fabric/build/run/clientGameTest/logs
           if-no-files-found: ignore
+
+      # Screenshots are committed to the tested claude/* branch (the artifact storage host is not
+      # reachable from the agent's environment); [skip ci] keeps this from triggering another run.
+      - name: Commit screenshots to the branch
+        if: always() && github.event_name == 'push' && startsWith(github.ref_name, 'claude/')
+        run: |
+          shots=fabric/build/run/clientGameTest/screenshots
+          [ -d "$shots" ] || exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch -q origin "$GITHUB_REF_NAME"
+          git checkout -q -B screenshots "origin/$GITHUB_REF_NAME"
+          rm -rf ci-screenshots
+          mkdir ci-screenshots
+          cp "$shots"/*.png ci-screenshots/
+          git add ci-screenshots
+          git commit -q -m "Game test screenshots for ${GITHUB_SHA::7} [skip ci]"
+          git push -q origin "HEAD:$GITHUB_REF_NAME"
