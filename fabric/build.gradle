@@ -37,6 +37,36 @@ dependencies {
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
 }
 
+// In-game tests (Fabric client game tests): a separate test mod that is never part of the release jar.
+// Run with `./gradlew :fabric:runClientGameTest` (needs a display; CI uses xvfb).
+sourceSets {
+    gametest {
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+
+dependencies {
+    gametestImplementation sourceSets.main.output
+}
+
+loom {
+    mods {
+        "multiclicker-gametest" {
+            sourceSet sourceSets.gametest
+        }
+    }
+    runs {
+        clientGameTest {
+            inherit loom.runs.getByName("client")
+            name = "Client Game Test"
+            source sourceSets.gametest
+            property "fabric.client.gametest"
+            runDir "build/run/clientGameTest"
+        }
+    }
+}
+
 processResources {
     inputs.property 'version', project.version
 
