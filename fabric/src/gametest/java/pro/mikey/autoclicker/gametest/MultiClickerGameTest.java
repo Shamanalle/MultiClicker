@@ -45,6 +45,9 @@ import java.util.function.Predicate;
 public class MultiClickerGameTest implements FabricClientGameTest {
     private static final Logger LOGGER = LoggerFactory.getLogger("MultiClicker/GameTest");
 
+    private static final List<String> TRANSLATIONS = List.of(
+            "uk_ua", "de_de", "fr_fr", "es_es", "pt_br", "pl_pl", "it_it", "tr_tr", "zh_cn", "ja_jp", "ko_kr");
+
     private final List<String> failures = new ArrayList<>();
     private final List<String> passed = new ArrayList<>();
 
@@ -93,8 +96,24 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             setLanguage(context, "ru_ru");
             menuScreenshots(context, "ru");
             reset(context, server);
-            hud(context, server, "ru_");
-            context.runOnClient(mc -> MultiClicker.get().setActive(false, null));
+            hud(context, server, "ru_", true);
+            deactivate(context);
+
+            // Every other translation: the densest pages and the HUD, to catch strings that do not fit.
+            for (String code : TRANSLATIONS) {
+                setLanguage(context, code);
+                languageScreenshots(context, server, code);
+            }
+
+            // The pictures on the project page, 1280x720 (GUI scale 3), in English and Russian.
+            context.getInput().resizeWindow(1280, 720);
+            context.waitTicks(2);
+            setLanguage(context, "en_us");
+            readmeScreenshots(context, server, "en");
+            setLanguage(context, "ru_ru");
+            readmeScreenshots(context, server, "ru");
+            context.getInput().resizeWindow(854, 480);
+            deactivate(context);
             context.setScreen(() -> null);
         }
         setLanguage(context, "en_us");
@@ -432,10 +451,10 @@ public class MultiClickerGameTest implements FabricClientGameTest {
     }
 
     private void hudScreenshots(ClientGameTestContext context, TestServerContext server) {
-        hud(context, server, "");
+        hud(context, server, "", true);
     }
 
-    private void hud(ClientGameTestContext context, TestServerContext server, String prefix) {
+    private void hud(ClientGameTestContext context, TestServerContext server, String prefix, boolean allStyles) {
         // Bare hands: the husk survives long enough for the screenshots.
         give(server, 1, new ItemStack(Items.TOTEM_OF_UNDYING, 2));
         server.runCommand("summon minecraft:husk 0.5 -60 3.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b}");
@@ -450,12 +469,94 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         activate(context);
         context.waitTicks(30);
         context.takeScreenshot(prefix + "hud_active_outline");
+        if (!allStyles) {
+            return;
+        }
         context.runOnClient(mc -> MultiClicker.get().highlight().style.set(HighlightModule.Style.GLOW));
         context.waitTicks(5);
         context.takeScreenshot(prefix + "hud_active_glow");
         context.runOnClient(mc -> MultiClicker.get().highlight().style.set(HighlightModule.Style.FILLED));
         context.waitTicks(5);
         context.takeScreenshot(prefix + "hud_active_filled");
+    }
+
+    private void languageScreenshots(ClientGameTestContext context, TestServerContext server, String code) {
+        for (Category category : List.of(Category.CLICKER, Category.SURVIVAL, Category.AUTOMATION)) {
+            context.setScreen(() -> new ConfigScreen(null));
+            context.runOnClient(mc -> ((ConfigScreen) mc.screen).showCategory(category));
+            parkCursor(context);
+            context.takeScreenshot("lang_" + code + "_" + category.name().toLowerCase());
+        }
+        context.setScreen(() -> new ProfilesScreen(new ConfigScreen(null)));
+        parkCursor(context);
+        context.takeScreenshot("lang_" + code + "_profiles");
+        reset(context, server);
+        hud(context, server, "lang_" + code + "_", false);
+        deactivate(context);
+    }
+
+    // --- Project page -----------------------------------------------------------------------------
+
+    /** A small mob farm: a few kills on the HUD, the next target highlighted, then the menus over it. */
+    private void readmeScreenshots(ClientGameTestContext context, TestServerContext server, String lang) {
+        reset(context, server);
+        server.runCommand("time set 2000");
+        server.runCommand("fill -4 -61 1 4 -61 9 minecraft:polished_andesite");
+        server.runCommand("fill -4 -60 9 4 -57 9 minecraft:stone_bricks");
+        server.runCommand("fill -4 -60 2 -4 -57 8 minecraft:stone_bricks");
+        server.runCommand("fill 4 -60 2 4 -57 8 minecraft:stone_bricks");
+        server.runCommand("setblock -4 -56 2 minecraft:lantern");
+        server.runCommand("setblock 4 -56 2 minecraft:lantern");
+        server.runCommand("summon minecraft:creeper -1.5 -60 7.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[160f,0f]}");
+        server.runCommand("summon minecraft:husk 2.0 -60 6.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[200f,0f]}");
+        give(server, 0, enchanted(server, Items.DIAMOND_SWORD, Enchantments.LOOTING, 3));
+        give(server, 1, new ItemStack(Items.COOKED_BEEF, 32));
+        give(server, 2, enchanted(server, Items.DIAMOND_PICKAXE, Enchantments.EFFICIENCY, 5));
+        give(server, 8, new ItemStack(Items.TOTEM_OF_UNDYING));
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.autoEat().enabledSetting().set(true);
+            mod.offhand().enabledSetting().set(true);
+            mod.antiAfk().enabledSetting().set(true);
+            mod.highlight().style.set(HighlightModule.Style.GLOW);
+            mod.mining().blocks.set(List.of("minecraft:stone", "minecraft:deepslate", "minecraft:cobblestone",
+                    "minecraft:andesite", "minecraft:diorite", "minecraft:granite", "minecraft:tuff"));
+        });
+        server.runCommand("tp @a 0.5 -60 0.5 0 12");
+        context.waitTicks(10);
+
+        activate(context);
+        for (int i = 1; i <= 3; i++) {
+            server.runCommand("summon minecraft:husk 0.5 -60 3.0 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Health:1f,Rotation:[180f,0f]}");
+            int kills = i;
+            waitUntil(context, "kill number " + kills, 100, mc -> MultiClicker.get().stats().kills() >= kills);
+        }
+        // The last husk cannot be hurt, so it stays the highlighted target.
+        server.runCommand("summon minecraft:husk 0.5 -60 3.0 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}");
+        server.runCommand("effect give @e[type=minecraft:husk] minecraft:resistance infinite 4 true");
+        context.waitTicks(70);
+        context.runOnClient(mc -> mc.gui.getChat().clearMessages(false));
+        // Between two hits, so the husk does not flash red.
+        waitUntil(context, "the sword to be charged again", 100, mc -> {
+            float charge = mc.player.getAttackStrengthScale(0);
+            return charge > 0.85F && charge < 0.98F;
+        });
+        context.takeScreenshot("readme_" + lang + "_hud");
+
+        for (Category category : List.of(Category.CLICKER, Category.SURVIVAL, Category.VISUAL)) {
+            context.setScreen(() -> new ConfigScreen(null));
+            context.runOnClient(mc -> ((ConfigScreen) mc.screen).showCategory(category));
+            parkCursor(context);
+            context.takeScreenshot("readme_" + lang + "_menu_" + category.name().toLowerCase());
+        }
+        context.setScreen(() -> new ProfilesScreen(new ConfigScreen(null)));
+        parkCursor(context);
+        context.takeScreenshot("readme_" + lang + "_profiles");
+        context.setScreen(() -> new ListEditScreen(new ConfigScreen(null), MultiClicker.get().mining().blocks));
+        parkCursor(context);
+        context.takeScreenshot("readme_" + lang + "_list_editor");
+        context.setScreen(() -> null);
+        deactivate(context);
     }
 
     // --- Menus ----------------------------------------------------------------------------------

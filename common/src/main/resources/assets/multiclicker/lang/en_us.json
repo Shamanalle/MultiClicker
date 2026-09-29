@@ -303,5 +303,7 @@
   "multiclicker.message.safety.health": "low health (%s HP)",
   "multiclicker.message.safety.damage": "you took damage",
   "multiclicker.message.safety.player": "player %s is nearby",
-  "multiclicker.message.safety.disconnected": "[MultiClicker] Safety disconnect: %s"
+  "multiclicker.message.safety.disconnected": "[MultiClicker] Safety disconnect: %s",
+  "modmenu.summaryTranslation.multiclicker": "Auto clicker with helpers for AFK farms, mining and fishing.",
+  "modmenu.descriptionTranslation.multiclicker": "Configurable auto clicker for attack, use and jump, with helpers for AFK farms, mining and fishing: target filter, Looting finishing blow, auto eat, smart offhand, auto tool, auto fish, anti-AFK, safety stop, HUD and target highlight."
 }
