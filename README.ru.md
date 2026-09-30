@@ -6,7 +6,7 @@
 
 **Автокликер для Fabric с помощниками для AFK-ферм, копания и рыбалки.**
 
-[![Minecraft 1.21.8](https://img.shields.io/badge/Minecraft-1.21.8-62b47a)](https://minecraft.net/)
+[![Minecraft 1.21 – 26.3](https://img.shields.io/badge/Minecraft-1.21%20%E2%80%93%2026.3-62b47a)](https://minecraft.net/)
 [![Fabric](https://img.shields.io/badge/loader-Fabric-dbd0b4)](https://fabricmc.net/)
 [![Релиз](https://img.shields.io/github/v/release/Shamanalle/MultiClicker?color=4c8bf5&label=релиз)](https://github.com/Shamanalle/MultiClicker/releases/latest)
 [![Игровые тесты](https://github.com/Shamanalle/MultiClicker/actions/workflows/gametest.yml/badge.svg)](https://github.com/Shamanalle/MultiClicker/actions/workflows/gametest.yml)
@@ -18,15 +18,17 @@
 
 </div>
 
-Мод-автокликер для Minecraft 1.21.8 (Fabric). Нажимает клавиши атаки, использования и прыжка в заданном
+Мод-автокликер для Minecraft 1.21 – 26.3 (Fabric). Нажимает клавиши атаки, использования и прыжка в заданном
 ритме. Включает модули для AFK-ферм, копания и рыбалки: авто-еда, авто-рыбалка, авто-инструмент,
 вторая рука, аварийная остановка, анти-АФК и другие.
 
 ## Быстрый старт
 
-1. Установите [Fabric Loader](https://fabricmc.net/use/) для Minecraft **1.21.8**.
-2. Положите в папку `mods` [Fabric API](https://modrinth.com/mod/fabric-api) и
-   [`MultiClicker-fabric-<версия>.jar`](https://github.com/Shamanalle/MultiClicker/releases/latest).
+1. Установите [Fabric Loader](https://fabricmc.net/use/) для своей версии Minecraft. Поддерживаются
+   1.21 – 1.21.11 и 26.1 – 26.3 (см. [версии](#поддерживаемые-версии)).
+2. Положите в папку `mods` [Fabric API](https://modrinth.com/mod/fabric-api) и jar под свою версию,
+   `MultiClicker-fabric-<версия мода>+<версия Minecraft>.jar` из
+   [последнего релиза](https://github.com/Shamanalle/MultiClicker/releases/latest).
    По желанию поставьте [Mod Menu](https://modrinth.com/mod/modmenu): он добавляет кнопку настроек
    в списке модов.
 3. Зайдите в мир, нажмите <kbd>O</kbd>, чтобы открыть меню, и <kbd>I</kbd>, чтобы включить или выключить мод.
@@ -111,6 +113,18 @@
 | Настройки: у каждого модуля своя карточка, у каждой опции подсказка | Выживание: безопасность, вторая рука и авто-еда |
 | ![Пресеты и профили](docs/images/ru/profiles.png) | ![Редактор списка блоков](docs/images/ru/list_editor.png) |
 | Готовые пресеты и собственные профили | Редактор списков: иконки предметов, добавление предмета из руки или блока в прицеле |
+
+## Поддерживаемые версии
+
+Для каждой версии Minecraft свой jar: 1.21, 1.21.1, 1.21.2, 1.21.3, 1.21.4, 1.21.5, 1.21.6, 1.21.7,
+1.21.8, 1.21.9, 1.21.10, 1.21.11, 26.1, 26.1.1, 26.1.2, 26.2 и 26.3. Для Minecraft 1.21.9 и новее нужен
+Fabric Loader 0.17 или новее.
+
+- 1.21.4 и новее: каждая сборка проходит игровые тесты.
+- 1.21 – 1.21.3: в Fabric API для них нет клиентского тестового API, поэтому CI лишь проверяет, что игра
+  запускается с модом и все миксины применяются.
+- 1.21.9: стили подсветки «контур» и «заливка» не рисуются (в Fabric API для этой версии нет событий
+  отрисовки мира), «свечение» работает.
 
 ## Управление
 
