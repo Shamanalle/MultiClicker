@@ -8,7 +8,7 @@
   "environment": "client",
   "entrypoints": {
     "fabric-client-gametest": [
-      "pro.mikey.autoclicker.gametest.MultiClickerGameTest"
+      "io.github.shamanalle.multiclicker.gametest.MultiClickerGameTest"
     ]
   },
   "depends": {

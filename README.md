@@ -115,4 +115,4 @@ You need JDK 21.
 
 ## License
 
-[MIT](LICENSE). Based on AutoClicker by Michael Hillcox.
+[MIT](LICENSE).

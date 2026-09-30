@@ -113,4 +113,4 @@ Türkçe, 简体中文, 日本語, 한국어. Предметы, чары и мо
 
 ## Лицензия
 
-[MIT](LICENSE). Основан на AutoClicker Michael Hillcox.
+[MIT](LICENSE).
