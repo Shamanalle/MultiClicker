@@ -1,17 +1,18 @@
 package io.github.shamanalle.multiclicker.gui;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import io.github.shamanalle.multiclicker.compat.Canvas;
+import io.github.shamanalle.multiclicker.compat.ModScreen;
 import io.github.shamanalle.multiclicker.gui.widget.FlatButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /** Base for the smaller MultiClicker dialogs: a centered panel with a title and flat buttons. */
-public abstract class PanelScreen extends Screen {
+public abstract class PanelScreen extends ModScreen {
     protected final Screen parent;
     protected final List<FlatButton> buttons = new ArrayList<>();
     protected int panelX;
@@ -53,40 +54,40 @@ public abstract class PanelScreen extends Screen {
         return addRenderableWidget(box);
     }
 
-    protected void drawFieldBackground(GuiGraphics g, EditBox box) {
+    protected void drawFieldBackground(Canvas g, EditBox box) {
         Draw.box(g, box.getX() - 6, box.getY() - 4, box.getWidth() + 12, 17, 3, Theme.CONTROL,
                 box.isFocused() ? Theme.alpha(Theme.accent(), 0.8F) : Theme.CONTROL);
     }
 
     @Override
-    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+    protected void draw(Canvas g, int mouseX, int mouseY, float partialTick) {
         long now = System.nanoTime();
         float delta = lastFrameNanos == 0 ? 0 : Math.min(0.1F, (now - lastFrameNanos) / 1_000_000_000.0F);
         lastFrameNanos = now;
 
         Draw.box(g, panelX, panelY, panelW, panelH, 4, Theme.PANEL, Theme.CARD_BORDER);
         Draw.rect(g, panelX + 8, panelY + 10, 3, 10, 1, Theme.accent());
-        g.drawString(font, title.copy().withStyle(ChatFormatting.BOLD), panelX + 15, panelY + 11, Theme.TEXT, false);
+        g.text(font, title.copy().withStyle(ChatFormatting.BOLD), panelX + 15, panelY + 11, Theme.TEXT);
         g.fill(panelX + 1, panelY + 29, panelX + panelW - 1, panelY + 30, Theme.DIVIDER);
 
         renderPanel(g, mouseX, mouseY, delta);
         for (FlatButton button : buttons) {
             button.render(g, font, mouseX, mouseY, delta);
         }
-        super.render(g, mouseX, mouseY, partialTick);
+        super.draw(g, mouseX, mouseY, partialTick);
     }
 
-    protected abstract void renderPanel(GuiGraphics g, int mouseX, int mouseY, float delta);
+    protected abstract void renderPanel(Canvas g, int mouseX, int mouseY, float delta);
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    protected boolean clicked(double mouseX, double mouseY, int button) {
         for (FlatButton flatButton : List.copyOf(buttons)) {
             if (flatButton.mouseClicked(mouseX, mouseY, button)) {
                 setFocused(null);
                 return true;
             }
         }
-        boolean handled = super.mouseClicked(mouseX, mouseY, button);
+        boolean handled = super.clicked(mouseX, mouseY, button);
         if (!handled) {
             setFocused(null);
         }

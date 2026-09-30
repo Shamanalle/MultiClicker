@@ -1,8 +1,17 @@
 plugins {
-    id 'dev.architectury.loom' version '1.10-SNAPSHOT' apply false
+    id 'dev.architectury.loom' version '1.14-SNAPSHOT' apply false
     id 'architectury-plugin' version '3.4-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
 }
+
+// Per-version settings (Fabric API, Mod Menu, source overlays, Java) come from versions/<minecraft_version>.properties.
+def versionFile = file("versions/${project.minecraft_version}.properties")
+if (!versionFile.exists()) {
+    throw new GradleException("Minecraft ${project.minecraft_version} is not supported: ${versionFile} is missing")
+}
+def versionProps = new Properties()
+versionFile.withInputStream { versionProps.load(it) }
+versionProps.each { key, value -> ext.set(key as String, value) }
 
 architectury {
     minecraft = project.minecraft_version
@@ -36,14 +45,26 @@ subprojects {
     java {
         withSourcesJar()
 
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.toVersion(rootProject.java_version)
+        targetCompatibility = JavaVersion.toVersion(rootProject.java_version)
     }
 
     tasks.withType(JavaCompile).configureEach {
-        it.options.release = 21
+        it.options.release = Integer.parseInt(rootProject.java_version)
         it.options.encoding = "UTF-8"
     }
+
+    // Version specific code: src/compat/<name>/java of each module is layered over src/main/java
+    // in the order given by "compat" (a later overlay replaces a file of the same name).
+    def compatDir = layout.buildDirectory.dir('compat/java')
+    def mergeCompat = tasks.register('mergeCompat', Sync) {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        into compatDir
+        rootProject.compat.split(',').each { name -> from(project.file("src/compat/$name/java")) }
+    }
+    sourceSets.main.java.srcDir(compatDir)
+    tasks.withType(JavaCompile).configureEach { dependsOn mergeCompat }
+    tasks.withType(Jar).configureEach { dependsOn mergeCompat }
 
     jar {
         from(rootProject.file("LICENSE")) {

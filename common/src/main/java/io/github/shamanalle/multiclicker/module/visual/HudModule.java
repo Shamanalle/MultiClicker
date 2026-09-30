@@ -3,9 +3,10 @@ package io.github.shamanalle.multiclicker.module.visual;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.language.I18n;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Canvas;
+import io.github.shamanalle.multiclicker.compat.Gfx;
 import io.github.shamanalle.multiclicker.gui.Draw;
 import io.github.shamanalle.multiclicker.gui.Theme;
 import io.github.shamanalle.multiclicker.module.Category;
@@ -50,7 +51,7 @@ public class HudModule extends Module {
         }
     }
 
-    public void render(GuiGraphics g, DeltaTracker deltaTracker) {
+    public void render(Canvas g, DeltaTracker deltaTracker) {
         Minecraft mc = Minecraft.getInstance();
         MultiClicker mod = MultiClicker.get();
         if (!isEnabled() || mod == null || mc.player == null || mc.options.hideGui
@@ -80,21 +81,19 @@ public class HudModule extends Module {
         int scaledHeight = Math.round(height * factor);
         int x = switch (corner.get()) {
             case TOP_LEFT, BOTTOM_LEFT -> MARGIN;
-            case TOP_RIGHT, BOTTOM_RIGHT -> g.guiWidth() - scaledWidth - MARGIN;
+            case TOP_RIGHT, BOTTOM_RIGHT -> g.width() - scaledWidth - MARGIN;
         };
         int y = switch (corner.get()) {
             case TOP_LEFT, TOP_RIGHT -> MARGIN;
-            case BOTTOM_LEFT, BOTTOM_RIGHT -> g.guiHeight() - scaledHeight - MARGIN;
+            case BOTTOM_LEFT, BOTTOM_RIGHT -> g.height() - scaledHeight - MARGIN;
         };
 
-        g.pose().pushMatrix();
-        g.pose().translate(x, y);
-        g.pose().scale(factor, factor);
+        Gfx.push(g, x, y, factor);
         drawPanel(g, font, lines, width, height, active);
-        g.pose().popMatrix();
+        Gfx.pop(g);
     }
 
-    private void drawPanel(GuiGraphics g, Font font, List<Line> lines, int width, int height, boolean active) {
+    private void drawPanel(Canvas g, Font font, List<Line> lines, int width, int height, boolean active) {
         int accent = Theme.accent();
         Draw.rect(g, 0, 0, width, height, 3, Theme.HUD_BACKGROUND);
         Draw.rect(g, 0, 0, 2, height, 1, active ? accent : Theme.TEXT_MUTED);

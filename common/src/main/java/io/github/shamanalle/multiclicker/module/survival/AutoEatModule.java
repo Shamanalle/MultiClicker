@@ -9,6 +9,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -86,7 +87,7 @@ public class AutoEatModule extends Module {
         if (slot == -1) {
             return;
         }
-        int selected = player.getInventory().getSelectedSlot();
+        int selected = Slots.selected(player.getInventory());
         previousSlot = slot != selected ? selected : -1;
         foodSlot = slot;
         Inventories.selectSlot(player, slot);
@@ -98,7 +99,7 @@ public class AutoEatModule extends Module {
 
     private void tickEating(Minecraft mc, LocalPlayer player) {
         timer++;
-        if (mc.screen != null || timer > EAT_TIMEOUT || player.getInventory().getSelectedSlot() != foodSlot
+        if (mc.screen != null || timer > EAT_TIMEOUT || Slots.selected(player.getInventory()) != foodSlot
                 || !isFood(player.getMainHandItem())) {
             finish(mc);
             return;
@@ -127,7 +128,7 @@ public class AutoEatModule extends Module {
             holdingUse = false;
         }
         // Switch back only if the food is still selected: a slot the player picked meanwhile wins.
-        if (mc.player != null && previousSlot != -1 && mc.player.getInventory().getSelectedSlot() == foodSlot) {
+        if (mc.player != null && previousSlot != -1 && Slots.selected(mc.player.getInventory()) == foodSlot) {
             Inventories.selectSlot(mc.player, previousSlot);
         }
         previousSlot = -1;

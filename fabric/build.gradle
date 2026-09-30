@@ -50,6 +50,16 @@ dependencies {
     gametestImplementation sourceSets.main.output
 }
 
+// Version specific test code: src/compat/<name>/gametest, layered like the main sources of the module.
+def gametestCompatDir = layout.buildDirectory.dir('compat/gametest')
+def mergeGametestCompat = tasks.register('mergeGametestCompat', Sync) {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    into gametestCompatDir
+    rootProject.compat.split(',').each { name -> from(project.file("src/compat/$name/gametest")) }
+}
+sourceSets.gametest.java.srcDir(gametestCompatDir)
+tasks.named('compileGametestJava') { dependsOn mergeGametestCompat }
+
 loom {
     mods {
         "multiclicker-gametest" {
@@ -69,9 +79,11 @@ loom {
 
 processResources {
     inputs.property 'version', project.version
+    inputs.property 'minecraft_version', rootProject.minecraft_version
+    inputs.property 'java_version', rootProject.java_version
 
     filesMatching('fabric.mod.json') {
-        expand version: project.version
+        expand version: project.version, minecraft_version: rootProject.minecraft_version, java_version: rootProject.java_version
     }
 }
 
@@ -82,4 +94,6 @@ shadowJar {
 
 remapJar {
     input.set shadowJar.archiveFile
+    // One jar per Minecraft version: MultiClicker-fabric-<mod version>+<minecraft version>.jar
+    archiveVersion = "${rootProject.mod_version}+${rootProject.minecraft_version}"
 }

@@ -1,17 +1,17 @@
 package io.github.shamanalle.multiclicker.gui;
 
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.lwjgl.glfw.GLFW;
+import io.github.shamanalle.multiclicker.compat.Canvas;
+import io.github.shamanalle.multiclicker.compat.Ids;
 import io.github.shamanalle.multiclicker.gui.widget.FlatButton;
 import io.github.shamanalle.multiclicker.setting.ListSetting;
 
@@ -118,7 +118,7 @@ public class ListEditScreen extends PanelScreen {
     }
 
     @Override
-    protected void renderPanel(GuiGraphics g, int mouseX, int mouseY, float delta) {
+    protected void renderPanel(Canvas g, int mouseX, int mouseY, float delta) {
         drawFieldBackground(g, input);
         Draw.box(g, listX, listY, listW, listH, 3, Theme.CARD, Theme.CARD_BORDER);
 
@@ -143,7 +143,7 @@ public class ListEditScreen extends PanelScreen {
                 panelY + panelH - 36 + 3, statusColor);
     }
 
-    private void drawEntry(GuiGraphics g, String id, int y, int mouseX, int mouseY) {
+    private void drawEntry(Canvas g, String id, int y, int mouseX, int mouseY) {
         boolean known = setting.isKnown(id);
         boolean overRow = isInList(mouseX, mouseY) && mouseY >= y && mouseY < y + ROW;
         if (overRow) {
@@ -151,7 +151,7 @@ public class ListEditScreen extends PanelScreen {
         }
         ItemStack icon = iconFor(id);
         if (!icon.isEmpty()) {
-            g.renderItem(icon, listX + 5, y + 2);
+            g.item(icon, listX + 5, y + 2);
         }
         String text = Draw.ellipsize(font, known ? id : id + "  (?)", listW - 50);
         Draw.text(g, font, text, listX + 26, y + 6, known ? Theme.TEXT : Theme.DANGER);
@@ -160,13 +160,12 @@ public class ListEditScreen extends PanelScreen {
     }
 
     private ItemStack iconFor(String id) {
-        ResourceLocation location = ResourceLocation.tryParse(id);
-        if (location == null || !setting.isKnown(id)) {
+        if (!setting.isKnown(id)) {
             return ItemStack.EMPTY;
         }
         return setting.kind() == ListSetting.Kind.ITEM
-                ? new ItemStack(BuiltInRegistries.ITEM.getValue(location))
-                : new ItemStack(BuiltInRegistries.BLOCK.getValue(location).asItem());
+                ? new ItemStack(Ids.item(id))
+                : new ItemStack(Ids.block(id).asItem());
     }
 
     private boolean isInList(double mouseX, double mouseY) {
@@ -174,7 +173,7 @@ public class ListEditScreen extends PanelScreen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    protected boolean clicked(double mouseX, double mouseY, int button) {
         if (button == 0 && isInList(mouseX, mouseY) && mouseX >= listX + listW - 20) {
             int index = (int) ((mouseY - listY - 2 + scroll) / ROW);
             List<String> entries = setting.get();
@@ -185,7 +184,7 @@ public class ListEditScreen extends PanelScreen {
                 return true;
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.clicked(mouseX, mouseY, button);
     }
 
     @Override
@@ -198,11 +197,11 @@ public class ListEditScreen extends PanelScreen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    protected boolean pressed(int keyCode, int scanCode, int modifiers) {
         if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && input.isFocused()) {
             addFromInput();
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.pressed(keyCode, scanCode, modifiers);
     }
 }

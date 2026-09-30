@@ -1,7 +1,7 @@
 package io.github.shamanalle.multiclicker.gui.widget;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import io.github.shamanalle.multiclicker.compat.Canvas;
 import io.github.shamanalle.multiclicker.gui.Anim;
 import io.github.shamanalle.multiclicker.gui.Draw;
 import io.github.shamanalle.multiclicker.gui.Theme;
@@ -31,7 +31,7 @@ public class CycleControl extends SettingControl {
     }
 
     @Override
-    protected void draw(GuiGraphics g, Font font, int mouseX, int mouseY, float delta) {
+    protected void draw(Canvas g, Font font, int mouseX, int mouseY, float delta) {
         boolean over = isMouseOver(mouseX, mouseY);
         float hovered = hover.update(over ? 1 : 0, delta, 20);
         Draw.rect(g, x, y, width, height, 3, Theme.mix(Theme.CONTROL, Theme.CONTROL_HOVER, hovered));

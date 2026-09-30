@@ -10,6 +10,8 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.github.shamanalle.multiclicker.compat.Keys;
+import io.github.shamanalle.multiclicker.compat.Messages;
 import io.github.shamanalle.multiclicker.config.ConfigManager;
 import io.github.shamanalle.multiclicker.gui.ConfigScreen;
 import io.github.shamanalle.multiclicker.module.Module;
@@ -41,15 +43,14 @@ import java.util.List;
 public final class MultiClicker {
     public static final String MOD_ID = "multiclicker";
     public static final Logger LOGGER = LoggerFactory.getLogger("MultiClicker");
-    private static final String KEY_CATEGORY = "key.categories.multiclicker";
     /** Settings are written to disk this many ticks after the last change. */
     private static final int SAVE_DELAY = 40;
 
     @Nullable
     private static MultiClicker instance;
 
-    public final KeyMapping toggleKey = new KeyMapping("key.multiclicker.toggle", GLFW.GLFW_KEY_I, KEY_CATEGORY);
-    public final KeyMapping menuKey = new KeyMapping("key.multiclicker.menu", GLFW.GLFW_KEY_O, KEY_CATEGORY);
+    public final KeyMapping toggleKey = Keys.keyMapping("key.multiclicker.toggle", GLFW.GLFW_KEY_I);
+    public final KeyMapping menuKey = Keys.keyMapping("key.multiclicker.menu", GLFW.GLFW_KEY_O);
 
     private final ClickerModule clicker = new ClickerModule();
     private final TargetFilterModule targetFilter = new TargetFilterModule();
@@ -219,11 +220,11 @@ public final class MultiClicker {
     /** First time in a world: tell the player which keys open the menu and start the mod. */
     private void showWelcome(Minecraft mc) {
         ui.welcomeShown.set(true);
-        mc.player.displayClientMessage(Component.literal("MultiClicker: ").withStyle(ChatFormatting.GOLD)
+        Messages.chat(mc.player, Component.literal("MultiClicker: ").withStyle(ChatFormatting.GOLD)
                 .append(Component.translatable("multiclicker.message.welcome",
                         menuKey.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.YELLOW),
                         toggleKey.getTranslatedKeyMessage().copy().withStyle(ChatFormatting.YELLOW))
-                        .withStyle(ChatFormatting.GRAY)), false);
+                        .withStyle(ChatFormatting.GRAY)));
     }
 
     private void tickModule(Minecraft mc, Module module) {
@@ -272,11 +273,11 @@ public final class MultiClicker {
             return;
         }
         if (reason != null) {
-            mc.player.displayClientMessage(Component.literal("MultiClicker: ").withStyle(ChatFormatting.GOLD)
-                    .append(reason.copy().withStyle(ChatFormatting.YELLOW)), true);
+            Messages.overlay(mc.player, Component.literal("MultiClicker: ").withStyle(ChatFormatting.GOLD)
+                    .append(reason.copy().withStyle(ChatFormatting.YELLOW)));
         } else if (ui.toggleMessage.get()) {
-            mc.player.displayClientMessage(Component.translatable(value ? "multiclicker.message.on" : "multiclicker.message.off")
-                    .withStyle(value ? ChatFormatting.GREEN : ChatFormatting.RED), true);
+            Messages.overlay(mc.player, Component.translatable(value ? "multiclicker.message.on" : "multiclicker.message.off")
+                    .withStyle(value ? ChatFormatting.GREEN : ChatFormatting.RED));
         }
         if (ui.toggleSound.get() || reason != null) {
             mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, value ? 1.3F : 0.8F));

@@ -3,7 +3,6 @@ package io.github.shamanalle.multiclicker.module.mining;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -12,6 +11,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Lookups;
+import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -19,7 +20,6 @@ import io.github.shamanalle.multiclicker.setting.IntSetting;
 import io.github.shamanalle.multiclicker.setting.Unit;
 import io.github.shamanalle.multiclicker.util.Inventories;
 
-import java.util.Optional;
 
 /** Switches to the fastest hotbar tool for the block being mined. */
 public class AutoToolModule extends Module {
@@ -51,7 +51,7 @@ public class AutoToolModule extends Module {
             idleTicks = 0;
             return;
         }
-        int current = player.getInventory().getSelectedSlot();
+        int current = Slots.selected(player.getInventory());
         if (toolSlot != -1 && current != toolSlot) {
             // The player picked another slot: that choice wins, do not switch back later.
             previousSlot = -1;
@@ -90,7 +90,7 @@ public class AutoToolModule extends Module {
     }
 
     private void restore(LocalPlayer player) {
-        if (previousSlot != -1 && player.getInventory().getSelectedSlot() == toolSlot) {
+        if (previousSlot != -1 && Slots.selected(player.getInventory()) == toolSlot) {
             Inventories.selectSlot(player, previousSlot);
         }
         previousSlot = -1;
@@ -99,9 +99,8 @@ public class AutoToolModule extends Module {
     }
 
     private int findBestTool(Minecraft mc, BlockState state) {
-        Optional<Holder.Reference<Enchantment>> efficiency = mc.level.registryAccess()
-                .lookupOrThrow(Registries.ENCHANTMENT).get(Enchantments.EFFICIENCY);
-        int current = mc.player.getInventory().getSelectedSlot();
+        Holder<Enchantment> efficiency = Lookups.enchantment(Lookups.enchantments(mc), Enchantments.EFFICIENCY);
+        int current = Slots.selected(mc.player.getInventory());
         int bestSlot = -1;
         float bestScore = score(mc.player.getInventory().getItem(current), state, efficiency);
         for (int slot = 0; slot < Inventories.HOTBAR_SIZE; slot++) {
@@ -119,10 +118,10 @@ public class AutoToolModule extends Module {
     }
 
     /** Mining speed, with a bonus for tools that actually make the block drop. */
-    private static float score(ItemStack stack, BlockState state, Optional<Holder.Reference<Enchantment>> efficiency) {
+    private static float score(ItemStack stack, BlockState state, Holder<Enchantment> efficiency) {
         float speed = stack.getDestroySpeed(state);
-        if (speed > 1.0F && efficiency.isPresent()) {
-            int level = EnchantmentHelper.getItemEnchantmentLevel(efficiency.get(), stack);
+        if (speed > 1.0F && efficiency != null) {
+            int level = EnchantmentHelper.getItemEnchantmentLevel(efficiency, stack);
             if (level > 0) {
                 speed += level * level + 1;
             }

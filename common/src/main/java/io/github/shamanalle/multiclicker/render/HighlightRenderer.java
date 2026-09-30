@@ -4,12 +4,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Shapes;
 import io.github.shamanalle.multiclicker.module.visual.HighlightModule;
 
 /** Draws the outline / filled box around the current target (the glow style is done by a mixin). */
@@ -32,7 +31,7 @@ public final class HighlightRenderer {
         }
 
         // Interpolate between ticks so the box follows the entity smoothly, then make it camera-relative.
-        Vec3 offset = target.getPosition(partialTick).subtract(target.position()).subtract(camera.getPosition());
+        Vec3 offset = target.getPosition(partialTick).subtract(target.position()).subtract(Shapes.cameraPosition(camera));
         AABB box = target.getBoundingBox().move(offset).inflate(0.05);
 
         int color = highlight.color();
@@ -41,9 +40,8 @@ public final class HighlightRenderer {
         float b = (color & 0xFF) / 255.0F;
 
         if (highlight.style.get() == HighlightModule.Style.FILLED) {
-            ShapeRenderer.addChainedFilledBoxVertices(poseStack, buffers.getBuffer(RenderType.debugFilledBox()),
-                    box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ, r, g, b, 0.22F);
+            Shapes.filledBox(poseStack, buffers, box, r, g, b, 0.22F);
         }
-        ShapeRenderer.renderLineBox(poseStack, buffers.getBuffer(RenderType.lines()), box, r, g, b, 1.0F);
+        Shapes.lineBox(poseStack, buffers, box, r, g, b, 1.0F);
     }
 }

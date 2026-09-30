@@ -6,9 +6,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.ToggleKeyMapping;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
+import io.github.shamanalle.multiclicker.compat.Keys;
+import io.github.shamanalle.multiclicker.compat.Session;
 import io.github.shamanalle.multiclicker.mixin.KeyMappingAccessor;
 import io.github.shamanalle.multiclicker.mixin.ToggleKeyMappingAccessor;
 
@@ -71,10 +72,10 @@ public final class Input {
                 case GLFW.GLFW_MOUSE_BUTTON_LEFT -> mc.mouseHandler.isLeftPressed();
                 case GLFW.GLFW_MOUSE_BUTTON_RIGHT -> mc.mouseHandler.isRightPressed();
                 case GLFW.GLFW_MOUSE_BUTTON_MIDDLE -> mc.mouseHandler.isMiddlePressed();
-                default -> GLFW.glfwGetMouseButton(mc.getWindow().getWindow(), key.getValue()) == GLFW.GLFW_PRESS;
+                default -> Keys.isMouseDown(mc, key.getValue());
             };
             case KEYSYM -> key.getValue() != InputConstants.UNKNOWN.getValue()
-                    && InputConstants.isKeyDown(mc.getWindow().getWindow(), key.getValue());
+                    && Keys.isKeyDown(mc, key.getValue());
             case SCANCODE -> false;
         };
     }
@@ -103,13 +104,6 @@ public final class Input {
         if (stack.isEmpty() || !stack.isItemEnabled(mc.level.enabledFeatures())) {
             return false;
         }
-        if (mc.gameMode.useItem(player, hand) instanceof InteractionResult.Success success) {
-            if (success.swingSource() == InteractionResult.SwingSource.CLIENT) {
-                player.swing(hand);
-            }
-            mc.gameRenderer.itemInHandRenderer.itemUsed(hand);
-            return true;
-        }
-        return false;
+        return Session.useItem(mc, player, hand);
     }
 }

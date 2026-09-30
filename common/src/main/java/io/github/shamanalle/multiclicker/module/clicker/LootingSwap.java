@@ -5,13 +5,11 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -23,6 +21,8 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.phys.EntityHitResult;
+import io.github.shamanalle.multiclicker.compat.Lookups;
+import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.util.Input;
 import io.github.shamanalle.multiclicker.util.Inventories;
 
@@ -74,12 +74,12 @@ final class LootingSwap {
             retryDelay--;
             return false;
         }
-        Registry<Enchantment> enchantments = mc.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        Registry<Enchantment> enchantments = Lookups.enchantments(mc);
         Holder<Enchantment> looting = holder(enchantments, Enchantments.LOOTING);
         if (looting == null) {
             return false;
         }
-        int selected = player.getInventory().getSelectedSlot();
+        int selected = Slots.selected(player.getInventory());
         int currentLevel = EnchantmentHelper.getItemEnchantmentLevel(looting, player.getMainHandItem());
         float health = target.getHealth() + target.getAbsorptionAmount();
         // Among the weapons with more Looting than the held item that kill with one hit: highest
@@ -119,7 +119,7 @@ final class LootingSwap {
         switch (state) {
             case CHARGING -> {
                 // The player scrolled to another slot: respect that and stop without switching back.
-                if (player.getInventory().getSelectedSlot() != lootingSlot) {
+                if (Slots.selected(player.getInventory()) != lootingSlot) {
                     reset();
                     return Result.IDLE;
                 }
@@ -154,7 +154,7 @@ final class LootingSwap {
         if (pressed) {
             Input.release(mc.options.keyAttack);
         }
-        if (player != null && previousSlot != -1 && player.getInventory().getSelectedSlot() == lootingSlot) {
+        if (player != null && previousSlot != -1 && Slots.selected(player.getInventory()) == lootingSlot) {
             Inventories.selectSlot(player, previousSlot);
         }
         reset();
@@ -175,7 +175,7 @@ final class LootingSwap {
         // Built from parts: the client never receives the attack damage attribute with the held
         // item's modifiers (only the server applies them), so the attribute value alone is wrong.
         double base = player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE) + addedAttackDamage(weapon)
-                + effectLevel(player, MobEffects.STRENGTH) * 3.0 - effectLevel(player, MobEffects.WEAKNESS) * 4.0;
+                + effectLevel(player, Lookups.strength()) * 3.0 - effectLevel(player, Lookups.weakness()) * 4.0;
         float damage = (float) Math.max(0, base) + enchantmentBonus(weapon, target, enchantments);
 
         float armor = target.getArmorValue();
@@ -184,7 +184,7 @@ final class LootingSwap {
         float effectiveArmor = Mth.clamp(armor - damage / toughnessFactor, armor * 0.2F, 20.0F);
         damage *= 1.0F - effectiveArmor / 25.0F;
 
-        MobEffectInstance resistance = target.getEffect(MobEffects.RESISTANCE);
+        MobEffectInstance resistance = target.getEffect(Lookups.resistance());
         if (resistance != null) {
             damage *= Math.max(0.0F, 1.0F - (resistance.getAmplifier() + 1) * 0.2F);
         }
@@ -214,10 +214,10 @@ final class LootingSwap {
         if (sharpness > 0) {
             bonus += 0.5F * sharpness + 0.5F;
         }
-        if (target.getType().is(EntityTypeTags.SENSITIVE_TO_SMITE)) {
+        if (Lookups.isMobOfTag(target, EntityTypeTags.SENSITIVE_TO_SMITE)) {
             bonus += 2.5F * level(enchantments, Enchantments.SMITE, weapon);
         }
-        if (target.getType().is(EntityTypeTags.SENSITIVE_TO_BANE_OF_ARTHROPODS)) {
+        if (Lookups.isMobOfTag(target, EntityTypeTags.SENSITIVE_TO_BANE_OF_ARTHROPODS)) {
             bonus += 2.5F * level(enchantments, Enchantments.BANE_OF_ARTHROPODS, weapon);
         }
         return bonus;
@@ -229,6 +229,6 @@ final class LootingSwap {
     }
 
     private static Holder<Enchantment> holder(Registry<Enchantment> enchantments, ResourceKey<Enchantment> key) {
-        return enchantments.get(key).orElse(null);
+        return Lookups.enchantment(enchantments, key);
     }
 }

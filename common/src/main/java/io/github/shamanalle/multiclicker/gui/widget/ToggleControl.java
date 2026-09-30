@@ -1,7 +1,7 @@
 package io.github.shamanalle.multiclicker.gui.widget;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import io.github.shamanalle.multiclicker.compat.Canvas;
 import io.github.shamanalle.multiclicker.gui.Anim;
 import io.github.shamanalle.multiclicker.gui.Draw;
 import io.github.shamanalle.multiclicker.gui.Theme;
@@ -25,7 +25,7 @@ public class ToggleControl extends SettingControl {
     }
 
     @Override
-    protected void draw(GuiGraphics g, Font font, int mouseX, int mouseY, float delta) {
+    protected void draw(Canvas g, Font font, int mouseX, int mouseY, float delta) {
         float on = knob.update(setting.get() ? 1 : 0, delta, 18);
         float hovered = hover.update(isMouseOver(mouseX, mouseY) ? 1 : 0, delta, 20);
         int off = Theme.mix(Theme.CONTROL, Theme.CONTROL_HOVER, hovered);

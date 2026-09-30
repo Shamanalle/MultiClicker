@@ -4,9 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import io.github.shamanalle.multiclicker.compat.Ids;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,27 +50,21 @@ public class ListSetting extends Setting<List<String>> {
         }
     }
 
-    public boolean contains(ResourceLocation id) {
-        return value.contains(id.toString());
+    public boolean contains(String id) {
+        return value.contains(id);
     }
 
     public boolean contains(Item item) {
-        return contains(BuiltInRegistries.ITEM.getKey(item));
+        return contains(BuiltInRegistries.ITEM.getKey(item).toString());
     }
 
     public boolean contains(Block block) {
-        return contains(BuiltInRegistries.BLOCK.getKey(block));
+        return contains(BuiltInRegistries.BLOCK.getKey(block).toString());
     }
 
     /** Whether the id refers to an existing item/block (unknown ids are highlighted in the UI). */
     public boolean isKnown(String id) {
-        ResourceLocation location = ResourceLocation.tryParse(id);
-        if (location == null) {
-            return false;
-        }
-        return kind == Kind.ITEM
-                ? BuiltInRegistries.ITEM.containsKey(location)
-                : BuiltInRegistries.BLOCK.containsKey(location);
+        return kind == Kind.ITEM ? Ids.itemExists(id) : Ids.blockExists(id);
     }
 
     /** Lower-cases the id and adds the {@code minecraft:} namespace when omitted. */

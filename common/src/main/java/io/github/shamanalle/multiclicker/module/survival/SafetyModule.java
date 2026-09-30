@@ -1,11 +1,11 @@
 package io.github.shamanalle.multiclicker.module.survival;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Session;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -73,11 +73,7 @@ public class SafetyModule extends Module {
         mod.setActive(false, reason);
         if (action.get() == Action.DISCONNECT) {
             Component message = Component.translatable("multiclicker.message.safety.disconnected", reason);
-            if (mc.isLocalServer() || mc.getConnection() == null) {
-                PauseScreen.disconnectFromWorld(mc, message);
-            } else {
-                mc.getConnection().getConnection().disconnect(message);
-            }
+            Session.disconnect(mc, message);
         }
     }
 }

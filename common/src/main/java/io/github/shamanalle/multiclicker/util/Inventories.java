@@ -3,8 +3,9 @@ package io.github.shamanalle.multiclicker.util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
+import io.github.shamanalle.multiclicker.compat.Containers;
+import io.github.shamanalle.multiclicker.compat.Slots;
 
 /** Inventory helpers that go through vanilla container clicks, so the server stays in sync. */
 public final class Inventories {
@@ -32,21 +33,17 @@ public final class Inventories {
     }
 
     public static void swapWithOffhand(Minecraft mc, int inventoryIndex) {
-        LocalPlayer player = mc.player;
-        mc.gameMode.handleInventoryMouseClick(player.inventoryMenu.containerId,
-                toMenuSlot(inventoryIndex), OFFHAND_BUTTON, ClickType.SWAP, player);
+        Containers.swap(mc, toMenuSlot(inventoryIndex), OFFHAND_BUTTON);
     }
 
     public static void dropStack(Minecraft mc, int inventoryIndex) {
-        LocalPlayer player = mc.player;
-        mc.gameMode.handleInventoryMouseClick(player.inventoryMenu.containerId,
-                toMenuSlot(inventoryIndex), 1, ClickType.THROW, player);
+        Containers.throwStack(mc, toMenuSlot(inventoryIndex));
     }
 
     /** Selects a hotbar slot; vanilla sends the slot change to the server on its next tick. */
     public static void selectSlot(LocalPlayer player, int slot) {
         if (slot >= 0 && slot < HOTBAR_SIZE) {
-            player.getInventory().setSelectedSlot(slot);
+            Slots.select(player.getInventory(), slot);
         }
     }
 

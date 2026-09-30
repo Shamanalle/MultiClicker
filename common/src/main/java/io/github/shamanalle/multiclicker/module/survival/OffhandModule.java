@@ -6,6 +6,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -116,7 +117,7 @@ public class OffhandModule extends Module {
      * item the player is holding. Food picks the most nourishing stack.
      */
     private static int find(LocalPlayer player, Want want, boolean skipHotbar) {
-        int selected = player.getInventory().getSelectedSlot();
+        int selected = Slots.selected(player.getInventory());
         int best = -1;
         float bestScore = -1;
         for (int i = 0; i < Inventories.MAIN_SIZE; i++) {

@@ -1,0 +1,78 @@
+plugins {
+    id 'fabric-loom' version '1.18.2' apply false
+}
+
+// Per-version settings (Fabric API, Mod Menu, source overlays, Java) come from versions/<minecraft_version>.properties.
+def versionFile = file("versions/${project.minecraft_version}.properties")
+if (!versionFile.exists()) {
+    throw new GradleException("Minecraft ${project.minecraft_version} is not supported: ${versionFile} is missing")
+}
+def versionProps = new Properties()
+versionFile.withInputStream { versionProps.load(it) }
+versionProps.each { key, value -> ext.set(key as String, value) }
+
+allprojects {
+    group = rootProject.maven_group
+    version = rootProject.mod_version
+}
+
+subprojects {
+    version = project.mod_version
+    group = project.maven_group
+
+    apply plugin: 'fabric-loom'
+
+    loom {
+        noIntermediateMappings()
+        enableTransitiveAccessWideners = false
+    }
+
+    base {
+        archivesName = "$rootProject.archives_name-$project.name"
+    }
+
+    repositories {
+        maven { url "https://maven.terraformersmc.com/releases/" }
+    }
+
+    dependencies {
+        minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
+        mappings loom.layered {
+            mappings(rootProject.file("mappings.tiny"))
+        }
+    }
+
+    java {
+        withSourcesJar()
+
+        sourceCompatibility = JavaVersion.toVersion(rootProject.java_version)
+        targetCompatibility = JavaVersion.toVersion(rootProject.java_version)
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        it.options.release = Integer.parseInt(rootProject.java_version)
+        it.options.encoding = "UTF-8"
+    }
+
+    tasks.withType(net.fabricmc.loom.task.RemapSourcesJarTask).configureEach {
+        enabled = false
+    }
+
+    // Version specific code: src/compat/<name>/java of each module is layered over src/main/java
+    // in the order given by "compat" (a later overlay replaces a file of the same name).
+    def compatDir = layout.buildDirectory.dir('compat/java')
+    def mergeCompat = tasks.register('mergeCompat', Sync) {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        into compatDir
+        rootProject.compat.split(',').each { name -> from(project.file("src/compat/$name/java")) }
+    }
+    sourceSets.main.java.srcDir(compatDir)
+    tasks.withType(JavaCompile).configureEach { dependsOn mergeCompat }
+    tasks.withType(Jar).configureEach { dependsOn mergeCompat }
+
+    jar {
+        from(rootProject.file("LICENSE")) {
+            rename { "${it}_${rootProject.archives_name}" }
+        }
+    }
+}
