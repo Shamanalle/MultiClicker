@@ -18,30 +18,95 @@
 
 </div>
 
-- **Plays like a hand on the mouse.** The mod presses the game's own keys, so the attack cooldown,
-  block breaking and server sync work exactly as in normal play. Keys you hold yourself are never
-  released.
-- **The helpers don't fight each other.** Auto eat, auto tool, the offhand and the clicker take turns
-  with the hotbar. None of them swaps an item out from under another, and each gives your slot back.
-- **Tested in a real game.** Every push starts Minecraft in CI and plays 14 scenarios in a real
-  world: fights, eating, mining, fishing, safety stops.
+MultiClicker presses the game's own keys for you: attack, use and jump, with a click rhythm you set.
+Around the clicker sit the helpers an AFK session needs: auto eat, auto fish, auto tool, an offhand
+manager, a safety stop and an anti-AFK.
+
+## Quick start
+
+1. Install [Fabric Loader](https://fabricmc.net/use/) for Minecraft **1.21.8**.
+2. Put [Fabric API](https://modrinth.com/mod/fabric-api) and
+   [`MultiClicker-fabric-<version>.jar`](https://github.com/Shamanalle/MultiClicker/releases/latest)
+   into the `mods` folder. Optional: [Mod Menu](https://modrinth.com/mod/modmenu) adds a settings
+   button to the mod list.
+3. Join a world and press <kbd>O</kbd> to open the menu, <kbd>I</kbd> to turn the mod on or off.
+
+Pick a ready-made setup under **Profiles → Presets**, then press <kbd>I</kbd>:
+
+| Preset | What it sets up |
+|:--|:--|
+| **Mob farm** | Attacks on full charge with a small random delay. Passive mobs, pets and named mobs are left alone. Auto eat and anti-AFK are on. |
+| **Mining** | The attack key is held, blocks are broken, auto tool picks the pickaxe, the clicker stops when the inventory is full. Auto eat is on. |
+| **Fishing** | The clicker is off, auto fish reels in and casts again. Auto eat and anti-AFK are on. |
+
+Your own setups can be saved as profiles and loaded again later.
+
+> Many multiplayer servers don't allow auto clickers. Check the rules before using the mod online.
 
 ## Features
 
-| | Module | What it does |
-|:--|:--|:--|
-| **Clicker** | Auto clicker | Separate attack, use and jump channels. Each can click or hold, with its own interval, hold time and random delay. It can wait for a full weapon charge, strike the killing blow with your Looting weapon, lock the camera, stop after an attack or time limit, and keep running while the window is in the background. |
-| **Combat** | Target filter | Players, hostile, neutral and passive mobs, other entities. It can skip babies, named mobs, pets and invisible mobs. Armor stands are never hit by default. |
-| **Survival** | Safety | Stops the mod, or leaves the server, when your health is low, when you take any damage, or when a player comes near. |
-| | Offhand | Keeps the most needed item in the offhand, in this order: totem when health is low, food when you're hungry, a torch while you hold a pickaxe, otherwise a shield. |
-| | Auto eat | Eats the best safe food from the hotbar and gives your slot back. It skips harmful and golden food and never opens the chest in front of you. |
-| **Automation** | Auto fish | Reels in on a bite and casts again. It recasts after a long wait, protects the rod and has a catch limit. |
-| | Anti-AFK | Jumps, sneaks, swings, looks around or takes a step at random intervals. |
-| | Auto walk | Walks forward. It can sprint and jump over obstacles. |
-| | Inventory cleaner | Throws out junk from a list and never touches the hotbar. |
-| **Mining** | Mining rules | Whitelist or blacklist of blocks. It can stop when the inventory is full and protect the tool from breaking. |
-| | Auto tool | Picks the fastest hotbar tool for the block, taking Efficiency into account, then switches back. |
-| **Visuals** | HUD · Target highlight | A status panel with channels, clicks per second, attacks, kills, time, ping, TPS and FPS. The next target is outlined, filled or glowing. |
+Every option below has a tooltip in the menu. Right-click any setting to reset it.
+
+### Auto clicker
+- **Three channels: attack (LMB), use (RMB) and jump.** Each one can *click* or *hold* the key and has
+  its own interval, hold time, pause and random delay.
+- **Wait for full charge.** Attacks only when the weapon is charged, for full damage. Turn it off for
+  1.8-style PvP.
+- **Targets.** Only allowed creatures, creatures and blocks (mining), or anything, even into the air.
+- **Pause while using items.** No attacks while you eat, drink, block or draw a bow.
+- **Looting finishing blow.** Predicts whether the next hit kills. If so, it switches to the hotbar
+  weapon with the best Looting, waits for it to charge, hits and switches back.
+- **Start delay**, **attack limit** and **time limit**: the mod turns itself off when they run out.
+- **Work in background.** The game keeps running when its window loses focus.
+- **Lock camera.** Mouse movement doesn't turn the camera while the mod is on.
+- Keys you hold yourself are never released, and the clicker pauses while a screen is open.
+
+### Target filter
+Players, hostile, neutral and passive mobs and other entities (boats, minecarts, armor stands, end
+crystals) are switched separately. On top of that: ignore babies, named mobs, pets and invisible
+mobs.
+
+### Survival
+- **Safety.** Stops the mod, or leaves the server, when your health drops to a threshold, when you
+  take any damage, or when another player comes within a set distance.
+- **Offhand.** Keeps the most needed item there, in this order: a totem at low health, food when
+  you're hungry, a torch while you hold a pickaxe, otherwise a shield.
+- **Auto eat.** Eats the best safe food from the hotbar and gives your slot back. It can skip harmful
+  food (rotten flesh, pufferfish, suspicious stew…) and golden food. It never opens the chest, door or
+  villager you look at.
+
+### Automation
+- **Auto fish.** Reels in on a bite after a reaction time you set, casts again, recasts if nothing
+  bites for too long, stops when the rod is about to break or after a number of catches. The rod can
+  be in either hand.
+- **Anti-AFK.** Jump, sneak, swing, look around or step, at random intervals between a minimum and a
+  maximum. Each action can be turned off.
+- **Auto walk.** Walks forward, optionally sprinting and jumping over obstacles.
+- **Inventory cleaner.** Throws out the items from your junk list, one stack at a time. It never
+  touches the hotbar unless you allow it.
+
+### Mining
+- **Mining rules.** A whitelist or blacklist of blocks the clicker may break, edited in a list editor
+  with item icons. It can stop when the inventory is full and protect the held tool from breaking.
+- **Auto tool.** Picks the fastest hotbar tool for the block, taking Efficiency into account, skips
+  nearly broken tools and switches back afterwards.
+
+### Interface
+- **HUD.** A status panel in any corner with the scale you choose: active channels, clicks per second,
+  attacks, kills, session time, ping, server TPS, FPS and the list of active modules. Every line can be
+  hidden.
+- **Target highlight.** The creature about to be hit is outlined, filled or glowing, in a color you
+  pick.
+- **Menu.** Category sidebar, module cards, instant search (also by English names), animated controls,
+  tooltips and a list editor. It adapts to the window, and on small screens the sidebar shrinks to icons.
+- **Feedback.** Accent color, a click sound and a message above the hotbar when the mod turns on or off.
+- **Profiles.** Save and load your own setups next to the built-in presets.
+
+### Working together
+The helpers take turns with the hotbar. Auto eat, the Looting swap, auto tool and the offhand never
+swap an item out from under each other, and each gives your slot back, unless you picked another one
+in the meantime. Every push starts Minecraft in CI and plays 14 scenarios in a real world: fights,
+eating, mining, fishing and safety stops.
 
 ## Screenshots
 
@@ -52,16 +117,6 @@
 | ![Presets and profiles](docs/images/en/profiles.png) | ![Block list editor](docs/images/en/list_editor.png) |
 | Ready-made presets and your own profiles | List editor: item icons, add the held item or the block you look at |
 
-The menu adapts to the window. On small screens the sidebar shrinks to icons.
-
-## Installation
-
-1. Install [Fabric Loader](https://fabricmc.net/use/) for Minecraft **1.21.8**.
-2. Put [Fabric API](https://modrinth.com/mod/fabric-api) and
-   [`MultiClicker-fabric-<version>.jar`](https://github.com/Shamanalle/MultiClicker/releases/latest)
-   into the `mods` folder.
-3. Optional: [Mod Menu](https://modrinth.com/mod/modmenu), which adds a settings button to the mod list.
-
 ## Controls
 
 | Key | Action |
@@ -69,26 +124,8 @@ The menu adapts to the window. On small screens the sidebar shrinks to icons.
 | <kbd>I</kbd> | Turn the mod on / off |
 | <kbd>O</kbd> | Open the settings |
 
-You can rebind them under *Options → Controls → Key Binds → MultiClicker*.
-
-In the menu:
-- Start typing to search.
-- Right-click a setting to reset it.
-- Use the mouse wheel or the arrow keys to fine-tune sliders.
-
-## Quick start
-
-- **Mob farm.** Choose *Profiles → Mob farm*, look at the spawn spot and press <kbd>I</kbd>. Every
-  hit lands on full charge, and pets and named mobs are left alone.
-- **Looting.** Keep a Looting sword in the hotbar and turn on *Looting finishing blow*. Before the
-  hit that kills, the mod switches to that sword, waits for it to charge, strikes and switches back.
-- **AFK mining.** Choose *Profiles → Mining*. The clicker holds attack, auto tool picks the pickaxe,
-  and the clicker stops when the inventory is full.
-- **Fishing.** Choose *Profiles → Fishing*, hold a rod and press <kbd>I</kbd>.
-
-The clicker pauses and lets go of the keys whenever a screen is open: inventory, chat or menu.
-
-> Many multiplayer servers don't allow auto clickers. Check the rules before using the mod online.
+Rebind them under *Options → Controls → Key Binds → MultiClicker*. In the menu, start typing to
+search, and use the mouse wheel or the arrow keys to fine-tune sliders.
 
 ## Languages
 
