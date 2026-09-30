@@ -18,9 +18,9 @@
 
 </div>
 
-MultiClicker presses the game's own keys for you: attack, use and jump, with a click rhythm you set.
-Around the clicker sit the helpers an AFK session needs: auto eat, auto fish, auto tool, an offhand
-manager, a safety stop and an anti-AFK.
+Auto clicker mod for Minecraft 1.21.8 (Fabric). Clicks the attack, use and jump keys at a rhythm you set.
+Includes modules for AFK farming, mining and fishing: auto eat, auto fish, auto tool, offhand, safety
+stop, anti-AFK and others.
 
 ## Quick start
 
@@ -39,13 +39,13 @@ Pick a ready-made setup under **Profiles → Presets**, then press <kbd>I</kbd>:
 | **Mining** | The attack key is held, blocks are broken, auto tool picks the pickaxe, the clicker stops when the inventory is full. Auto eat is on. |
 | **Fishing** | The clicker is off, auto fish reels in and casts again. Auto eat and anti-AFK are on. |
 
-Your own setups can be saved as profiles and loaded again later.
+Your own settings can be saved as profiles.
 
 > Many multiplayer servers don't allow auto clickers. Check the rules before using the mod online.
 
 ## Features
 
-Every option below has a tooltip in the menu. Right-click any setting to reset it.
+Every option has a tooltip in the menu. Right-click a setting to reset it.
 
 ### Auto clicker
 - **Three channels: attack (LMB), use (RMB) and jump.** Each one can *click* or *hold* the key and has
@@ -59,7 +59,7 @@ Every option below has a tooltip in the menu. Right-click any setting to reset i
 - **Start delay**, **attack limit** and **time limit**: the mod turns itself off when they run out.
 - **Work in background.** The game keeps running when its window loses focus.
 - **Lock camera.** Mouse movement doesn't turn the camera while the mod is on.
-- Keys you hold yourself are never released, and the clicker pauses while a screen is open.
+- Keys you hold yourself are not released. The clicker pauses while a screen is open.
 
 ### Target filter
 Players, hostile, neutral and passive mobs and other entities (boats, minecarts, armor stands, end
@@ -69,9 +69,9 @@ mobs.
 ### Survival
 - **Safety.** Stops the mod, or leaves the server, when your health drops to a threshold, when you
   take any damage, or when another player comes within a set distance.
-- **Offhand.** Keeps the most needed item there, in this order: a totem at low health, food when
+- **Offhand.** Keeps one item in the offhand, by priority: a totem at low health, food when
   you're hungry, a torch while you hold a pickaxe, otherwise a shield.
-- **Auto eat.** Eats the best safe food from the hotbar and gives your slot back. It can skip harmful
+- **Auto eat.** Eats the best safe food from the hotbar, then returns to the previous slot. It can skip harmful
   food (rotten flesh, pufferfish, suspicious stew…) and golden food. It never opens the chest, door or
   villager you look at.
 
@@ -97,16 +97,10 @@ mobs.
   hidden.
 - **Target highlight.** The creature about to be hit is outlined, filled or glowing, in a color you
   pick.
-- **Menu.** Category sidebar, module cards, instant search (also by English names), animated controls,
-  tooltips and a list editor. It adapts to the window, and on small screens the sidebar shrinks to icons.
-- **Feedback.** Accent color, a click sound and a message above the hotbar when the mod turns on or off.
-- **Profiles.** Save and load your own setups next to the built-in presets.
-
-### Working together
-The helpers take turns with the hotbar. Auto eat, the Looting swap, auto tool and the offhand never
-swap an item out from under each other, and each gives your slot back, unless you picked another one
-in the meantime. Every push starts Minecraft in CI and plays 14 scenarios in a real world: fights,
-eating, mining, fishing and safety stops.
+- **Menu.** Categories, module cards, search (also by English names), tooltips and a list editor with
+  item icons. Fits the window size; on small screens the sidebar turns into icons.
+- **Feedback.** Accent color, a sound and a message above the hotbar when the mod turns on or off.
+- **Profiles.** Save your settings under a name and load them later.
 
 ## Screenshots
 
