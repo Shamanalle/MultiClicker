@@ -13,7 +13,7 @@ final class WorldHook {
     static void register() {
         LevelRenderEvents.AFTER_TRANSLUCENT_FEATURES.register(context -> {
             Minecraft mc = Minecraft.getInstance();
-            HighlightRenderer.render(new Shapes.Sink(context.poseStack(), context.bufferSource()), Shapes.cameraPosition(mc.gameRenderer.getMainCamera()),
+            HighlightRenderer.render(new Shapes.Sink(context.poseStack(), context.submitNodeCollector()), context.levelState().cameraRenderState.pos,
                     mc.getDeltaTracker().getGameTimeDeltaPartialTick(false));
         });
     }

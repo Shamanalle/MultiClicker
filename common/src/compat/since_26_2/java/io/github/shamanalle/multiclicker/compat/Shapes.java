@@ -3,7 +3,7 @@ package io.github.shamanalle.multiclicker.compat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -18,11 +18,11 @@ public final class Shapes {
     /** Where the shapes of one frame are drawn. */
     public static final class Sink {
         final PoseStack poseStack;
-        final MultiBufferSource buffers;
+        final SubmitNodeCollector collector;
 
-        public Sink(PoseStack poseStack, MultiBufferSource buffers) {
+        public Sink(PoseStack poseStack, SubmitNodeCollector collector) {
             this.poseStack = poseStack;
-            this.buffers = buffers;
+            this.collector = collector;
         }
     }
 
@@ -31,8 +31,11 @@ public final class Shapes {
     }
 
     public static void filledBox(Sink sink, AABB box, float r, float g, float b, float a) {
-        VertexConsumer consumer = sink.buffers.getBuffer(RenderTypes.debugFilledBox());
-        PoseStack.Pose pose = sink.poseStack.last();
+        sink.collector.submitCustomGeometry(sink.poseStack, RenderTypes.debugFilledBox(),
+                (pose, consumer) -> fill(consumer, pose, box, r, g, b, a));
+    }
+
+    private static void fill(VertexConsumer consumer, PoseStack.Pose pose, AABB box, float r, float g, float b, float a) {
         float x0 = (float) box.minX, y0 = (float) box.minY, z0 = (float) box.minZ;
         float x1 = (float) box.maxX, y1 = (float) box.maxY, z1 = (float) box.maxZ;
         // The pipeline does not cull faces, so the winding order does not matter.
@@ -45,8 +48,11 @@ public final class Shapes {
     }
 
     public static void lineBox(Sink sink, AABB box, float r, float g, float b, float a) {
-        VertexConsumer consumer = sink.buffers.getBuffer(RenderTypes.lines());
-        PoseStack.Pose pose = sink.poseStack.last();
+        sink.collector.submitCustomGeometry(sink.poseStack, RenderTypes.lines(),
+                (pose, consumer) -> outline(consumer, pose, box, r, g, b, a));
+    }
+
+    private static void outline(VertexConsumer consumer, PoseStack.Pose pose, AABB box, float r, float g, float b, float a) {
         float x0 = (float) box.minX, y0 = (float) box.minY, z0 = (float) box.minZ;
         float x1 = (float) box.maxX, y1 = (float) box.maxY, z1 = (float) box.maxZ;
         // Four edges along each axis.

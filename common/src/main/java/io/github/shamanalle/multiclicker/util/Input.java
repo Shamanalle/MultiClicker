@@ -7,7 +7,6 @@ import net.minecraft.client.ToggleKeyMapping;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
-import org.lwjgl.glfw.GLFW;
 import io.github.shamanalle.multiclicker.compat.Keys;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Session;
@@ -68,17 +67,7 @@ public final class Input {
             return false;
         }
         InputConstants.Key key = ((KeyMappingAccessor) mapping).multiclicker$getKey();
-        return switch (key.getType()) {
-            case MOUSE -> switch (key.getValue()) {
-                case GLFW.GLFW_MOUSE_BUTTON_LEFT -> mc.mouseHandler.isLeftPressed();
-                case GLFW.GLFW_MOUSE_BUTTON_RIGHT -> mc.mouseHandler.isRightPressed();
-                case GLFW.GLFW_MOUSE_BUTTON_MIDDLE -> mc.mouseHandler.isMiddlePressed();
-                default -> Keys.isMouseDown(mc, key.getValue());
-            };
-            case KEYSYM -> key.getValue() != InputConstants.UNKNOWN.getValue()
-                    && Keys.isKeyDown(mc, key.getValue());
-            case SCANCODE -> false;
-        };
+        return Keys.isDown(mc, key);
     }
 
     /** True while the player is steering the character with movement keys. */

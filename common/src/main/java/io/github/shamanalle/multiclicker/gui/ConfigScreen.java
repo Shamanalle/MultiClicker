@@ -10,8 +10,8 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import com.mojang.blaze3d.platform.InputConstants;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Canvas;
 import io.github.shamanalle.multiclicker.compat.Gfx;
@@ -694,14 +694,14 @@ public class ConfigScreen extends ModScreen {
 
     @Override
     protected boolean pressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_F && Keys.controlDown()) {
+        if (keyCode == InputConstants.KEY_F && Keys.controlDown()) {
             setFocused(search);
             search.setFocused(true);
             return true;
         }
         if (!search.isFocused() && hoverKey instanceof Setting<?> setting
-                && (keyCode == GLFW.GLFW_KEY_LEFT || keyCode == GLFW.GLFW_KEY_RIGHT)) {
-            return control(setting).adjust(keyCode == GLFW.GLFW_KEY_RIGHT ? 1 : -1);
+                && (keyCode == InputConstants.KEY_LEFT || keyCode == InputConstants.KEY_RIGHT)) {
+            return control(setting).adjust(keyCode == InputConstants.KEY_RIGHT ? 1 : -1);
         }
         return super.pressed(keyCode, scanCode, modifiers);
     }

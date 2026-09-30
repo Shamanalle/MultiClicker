@@ -32,6 +32,8 @@ jobs:
           - { mc: "26.1", java: 25 }
           - { mc: "26.1.1", java: 25 }
           - { mc: "26.1.2", java: 25 }
+          - { mc: "26.2", java: 25 }
+          - { mc: "26.3", java: 25 }
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

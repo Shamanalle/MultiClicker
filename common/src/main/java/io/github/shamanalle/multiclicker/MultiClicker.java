@@ -6,8 +6,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
+import com.mojang.blaze3d.platform.InputConstants;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.github.shamanalle.multiclicker.compat.Keys;
@@ -50,8 +50,8 @@ public final class MultiClicker {
     @Nullable
     private static MultiClicker instance;
 
-    public final KeyMapping toggleKey = Keys.keyMapping("key.multiclicker.toggle", GLFW.GLFW_KEY_I);
-    public final KeyMapping menuKey = Keys.keyMapping("key.multiclicker.menu", GLFW.GLFW_KEY_O);
+    public final KeyMapping toggleKey = Keys.keyMapping("key.multiclicker.toggle", InputConstants.KEY_I);
+    public final KeyMapping menuKey = Keys.keyMapping("key.multiclicker.menu", InputConstants.KEY_O);
 
     private final ClickerModule clicker = new ClickerModule();
     private final TargetFilterModule targetFilter = new TargetFilterModule();

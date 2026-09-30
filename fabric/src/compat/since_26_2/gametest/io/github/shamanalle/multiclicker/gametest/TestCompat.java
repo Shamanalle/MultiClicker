@@ -10,7 +10,7 @@ final class TestCompat {
     }
 
     static void waitForChunks(TestSingleplayerContext world) {
-        world.getClientWorld().waitForChunksRender();
+        world.getConnection().waitForChunksRender();
     }
 
     static boolean isHusk(Entity entity) {
@@ -18,10 +18,10 @@ final class TestCompat {
     }
 
     static void clearChat(Minecraft mc) {
-        mc.gui.getChat().clearMessages(false);
+        mc.gui.hud.getChat().clearMessages(false);
     }
 
     static boolean overlayGone(Minecraft mc) {
-        return mc.getOverlay() == null;
+        return mc.gui.overlay() == null;
     }
 }

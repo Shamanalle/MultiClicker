@@ -20,6 +20,20 @@ public final class Keys {
         return GLFW.glfwGetMouseButton(mc.getWindow().handle(), button) == GLFW.GLFW_PRESS;
     }
 
+    /** Whether the player physically holds the key or mouse button (simulated presses do not count). */
+    public static boolean isDown(Minecraft mc, InputConstants.Key key) {
+        return switch (key.getType()) {
+            case MOUSE -> switch (key.getValue()) {
+                case InputConstants.MOUSE_BUTTON_LEFT -> mc.mouseHandler.isLeftPressed();
+                case InputConstants.MOUSE_BUTTON_RIGHT -> mc.mouseHandler.isRightPressed();
+                case InputConstants.MOUSE_BUTTON_MIDDLE -> mc.mouseHandler.isMiddlePressed();
+                default -> isMouseDown(mc, key.getValue());
+            };
+            case KEYSYM -> key.getValue() != InputConstants.UNKNOWN.getValue() && isKeyDown(mc, key.getValue());
+            case SCANCODE -> false;
+        };
+    }
+
     public static boolean shiftDown() {
         Minecraft mc = Minecraft.getInstance();
         return isKeyDown(mc, GLFW.GLFW_KEY_LEFT_SHIFT) || isKeyDown(mc, GLFW.GLFW_KEY_RIGHT_SHIFT);

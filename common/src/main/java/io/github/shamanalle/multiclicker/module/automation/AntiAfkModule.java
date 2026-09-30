@@ -3,9 +3,9 @@ package io.github.shamanalle.multiclicker.module.automation;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.InteractionHand;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Screens;
+import io.github.shamanalle.multiclicker.compat.Session;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -94,7 +94,7 @@ public class AntiAfkModule extends Module {
                 else if (tick >= 5) finishAction(mc);
             }
             case SWING -> {
-                player.swing(InteractionHand.MAIN_HAND);
+                Session.swing(player);
                 finishAction(mc);
             }
             case ROTATE -> {

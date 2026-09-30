@@ -1,9 +1,6 @@
 package io.github.shamanalle.multiclicker.render;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -16,7 +13,7 @@ public final class HighlightRenderer {
     private HighlightRenderer() {
     }
 
-    public static void render(PoseStack poseStack, MultiBufferSource buffers, Camera camera, float partialTick) {
+    public static void render(Shapes.Sink sink, Vec3 cameraPosition, float partialTick) {
         MultiClicker mod = MultiClicker.get();
         if (mod == null) {
             return;
@@ -31,7 +28,7 @@ public final class HighlightRenderer {
         }
 
         // Interpolate between ticks so the box follows the entity smoothly, then make it camera-relative.
-        Vec3 offset = target.getPosition(partialTick).subtract(target.position()).subtract(Shapes.cameraPosition(camera));
+        Vec3 offset = target.getPosition(partialTick).subtract(target.position()).subtract(cameraPosition);
         AABB box = target.getBoundingBox().move(offset).inflate(0.05);
 
         int color = highlight.color();
@@ -40,8 +37,8 @@ public final class HighlightRenderer {
         float b = (color & 0xFF) / 255.0F;
 
         if (highlight.style.get() == HighlightModule.Style.FILLED) {
-            Shapes.filledBox(poseStack, buffers, box, r, g, b, 0.22F);
+            Shapes.filledBox(sink, box, r, g, b, 0.22F);
         }
-        Shapes.lineBox(poseStack, buffers, box, r, g, b, 1.0F);
+        Shapes.lineBox(sink, box, r, g, b, 1.0F);
     }
 }

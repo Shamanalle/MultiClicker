@@ -13,7 +13,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -151,7 +150,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         give(server, 0, new ItemStack(Items.IRON_SWORD));
         server.runCommand("summon minecraft:husk 0.5 -60 2.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b}");
         context.waitTicks(5);
-        check(context.computeOnClient(mc -> mc.hitResult instanceof EntityHitResult hit && hit.getEntity().getType() == EntityType.HUSK),
+        check(context.computeOnClient(mc -> mc.hitResult instanceof EntityHitResult hit && TestCompat.isHusk(hit.getEntity())),
                 "the husk is not under the crosshair, the scenario setup is wrong");
 
         activate(context);
@@ -532,7 +531,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         server.runCommand("summon minecraft:husk 0.5 -60 3.0 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}");
         server.runCommand("effect give @e[type=minecraft:husk] minecraft:resistance infinite 4 true");
         context.waitTicks(70);
-        context.runOnClient(mc -> mc.gui.getChat().clearMessages(false));
+        context.runOnClient(mc -> TestCompat.clearChat(mc));
         // Between two hits, so the husk does not flash red.
         waitUntil(context, "the sword to be charged again", 100, mc -> {
             float charge = mc.player.getAttackStrengthScale(0);
@@ -628,7 +627,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             mc.getLanguageManager().setSelected(code);
             mc.reloadResourcePacks();
         });
-        context.waitFor(mc -> mc.getOverlay() == null, 1200);
+        context.waitFor(mc -> TestCompat.overlayGone(mc), 1200);
         context.waitTicks(2);
     }
 
@@ -676,7 +675,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
 
     private static Entity husk(Minecraft mc) {
         for (Entity entity : mc.level.entitiesForRendering()) {
-            if (entity.getType() == EntityType.HUSK && entity instanceof LivingEntity husk && husk.isAlive() && !husk.isDeadOrDying()) {
+            if (TestCompat.isHusk(entity) && entity instanceof LivingEntity husk && husk.isAlive() && !husk.isDeadOrDying()) {
                 return husk;
             }
         }

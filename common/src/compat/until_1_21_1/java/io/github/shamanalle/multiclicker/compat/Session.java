@@ -15,6 +15,11 @@ public final class Session {
     private Session() {
     }
 
+    /** The arm swing of the main hand (also seen by other players). */
+    public static void swing(LocalPlayer player) {
+        player.swing(InteractionHand.MAIN_HAND);
+    }
+
     /** Leaves the current world or server, like the "Save and Quit" / "Disconnect" button. */
     public static void disconnect(Minecraft mc, Component message) {
         if (mc.getConnection() == null || mc.level == null) {
