@@ -77,3 +77,45 @@ jobs:
           name: gametest-logs-${{ matrix.mc }}
           path: fabric/build/run/clientGameTest/logs
           if-no-files-found: ignore
+
+  # Fabric API for Minecraft 1.21 to 1.21.3 has no client game test API, so these versions only get a
+  # smoke run: the game is started up to the resource reload and the log is checked for the mod
+  # loading and for mixin failures.
+  smoke:
+    name: Start-up check ${{ matrix.mc }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { mc: "1.21", java: 21 }
+          - { mc: "1.21.1", java: 21 }
+          - { mc: "1.21.2", java: 21 }
+          - { mc: "1.21.3", java: 21 }
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install virtual display
+        run: sudo apt-get update -q && sudo apt-get install -y -q xvfb libgl1-mesa-dri
+
+      - name: Start the game
+        run: |
+          chmod +x gradlew
+          xvfb-run -a -s "-screen 0 1280x720x24" timeout 240 ./gradlew :fabric:runClient --no-daemon -Pminecraft_version=${{ matrix.mc }} | tee smoke.log || true
+
+      - name: Check the log
+        run: |
+          grep -q "MultiClicker .* initialized" smoke.log
+          grep -q "Reloading ResourceManager" smoke.log
+          ! grep -E "InjectionError|Mixin apply failed|Critical injection failure|Mixin transformation of .* failed" smoke.log
