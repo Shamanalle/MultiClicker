@@ -7,9 +7,6 @@
   "authors": [
     "Multi Clicker Team"
   ],
-  "contributors": [
-    "Michael Hillcox (original AutoClicker)"
-  ],
   "contact": {
     "sources": "https://github.com/Shamanalle/MultiClicker",
     "issues": "https://github.com/Shamanalle/MultiClicker/issues"
@@ -19,10 +16,10 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "pro.mikey.autoclicker.fabric.MultiClickerFabric"
+      "io.github.shamanalle.multiclicker.fabric.MultiClickerFabric"
     ],
     "modmenu": [
-      "pro.mikey.autoclicker.fabric.ModMenuIntegration"
+      "io.github.shamanalle.multiclicker.fabric.ModMenuIntegration"
     ]
   },
   "mixins": [
