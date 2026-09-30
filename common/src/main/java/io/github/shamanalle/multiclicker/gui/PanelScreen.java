@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import io.github.shamanalle.multiclicker.compat.Canvas;
 import io.github.shamanalle.multiclicker.compat.ModScreen;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.gui.widget.FlatButton;
 
 import java.util.ArrayList;
@@ -101,6 +102,6 @@ public abstract class PanelScreen extends ModScreen {
 
     @Override
     public void onClose() {
-        minecraft.setScreen(parent);
+        Screens.open(minecraft, parent);
     }
 }

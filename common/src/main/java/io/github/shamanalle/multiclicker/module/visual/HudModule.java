@@ -7,6 +7,7 @@ import net.minecraft.client.resources.language.I18n;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Canvas;
 import io.github.shamanalle.multiclicker.compat.Gfx;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.gui.Draw;
 import io.github.shamanalle.multiclicker.gui.Theme;
 import io.github.shamanalle.multiclicker.module.Category;
@@ -54,7 +55,7 @@ public class HudModule extends Module {
     public void render(Canvas g, DeltaTracker deltaTracker) {
         Minecraft mc = Minecraft.getInstance();
         MultiClicker mod = MultiClicker.get();
-        if (!isEnabled() || mod == null || mc.player == null || mc.options.hideGui
+        if (!isEnabled() || mod == null || mc.player == null || Screens.hudHidden(mc)
                 || mc.getDebugOverlay().showDebugScreen()) {
             return;
         }
@@ -119,7 +120,7 @@ public class HudModule extends Module {
         if (!active) {
             status = I18n.get("multiclicker.hud.off");
             statusColor = Theme.TEXT_MUTED;
-        } else if (mc.screen != null) {
+        } else if (Screens.current(mc) != null) {
             status = I18n.get("multiclicker.hud.paused");
             statusColor = Theme.WARNING;
         } else {

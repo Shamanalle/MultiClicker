@@ -5,6 +5,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import io.github.shamanalle.multiclicker.compat.Canvas;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.gui.Anim;
 import io.github.shamanalle.multiclicker.gui.Draw;
 import io.github.shamanalle.multiclicker.gui.ListEditScreen;
@@ -41,7 +42,7 @@ public class ListControl extends SettingControl {
         if (!isMouseOver(mouseX, mouseY) || button != 0) {
             return false;
         }
-        Minecraft.getInstance().setScreen(new ListEditScreen(parent, setting));
+        Screens.open(Minecraft.getInstance(), new ListEditScreen(parent, setting));
         return true;
     }
 }

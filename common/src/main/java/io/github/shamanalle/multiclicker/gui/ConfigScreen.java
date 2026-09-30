@@ -17,6 +17,7 @@ import io.github.shamanalle.multiclicker.compat.Canvas;
 import io.github.shamanalle.multiclicker.compat.Gfx;
 import io.github.shamanalle.multiclicker.compat.Keys;
 import io.github.shamanalle.multiclicker.compat.ModScreen;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.gui.widget.SettingControl;
 import io.github.shamanalle.multiclicker.gui.widget.ToggleControl;
 import io.github.shamanalle.multiclicker.module.Category;
@@ -268,7 +269,7 @@ public class ConfigScreen extends ModScreen {
     @Override
     public void onClose() {
         mod.saveConfig();
-        minecraft.setScreen(parent);
+        Screens.open(minecraft, parent);
     }
 
     // --- Rendering ------------------------------------------------------------------------------
@@ -605,7 +606,7 @@ public class ConfigScreen extends ModScreen {
         }
         if (isOverSidebarItem(mouseX, mouseY, profilesItemY())) {
             playClick();
-            minecraft.setScreen(new ProfilesScreen(this));
+            Screens.open(minecraft, new ProfilesScreen(this));
             return true;
         }
 

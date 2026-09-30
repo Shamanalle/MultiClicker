@@ -25,6 +25,7 @@ import net.minecraft.world.phys.HitResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.config.Preset;
 import io.github.shamanalle.multiclicker.gui.ConfigScreen;
@@ -212,7 +213,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         activate(context);
         boolean[] openedContainer = {false};
         waitUntil(context, "the player to eat", 120, mc -> {
-            openedContainer[0] |= mc.screen instanceof AbstractContainerScreen<?>;
+            openedContainer[0] |= Screens.current(mc) instanceof AbstractContainerScreen<?>;
             return mc.player.getFoodData().getFoodLevel() > 6 && !MultiClicker.get().autoEat().isBusy();
         });
         check(!openedContainer[0], "eating opened the chest in front of the player");
@@ -482,7 +483,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
     private void languageScreenshots(ClientGameTestContext context, String code) {
         for (Category category : List.of(Category.CLICKER, Category.SURVIVAL, Category.AUTOMATION)) {
             context.setScreen(() -> new ConfigScreen(null));
-            context.runOnClient(mc -> ((ConfigScreen) mc.screen).showCategory(category));
+            context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).showCategory(category));
             parkCursor(context);
             context.takeScreenshot("lang_" + code + "_" + category.name().toLowerCase());
         }
@@ -541,7 +542,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
 
         for (Category category : List.of(Category.CLICKER, Category.SURVIVAL, Category.VISUAL)) {
             context.setScreen(() -> new ConfigScreen(null));
-            context.runOnClient(mc -> ((ConfigScreen) mc.screen).showCategory(category));
+            context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).showCategory(category));
             parkCursor(context);
             context.takeScreenshot("readme_" + lang + "_menu_" + category.name().toLowerCase());
         }
@@ -565,11 +566,11 @@ public class MultiClickerGameTest implements FabricClientGameTest {
     private void menuScreenshots(ClientGameTestContext context, String prefix) {
         for (Category category : Category.values()) {
             context.setScreen(() -> new ConfigScreen(null));
-            context.runOnClient(mc -> ((ConfigScreen) mc.screen).showCategory(category));
+            context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).showCategory(category));
             parkCursor(context);
             context.takeScreenshot(prefix + "_menu_" + category.name().toLowerCase());
         }
-        context.runOnClient(mc -> ((ConfigScreen) mc.screen).search("eat"));
+        context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).search("eat"));
         context.waitTicks(8);
         context.takeScreenshot(prefix + "_menu_search");
         context.setScreen(() -> new ProfilesScreen(new ConfigScreen(null)));

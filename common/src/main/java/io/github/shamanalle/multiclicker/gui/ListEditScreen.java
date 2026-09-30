@@ -163,9 +163,14 @@ public class ListEditScreen extends PanelScreen {
         if (!setting.isKnown(id)) {
             return ItemStack.EMPTY;
         }
-        return setting.kind() == ListSetting.Kind.ITEM
-                ? new ItemStack(Ids.item(id))
-                : new ItemStack(Ids.block(id).asItem());
+        try {
+            return setting.kind() == ListSetting.Kind.ITEM
+                    ? new ItemStack(Ids.item(id))
+                    : new ItemStack(Ids.block(id).asItem());
+        } catch (RuntimeException e) {
+            // Newer versions bind item data only after a world was loaded: no icon until then.
+            return ItemStack.EMPTY;
+        }
     }
 
     private boolean isInList(double mouseX, double mouseY) {

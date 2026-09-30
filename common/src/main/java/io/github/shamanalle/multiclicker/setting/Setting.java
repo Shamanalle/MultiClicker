@@ -1,9 +1,9 @@
 package io.github.shamanalle.multiclicker.setting;
 
 import com.google.gson.JsonElement;
-import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.module.Module;
 
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ public abstract class Setting<T> {
     @Nullable
     public Component description() {
         String descKey = translationKey() + ".desc";
-        return I18n.exists(descKey) ? Component.translatable(descKey) : null;
+        return Screens.hasTranslation(descKey) ? Component.translatable(descKey) : null;
     }
 
     public T get() {

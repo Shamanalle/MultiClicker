@@ -9,6 +9,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
 import io.github.shamanalle.multiclicker.compat.Keys;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Session;
 import io.github.shamanalle.multiclicker.mixin.KeyMappingAccessor;
 import io.github.shamanalle.multiclicker.mixin.ToggleKeyMappingAccessor;
@@ -63,7 +64,7 @@ public final class Input {
 
     public static boolean isPhysicallyDown(KeyMapping mapping) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.screen != null) {
+        if (Screens.current(mc) != null) {
             return false;
         }
         InputConstants.Key key = ((KeyMappingAccessor) mapping).multiclicker$getKey();

@@ -12,6 +12,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Lookups;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
@@ -57,7 +58,7 @@ public class AutoToolModule extends Module {
             previousSlot = -1;
             toolSlot = -1;
         }
-        boolean mining = mc.screen == null && mc.options.keyAttack.isDown()
+        boolean mining = Screens.current(mc) == null && mc.options.keyAttack.isDown()
                 && mc.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK;
         if (!mining) {
             if (toolSlot != -1 && ++idleTicks >= SWITCH_BACK_DELAY) {

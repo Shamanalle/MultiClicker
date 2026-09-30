@@ -10,6 +10,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: gametest-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   gametest:
     name: Client game tests ${{ matrix.mc }}

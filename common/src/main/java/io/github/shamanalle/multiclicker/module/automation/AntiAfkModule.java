@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -64,7 +65,7 @@ public class AntiAfkModule extends Module {
         }
         scheduleNext();
         // Skip while a menu is open or the player is moving on their own.
-        if (mc.screen != null || Input.isPlayerMoving(mc)) {
+        if (Screens.current(mc) != null || Input.isPlayerMoving(mc)) {
             return;
         }
         List<Action> pool = new ArrayList<>();

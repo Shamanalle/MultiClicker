@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.github.shamanalle.multiclicker.compat.Keys;
 import io.github.shamanalle.multiclicker.compat.Messages;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.config.ConfigManager;
 import io.github.shamanalle.multiclicker.gui.ConfigScreen;
 import io.github.shamanalle.multiclicker.module.Module;
@@ -190,12 +191,12 @@ public final class MultiClicker {
     /** Called at the start of every client tick, before vanilla processes key presses. */
     public void onClientTick(Minecraft mc) {
         while (menuKey.consumeClick()) {
-            mc.setScreen(new ConfigScreen(null));
+            Screens.open(mc, new ConfigScreen(null));
         }
         while (toggleKey.consumeClick()) {
             setActive(!active, null);
         }
-        if (!ui.welcomeShown.get() && mc.player != null && mc.screen == null) {
+        if (!ui.welcomeShown.get() && mc.player != null && Screens.current(mc) == null) {
             showWelcome(mc);
         }
         if (active && (mc.player == null || mc.level == null)) {

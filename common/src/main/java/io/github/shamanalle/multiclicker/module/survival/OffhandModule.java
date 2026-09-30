@@ -6,6 +6,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
@@ -85,7 +86,7 @@ public class OffhandModule extends Module {
             }
             // Only an emergency totem may interrupt eating, blocking or drawing a bow, or happen
             // while the player has the inventory open.
-            if (want != Want.TOTEM && (player.isUsingItem() || mc.screen != null)) {
+            if (want != Want.TOTEM && (player.isUsingItem() || Screens.current(mc) != null)) {
                 return;
             }
             // Auto eat eats from the hotbar: leave the food there for it.

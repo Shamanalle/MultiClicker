@@ -2,6 +2,7 @@ package io.github.shamanalle.multiclicker.module.automation;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -22,7 +23,7 @@ public class AutoWalkModule extends Module {
     @Override
     public void tick(Minecraft mc) {
         LocalPlayer player = mc.player;
-        if (mc.screen != null) {
+        if (Screens.current(mc) != null) {
             stop(mc);
             return;
         }

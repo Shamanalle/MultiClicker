@@ -9,6 +9,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
@@ -78,7 +79,7 @@ public class AutoEatModule extends Module {
             cooldown--;
             return;
         }
-        if (mc.screen != null || player.isCreative() || player.isSpectator()
+        if (Screens.current(mc) != null || player.isCreative() || player.isSpectator()
                 || player.getFoodData().getFoodLevel() > hunger.get() || player.isUsingItem()
                 || MultiClicker.get().clicker().isSwappingWeapon()) {
             return;
@@ -99,7 +100,7 @@ public class AutoEatModule extends Module {
 
     private void tickEating(Minecraft mc, LocalPlayer player) {
         timer++;
-        if (mc.screen != null || timer > EAT_TIMEOUT || Slots.selected(player.getInventory()) != foodSlot
+        if (Screens.current(mc) != null || timer > EAT_TIMEOUT || Slots.selected(player.getInventory()) != foodSlot
                 || !isFood(player.getMainHandItem())) {
             finish(mc);
             return;
