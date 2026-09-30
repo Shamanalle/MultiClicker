@@ -56,9 +56,10 @@ processResources {
     inputs.property 'version', project.version
     inputs.property 'minecraft_version', rootProject.minecraft_version
     inputs.property 'java_version', rootProject.java_version
+    inputs.property 'loader_min', rootProject.loader_min
 
     filesMatching('fabric.mod.json') {
-        expand version: project.version, minecraft_version: rootProject.minecraft_version, java_version: rootProject.java_version
+        expand version: project.version, minecraft_version: rootProject.minecraft_version, java_version: rootProject.java_version, loader_min: rootProject.loader_min
     }
 }
 
