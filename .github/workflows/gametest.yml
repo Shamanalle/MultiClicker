@@ -82,6 +82,18 @@ jobs:
           done
           exit 1
 
+      - name: Show diagnostics
+        if: always()
+        run: |
+          f=fabric/build/run/clientGameTest/logs/diag.txt
+          if [ -f "$f" ]; then
+            head -45 "$f"
+            echo "==== threads"
+            awk '/^"(Server thread|Render thread|Test thread|Worker-Main|Worker-Bootstrap)/{p=1;n=0} p{print; n++} n>22{p=0}' "$f" | cut -c1-200 | head -170
+          else
+            echo "no diag file"
+          fi
+
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
