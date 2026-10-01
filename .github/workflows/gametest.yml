@@ -72,12 +72,13 @@ jobs:
           # ("Timeout loading world"). A real failure of a scenario fails both attempts.
           mkdir -p fabric/build/run/clientGameTest/logs
           (
+            set +e +o pipefail
             for i in $(seq 1 900); do
               sleep 1
               n=$(grep -c 'World loading finished' gametest.log 2>/dev/null || true)
               if [ "${n:-0}" -ge 300 ]; then
                 echo "::group::STALL DIAGNOSTICS (after $i s, $n lines)"
-                nproc; free -m; uptime; top -b -n1 | head -25
+                nproc; free -m; uptime; (top -b -n1 | head -14) || true
                 pid=$(pgrep -f devlaunchinjector | head -1); echo "pid=$pid"
                 jcmd "$pid" Thread.print > /tmp/dump.txt 2>&1; echo "dump lines: $(wc -l < /tmp/dump.txt)"; head -3 /tmp/dump.txt | cut -c1-160
                 grep -A28 '^"Server thread"' /tmp/dump.txt | cut -c1-170
