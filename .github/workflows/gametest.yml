@@ -70,8 +70,13 @@ jobs:
           (
             for i in $(seq 1 900); do
               sleep 1
-              if [ "$(grep -c 'Preparing spawn area: 16%' gametest.log 2>/dev/null)" -ge 60 ]; then
-                { nproc; free -m; uptime; top -b -n1 | head -30; echo ====; pid=$(pgrep -f devlaunchinjector | head -1); echo "pid=$pid"; jcmd "$pid" Thread.print; } > fabric/build/run/clientGameTest/logs/diag.txt 2>&1
+              n=$(grep -c 'Preparing spawn area: 16%' gametest.log 2>/dev/null || true)
+              if [ "${n:-0}" -ge 60 ]; then
+                echo "::group::STALL DIAGNOSTICS (after $i s, $n lines)"
+                nproc; free -m; uptime; top -b -n1 | head -25
+                pid=$(pgrep -f devlaunchinjector | head -1); echo "pid=$pid"
+                jcmd "$pid" Thread.print 2>&1 | awk '/^"(Server thread|Render thread|Test thread|Worker-Main|Worker-Bootstrap|main)/{p=1;n=0} p{print; n++} n>20{p=0}' | cut -c1-180 | head -200
+                echo "::endgroup::"
                 break
               fi
             done
@@ -81,18 +86,6 @@ jobs:
             echo "::warning::Game test attempt $attempt failed"
           done
           exit 1
-
-      - name: Show diagnostics
-        if: always()
-        run: |
-          f=fabric/build/run/clientGameTest/logs/diag.txt
-          if [ -f "$f" ]; then
-            head -45 "$f"
-            echo "==== threads"
-            awk '/^"(Server thread|Render thread|Test thread|Worker-Main|Worker-Bootstrap)/{p=1;n=0} p{print; n++} n>22{p=0}' "$f" | cut -c1-200 | head -170
-          else
-            echo "no diag file"
-          fi
 
       - name: Upload screenshots
         if: always()
