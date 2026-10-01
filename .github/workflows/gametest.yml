@@ -79,7 +79,10 @@ jobs:
                 echo "::group::STALL DIAGNOSTICS (after $i s, $n lines)"
                 nproc; free -m; uptime; top -b -n1 | head -25
                 pid=$(pgrep -f devlaunchinjector | head -1); echo "pid=$pid"
-                jcmd "$pid" Thread.print 2>&1 | awk '/^"(Server thread|Render thread|Test thread|Worker-Main|Worker-Bootstrap|main)/{p=1;n=0} p{print; n++} n>20{p=0}' | cut -c1-180 | head -200
+                jcmd "$pid" Thread.print > /tmp/dump.txt 2>&1; echo "dump lines: $(wc -l < /tmp/dump.txt)"; head -3 /tmp/dump.txt | cut -c1-160
+                grep -A28 '^"Server thread"' /tmp/dump.txt | cut -c1-170
+                echo "---- worker/chunk threads"
+                grep -B1 -A14 -E '^"(Worker-Main-[0-9]+|Chunk|Render thread)' /tmp/dump.txt | cut -c1-170 | head -110
                 echo "::endgroup::"
                 break
               fi
