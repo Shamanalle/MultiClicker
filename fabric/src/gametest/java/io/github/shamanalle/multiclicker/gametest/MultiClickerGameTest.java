@@ -60,8 +60,11 @@ public class MultiClickerGameTest implements FabricClientGameTest {
 
     @Override
     public void runTest(ClientGameTestContext context) {
-        // A small view keeps world loading quick on slow software-rendered runners.
+        // The test server waits for the client between ticks, so on a software-rendered runner a slow
+        // frame slows the whole world load: the blurred background of the loading screen alone takes
+        // most of the CPU, and a small view keeps the rest cheap.
         context.runOnClient(client -> {
+            client.options.menuBackgroundBlurriness().set(0);
             client.options.renderDistance().set(4);
             client.options.simulationDistance().set(5);
         });
