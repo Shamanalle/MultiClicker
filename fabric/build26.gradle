@@ -69,3 +69,8 @@ jar {
     // One jar per Minecraft version: MultiClicker-fabric-<mod version>+<minecraft version>.jar
     archiveVersion = "${rootProject.mod_version}+${rootProject.minecraft_version}"
 }
+
+// The release jar comes out of remapJar (a pass-through on unobfuscated versions); it needs the same name.
+remapJar {
+    archiveVersion = "${rootProject.mod_version}+${rootProject.minecraft_version}"
+}
