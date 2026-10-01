@@ -19,10 +19,6 @@ jobs:
     name: Client game tests ${{ matrix.mc }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    # 1.21.9 to 1.21.11 stall while preparing the spawn area on the CI runners (the server stays at
-    # "Preparing spawn area: 16%"), although the same tests pass in full on a local machine.
-    # They are reported but do not block the run.
-    continue-on-error: ${{ matrix.flaky == true }}
     strategy:
       fail-fast: false
       matrix:
@@ -32,9 +28,9 @@ jobs:
           - { mc: "1.21.6", java: 21 }
           - { mc: "1.21.7", java: 21 }
           - { mc: "1.21.8", java: 21 }
-          - { mc: "1.21.9", java: 21, flaky: true }
-          - { mc: "1.21.10", java: 21, flaky: true }
-          - { mc: "1.21.11", java: 21, flaky: true }
+          - { mc: "1.21.9", java: 21 }
+          - { mc: "1.21.10", java: 21 }
+          - { mc: "1.21.11", java: 21 }
           - { mc: "26.1", java: 25 }
           - { mc: "26.1.1", java: 25 }
           - { mc: "26.1.2", java: 25 }
