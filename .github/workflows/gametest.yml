@@ -122,7 +122,13 @@ jobs:
       - name: Start the game
         run: |
           chmod +x gradlew
-          xvfb-run -a -s "-screen 0 1280x720x24" timeout 240 ./gradlew :fabric:runClient --no-daemon -Pminecraft_version=${{ matrix.mc }} | tee smoke.log || true
+          # The game is stopped by the timeout, so the exit code means nothing; the log check decides.
+          # A failed download of the game files (network) is the one thing worth a second try.
+          for attempt in 1 2; do
+            xvfb-run -a -s "-screen 0 1280x720x24" timeout 240 ./gradlew :fabric:runClient --no-daemon -Pminecraft_version=${{ matrix.mc }} | tee smoke.log || true
+            grep -q "DownloadException" smoke.log || break
+            echo "::warning::Download failed on attempt $attempt"
+          done
 
       - name: Check the log
         run: |
