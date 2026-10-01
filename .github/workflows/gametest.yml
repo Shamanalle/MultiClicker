@@ -70,8 +70,8 @@ jobs:
           (
             for i in $(seq 1 900); do
               sleep 1
-              n=$(grep -c 'Preparing spawn area: 16%' gametest.log 2>/dev/null || true)
-              if [ "${n:-0}" -ge 60 ]; then
+              n=$(grep -c 'World loading finished' gametest.log 2>/dev/null || true)
+              if [ "${n:-0}" -ge 300 ]; then
                 echo "::group::STALL DIAGNOSTICS (after $i s, $n lines)"
                 nproc; free -m; uptime; top -b -n1 | head -25
                 pid=$(pgrep -f devlaunchinjector | head -1); echo "pid=$pid"
