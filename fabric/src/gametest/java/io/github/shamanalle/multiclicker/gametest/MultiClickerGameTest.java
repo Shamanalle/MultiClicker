@@ -60,13 +60,10 @@ public class MultiClickerGameTest implements FabricClientGameTest {
 
     @Override
     public void runTest(ClientGameTestContext context) {
-        // A small view and a low frame rate keep world loading quick on slow software-rendered
-        // runners: unlimited frames of the loading screen take the CPU away from the server thread.
+        // A small view keeps world loading quick on slow software-rendered runners.
         context.runOnClient(client -> {
             client.options.renderDistance().set(4);
             client.options.simulationDistance().set(5);
-            client.options.framerateLimit().set(15);
-            client.options.enableVsync().set(false);
         });
         menuScreenshots(context, "title");
 
