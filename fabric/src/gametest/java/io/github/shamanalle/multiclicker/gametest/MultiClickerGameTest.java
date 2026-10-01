@@ -60,6 +60,11 @@ public class MultiClickerGameTest implements FabricClientGameTest {
 
     @Override
     public void runTest(ClientGameTestContext context) {
+        // A small view keeps world loading quick on slow software-rendered runners.
+        context.runOnClient(client -> {
+            client.options.renderDistance().set(4);
+            client.options.simulationDistance().set(4);
+        });
         menuScreenshots(context, "title");
 
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
