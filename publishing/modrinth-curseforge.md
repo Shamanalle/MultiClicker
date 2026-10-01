@@ -1,0 +1,329 @@
+# MultiClicker: texts for Modrinth and CurseForge
+
+Everything below is ready to paste. Check the category names in the upload form: both sites rename them
+from time to time.
+
+Contents: 1. Project settings · 2. English description · 3. Russian description · 4. Short texts for
+the version fields · 5. Upload checklist
+
+---
+
+## 1. Project settings
+
+| Field | Value |
+|:--|:--|
+| Name | `MultiClicker` |
+| Slug / URL | `multiclicker` (if it is taken: `multiclicker-fabric`) |
+| Summary (Modrinth, 256 characters max; CurseForge, 250 max) | see below |
+| Loader | Fabric |
+| Environment | Client: required. Server: unsupported (the mod is client-only) |
+| License | MIT |
+| Source code | https://github.com/Shamanalle/MultiClicker |
+| Issues | https://github.com/Shamanalle/MultiClicker/issues |
+| Dependencies | Fabric API: required. Mod Menu: optional |
+| Modrinth categories (up to 3) | Utility, Game mechanics |
+| CurseForge category | Utility & QoL (if the list has no such entry: Miscellaneous) |
+
+**Summary, English** (160 characters):
+
+> Auto clicker for Fabric with auto eat, auto fish, auto tool, offhand, safety stop and anti-AFK for mob farms, mining and fishing.
+
+**Summary, Russian** (for the Russian description or a translation of the project):
+
+> Автокликер для Fabric с авто-едой, авто-рыбалкой, авто-инструментом, второй рукой, аварийной остановкой и анти-АФК для ферм, копания и рыбалки.
+
+Why this wording: both sites search the name and the summary (Modrinth has no free-form tags, CurseForge has only fixed categories). The words people type
+(`auto clicker`, `autoclicker`, `auto eat`, `auto fish`, `afk`) are in the summary and the first
+paragraph, so the name can stay `MultiClicker`.
+
+---
+
+## 2. English description
+
+Markdown, works on Modrinth. For CurseForge paste it into the Markdown editor (or switch the editor
+to Markdown first). Upload the screenshots to the gallery on both sites; the links below point to the
+repository images, so they work on Modrinth as they are.
+
+````markdown
+# MultiClicker
+
+Auto clicker for Minecraft (Fabric). It clicks the attack, use and jump keys at a rhythm you set, and
+comes with modules for AFK farms, mining and fishing: auto eat, auto fish, auto tool, offhand, safety
+stop, anti-AFK and others.
+
+![A mob farm with MultiClicker: the status panel and the highlighted target](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/hud.png)
+
+## Quick start
+
+1. Install Fabric Loader and put **Fabric API** and the MultiClicker jar into the `mods` folder.
+   [Mod Menu](https://modrinth.com/mod/modmenu) is optional and adds a settings button to the mod list.
+2. Join a world. Press **O** to open the menu and **I** to turn the mod on or off.
+3. Open **Profiles → Presets**, pick a setup and press **I**.
+
+| Preset | What it sets up |
+|:--|:--|
+| **Mob farm** | Attacks on full charge with a small random delay. Passive mobs, pets and named mobs are left alone. Auto eat and anti-AFK are on. |
+| **Mining** | The attack key is held, blocks are broken, auto tool picks the pickaxe, the clicker stops when the inventory is full. Auto eat is on. |
+| **Fishing** | The clicker is off, auto fish reels in and casts again. Auto eat and anti-AFK are on. |
+
+Your own settings can be saved as profiles.
+
+> Many multiplayer servers don't allow auto clickers. Check the server rules before you use the mod online.
+
+## Features
+
+Every option has a tooltip in the menu. Right-click a setting to reset it.
+
+**Auto clicker**
+- Three channels: attack (left mouse button), use (right mouse button) and jump. Each one can click or
+  hold the key and has its own interval, hold time, pause and random delay.
+- Waits for full weapon charge for full damage. Turn it off for 1.8-style PvP.
+- Targets: only allowed creatures, creatures and blocks (mining), or anything.
+- Pauses while you eat, drink, block or draw a bow.
+- Looting finishing blow: predicts whether the next hit kills; if so, it switches to the hotbar weapon
+  with the best Looting, waits for it to charge, hits and switches back.
+- Start delay, attack limit and time limit: the mod turns itself off when they run out.
+- Works in the background when the game window loses focus, and can lock the camera.
+- Keys you hold yourself are not released. The clicker pauses while a screen is open.
+
+**Target filter**
+Players, hostile, neutral and passive mobs and other entities (boats, minecarts, armor stands, end
+crystals) are switched separately. You can also ignore babies, named mobs, pets and invisible mobs.
+
+**Survival**
+- Safety: stops the mod or leaves the server when your health drops to a threshold, when you take any
+  damage, or when another player comes within a set distance.
+- Offhand: keeps one item in the offhand by priority: a totem at low health, food when you're hungry,
+  a torch while you hold a pickaxe, otherwise a shield.
+- Auto eat: eats the best safe food from the hotbar and returns to the previous slot. It can skip harmful
+  food (rotten flesh, pufferfish, suspicious stew) and golden food, and never opens the chest, door or
+  villager you look at.
+
+**Automation**
+- Auto fish: reels in on a bite after a reaction time you set, casts again, recasts if nothing bites for
+  too long, stops when the rod is about to break or after a number of catches. The rod can be in either hand.
+- Anti-AFK: jump, sneak, swing, look around or step at random intervals. Each action can be turned off.
+- Auto walk: walks forward, optionally sprinting and jumping over obstacles.
+- Inventory cleaner: throws out the items from your junk list, one stack at a time. It never touches
+  the hotbar unless you allow it.
+
+**Mining**
+- Mining rules: a whitelist or blacklist of blocks the clicker may break, edited in a list editor with
+  item icons. It can stop when the inventory is full and protect the held tool from breaking.
+- Auto tool: picks the fastest hotbar tool for the block, takes Efficiency into account, skips nearly
+  broken tools and switches back afterwards.
+
+**Interface**
+- HUD: a status panel in any corner with the scale you choose: active channels, clicks per second,
+  attacks, kills, session time, ping, server TPS, FPS and the list of active modules. Every line can be hidden.
+- Target highlight: the creature about to be hit is outlined, filled or glowing, in a color you pick.
+- Menu: categories, module cards, search (also by English names), tooltips and a list editor with item
+  icons. It fits the window size; on small screens the sidebar turns into icons.
+- Feedback: accent color, a sound and a message above the hotbar when the mod turns on or off.
+- Profiles: save your settings under a name and load them later.
+
+## Screenshots
+
+![Clicker settings](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/menu_clicker.png)
+![Survival modules](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/menu_survival.png)
+![Presets and profiles](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/profiles.png)
+![Block list editor](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/list_editor.png)
+
+## Supported versions
+
+One jar per Minecraft version: 1.21, 1.21.1 to 1.21.11, and 26.1, 26.1.1, 26.1.2, 26.2, 26.3. Download
+the file for your version. Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer.
+
+- On 1.21.9 the outline and filled highlight styles are not drawn (Fabric API for that version has no
+  world rendering events); the glow style works.
+
+## Controls
+
+| Key | Action |
+|:--:|:--|
+| I | Turn the mod on / off |
+| O | Open the settings |
+
+Rebind them under Options → Controls → Key Binds → MultiClicker. In the menu, start typing to search,
+and use the mouse wheel or the arrow keys to fine-tune sliders.
+
+## Languages
+
+English, Русский, Українська, Deutsch, Français, Español, Português (Brasil), Polski, Italiano,
+Türkçe, 简体中文, 日本語, 한국어. Items, enchantments and mobs use the game's own names in each language.
+
+## Configuration
+
+Settings are saved in `config/multiclicker.json`, profiles in `config/multiclicker/profiles/`.
+
+## Links
+
+[Source code](https://github.com/Shamanalle/MultiClicker) · [Report a problem](https://github.com/Shamanalle/MultiClicker/issues) · MIT license
+````
+
+---
+
+## 3. Russian description
+
+Modrinth and CurseForge have one description per project. Two options: add this block at the end of
+the English text inside `<details><summary>Русский</summary> ... </details>`, or use it as the
+description of a Russian translation if the site offers one.
+
+````markdown
+# MultiClicker
+
+Автокликер для Minecraft (Fabric). Нажимает клавиши атаки, использования и прыжка в заданном ритме.
+Есть модули для AFK-ферм, копания и рыбалки: авто-еда, авто-рыбалка, авто-инструмент, вторая рука,
+аварийная остановка, анти-АФК и другие.
+
+## Быстрый старт
+
+1. Установите Fabric Loader, положите в папку `mods` **Fabric API** и jar мода для вашей версии.
+   [Mod Menu](https://modrinth.com/mod/modmenu) не обязателен: он добавляет кнопку настроек в список модов.
+2. Зайдите в мир. **O** открывает меню, **I** включает и выключает мод.
+3. Откройте **Профили → Пресеты**, выберите набор и нажмите **I**.
+
+| Пресет | Что настраивает |
+|:--|:--|
+| **Ферма мобов** | Бьёт при полной зарядке со случайной задержкой. Мирных мобов, питомцев и мобов с именем не трогает. Включены авто-еда и анти-АФК. |
+| **Копание** | Клавиша атаки удерживается, блоки ломаются, авто-инструмент берёт кирку, кликер останавливается при полном инвентаре. Включена авто-еда. |
+| **Рыбалка** | Кликер выключен, авто-рыбалка подсекает и забрасывает удочку снова. Включены авто-еда и анти-АФК. |
+
+Свои настройки можно сохранять как профили.
+
+> Многие серверы запрещают автокликеры. Перед игрой онлайн прочитайте правила сервера.
+
+## Возможности
+
+У каждой настройки в меню есть подсказка. Правый клик по настройке сбрасывает её.
+
+**Автокликер**
+- Три канала: атака (левая кнопка мыши), использование (правая) и прыжок. Каждый может нажимать или
+  удерживать клавишу и имеет свой интервал, время удержания, паузу и случайную задержку.
+- Ждёт полной зарядки оружия ради полного урона. Для PvP в стиле 1.8 это можно отключить.
+- Цели: только разрешённые существа, существа и блоки (копание) или что угодно.
+- Пауза, пока вы едите, пьёте, закрываетесь щитом или натягиваете лук.
+- Добивающий удар с Добычей: предсказывает, убьёт ли следующий удар; если да, берёт из хотбара оружие
+  с лучшей Добычей, ждёт зарядки, бьёт и возвращает прежний слот.
+- Задержка старта, лимит атак и лимит времени: по их исчерпании мод выключается сам.
+- Работает в фоне, когда окно игры не в фокусе; может блокировать камеру.
+- Клавиши, которые вы держите сами, не отпускаются. Пока открыт экран, кликер на паузе.
+
+**Фильтр целей**
+Игроки, враждебные, нейтральные и мирные мобы и прочие сущности (лодки, вагонетки, стойки для брони,
+кристаллы Края) включаются отдельно. Можно игнорировать детёнышей, мобов с именем, питомцев и невидимых мобов.
+
+**Выживание**
+- Безопасность: останавливает мод или выходит с сервера, когда здоровье падает до порога, при любом
+  уроне или когда рядом появляется другой игрок.
+- Вторая рука: держит один предмет по приоритету: тотем при низком здоровье, еду при голоде, факел с
+  киркой в руке, иначе щит.
+- Авто-еда: ест лучшую безопасную еду из хотбара и возвращает прежний слот. Может пропускать вредную
+  еду (гнилая плоть, иглобрюх, подозрительное рагу) и золотую, и никогда не открывает сундук, дверь
+  или торговца, на которого вы смотрите.
+
+**Автоматизация**
+- Авто-рыбалка: подсекает при поклёвке через заданное время реакции, забрасывает снова, перезабрасывает,
+  если долго нет поклёвки, останавливается перед поломкой удочки или после заданного числа уловов.
+  Удочка может быть в любой руке.
+- Анти-АФК: прыжок, приседание, взмах, взгляд по сторонам или шаг через случайные промежутки. Каждое
+  действие можно отключить.
+- Авто-ходьба: идёт вперёд, при желании бежит и прыгает через препятствия.
+- Очистка инвентаря: выбрасывает предметы из списка мусора по одному стаку. Хотбар не трогает без разрешения.
+
+**Копание**
+- Правила копания: белый или чёрный список блоков, которые кликер может ломать; редактируется в
+  редакторе списков с иконками предметов. Может останавливаться при полном инвентаре и беречь
+  инструмент в руке от поломки.
+- Авто-инструмент: берёт из хотбара самый быстрый инструмент для блока с учётом Эффективности,
+  пропускает почти сломанные и возвращает прежний слот.
+
+**Интерфейс**
+- HUD: панель состояния в любом углу и нужного размера: активные каналы, кликов в секунду, атаки,
+  убийства, время сессии, пинг, TPS сервера, FPS и список активных модулей. Любую строку можно скрыть.
+- Подсветка цели: существо, которое сейчас ударят, обводится, заливается или светится выбранным цветом.
+- Меню: категории, карточки модулей, поиск (в том числе по английским названиям), подсказки и
+  редактор списков с иконками. Подстраивается под размер окна; на маленьких экранах боковая панель
+  превращается в значки.
+- Обратная связь: цвет акцента, звук и сообщение над хотбаром при включении и выключении мода.
+- Профили: сохраняйте настройки под именем и загружайте позже.
+
+## Скриншоты
+
+![Настройки кликера](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/menu_clicker.png)
+![Модули выживания](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/menu_survival.png)
+![Пресеты и профили](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/profiles.png)
+![Редактор списка блоков](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/list_editor.png)
+
+## Поддерживаемые версии
+
+Один jar на каждую версию Minecraft: 1.21, 1.21.1–1.21.11 и 26.1, 26.1.1, 26.1.2, 26.2, 26.3. Скачайте
+файл для своей версии. Для Minecraft 1.21.9 и новее нужен Fabric Loader 0.17 или новее.
+
+- На 1.21.9 стили подсветки «обводка» и «заливка» не рисуются (в Fabric API для этой версии нет событий
+  отрисовки мира); стиль «свечение» работает.
+
+## Управление
+
+| Клавиша | Действие |
+|:--:|:--|
+| I | Включить / выключить мод |
+| O | Открыть настройки |
+
+Клавиши меняются в Настройки → Управление → Клавиши → MultiClicker. В меню начните печатать, чтобы
+искать; колесо мыши и стрелки помогают точно настроить ползунки.
+
+## Языки
+
+English, Русский, Українська, Deutsch, Français, Español, Português (Brasil), Polski, Italiano,
+Türkçe, 简体中文, 日本語, 한국어. Предметы, зачарования и мобы называются так, как в самой игре.
+
+## Настройки
+
+Настройки хранятся в `config/multiclicker.json`, профили в `config/multiclicker/profiles/`.
+
+## Ссылки
+
+[Исходный код](https://github.com/Shamanalle/MultiClicker) · [Сообщить о проблеме](https://github.com/Shamanalle/MultiClicker/issues) · лицензия MIT
+````
+
+---
+
+## 4. Version fields
+
+Upload every jar as its own version/file and tick the matching Minecraft version and the Fabric loader
+(1.21.9 and newer: Fabric Loader 0.17+, mention it in the changelog).
+
+**Version name:** `MultiClicker 2.1.0 for Minecraft <version>`, for example `MultiClicker 2.1.0 for Minecraft 1.21.4`.
+
+**Version number:** `2.1.0+<Minecraft version>`, the same as in the file name.
+
+**Release channel:** Release.
+
+**Dependencies:** Fabric API (required), Mod Menu (optional).
+
+**Changelog** (the same text for every file):
+
+```
+2.1.0
+
+- Support for 17 Minecraft versions: 1.21, 1.21.1 to 1.21.11 and 26.1, 26.1.1, 26.1.2, 26.2, 26.3.
+  Download the file that matches your game version.
+- Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer.
+- On 1.21.9 the outline and filled highlight styles are not drawn; the glow style works.
+```
+
+Full history: https://github.com/Shamanalle/MultiClicker/blob/main/CHANGELOG.md
+
+---
+
+## 5. Upload checklist
+
+1. Modrinth: create the project, set the fields from section 1, paste section 2 (add section 3 in a
+   `<details>` block at the end), add the icon `common/src/main/resources/assets/multiclicker/icon.png`
+   and the screenshots to the gallery (set `hud.png` as the featured image).
+2. Upload the 17 jars from the GitHub release as separate versions (section 4). Modrinth can attach
+   several Minecraft versions to one file only when the file really works on all of them, so keep one
+   jar per version.
+3. CurseForge: the same text, the same 17 files (one file per game version).
+4. Both sites review new projects; the review can take from a few hours to a few days.
