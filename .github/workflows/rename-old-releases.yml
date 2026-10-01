@@ -1,0 +1,21 @@
+name: Rename old releases
+
+# One-off: gives the 2.0.x releases a title that names the Minecraft version. Removed again right after the run.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  rename:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set the release titles
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release edit v2.0.0 --title "MultiClicker 2.0.0 for Minecraft 1.21.8"
+          gh release edit v2.0.1 --title "MultiClicker 2.0.1 for Minecraft 1.21.8"
+          gh release list --limit 10
