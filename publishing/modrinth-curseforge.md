@@ -327,5 +327,3 @@ Full history: https://github.com/Shamanalle/MultiClicker/blob/main/CHANGELOG.md
    jar per version.
 3. CurseForge: the same text, the same 17 files (one file per game version).
 4. Both sites review new projects; the review can take from a few hours to a few days.
-5. Before the first upload, check that the author field in `fabric.mod.json` (`Multi Clicker Team`) is
-   what you want to see on both sites.
