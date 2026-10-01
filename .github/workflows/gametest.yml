@@ -60,7 +60,13 @@ jobs:
           set -o pipefail
           chmod +x gradlew
           gradle_cmd=${{ startsWith(matrix.mc, '26.') && 'gradle' || './gradlew' }}
-          xvfb-run -a -s "-screen 0 1920x1080x24" $gradle_cmd :fabric:runClientGameTest --no-daemon -Pminecraft_version=${{ matrix.mc }} | tee gametest.log
+          # The world sometimes takes longer to load than the test harness waits on a busy runner
+          # ("Timeout loading world"). A real failure of a scenario fails both attempts.
+          for attempt in 1 2; do
+            xvfb-run -a -s "-screen 0 1920x1080x24" $gradle_cmd :fabric:runClientGameTest --no-daemon -Pminecraft_version=${{ matrix.mc }} | tee gametest.log && exit 0
+            echo "::warning::Game test attempt $attempt failed"
+          done
+          exit 1
 
       - name: Upload screenshots
         if: always()
