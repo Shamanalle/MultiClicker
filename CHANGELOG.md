@@ -2,6 +2,14 @@
 
 All notable changes to **MultiClicker** will be documented in this file.
 
+## [2.1.1] - 2026-10-01
+### Fixed
+- The author in the mod metadata (shown in Mod Menu) is now Shamanalle.
+
+### Changed
+- The in-game tests pass on every version from 1.21.4 to 26.3 on the CI runners. On 1.21.9 to 1.21.11 the
+  world load used to stall because the blurred menu background took the frame time of the software renderer.
+
 ## [2.1.0] - 2026-09-30
 ### Added
 - Support for 17 Minecraft versions: 1.21, 1.21.1 to 1.21.11 and 26.1, 26.1.1, 26.1.2, 26.2, 26.3.
