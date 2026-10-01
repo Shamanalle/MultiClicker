@@ -6,7 +6,7 @@
 
 **Auto clicker for Fabric with helpers for AFK farms, mining and fishing.**
 
-[![Minecraft 1.21.8](https://img.shields.io/badge/Minecraft-1.21.8-62b47a)](https://minecraft.net/)
+[![Minecraft 1.21 – 26.3](https://img.shields.io/badge/Minecraft-1.21%20%E2%80%93%2026.3-62b47a)](https://minecraft.net/)
 [![Fabric](https://img.shields.io/badge/loader-Fabric-dbd0b4)](https://fabricmc.net/)
 [![Release](https://img.shields.io/github/v/release/Shamanalle/MultiClicker?color=4c8bf5)](https://github.com/Shamanalle/MultiClicker/releases/latest)
 [![In-game tests](https://github.com/Shamanalle/MultiClicker/actions/workflows/gametest.yml/badge.svg)](https://github.com/Shamanalle/MultiClicker/actions/workflows/gametest.yml)
@@ -18,16 +18,17 @@
 
 </div>
 
-Auto clicker mod for Minecraft 1.21.8 (Fabric). Clicks the attack, use and jump keys at a rhythm you set.
+Auto clicker mod for Minecraft 1.21 – 26.3 (Fabric). Clicks the attack, use and jump keys at a rhythm you set.
 Includes modules for AFK farming, mining and fishing: auto eat, auto fish, auto tool, offhand, safety
 stop, anti-AFK and others.
 
 ## Quick start
 
-1. Install [Fabric Loader](https://fabricmc.net/use/) for Minecraft **1.21.8**.
-2. Put [Fabric API](https://modrinth.com/mod/fabric-api) and
-   [`MultiClicker-fabric-<version>.jar`](https://github.com/Shamanalle/MultiClicker/releases/latest)
-   into the `mods` folder. Optional: [Mod Menu](https://modrinth.com/mod/modmenu) adds a settings
+1. Install [Fabric Loader](https://fabricmc.net/use/) for your Minecraft version. Supported:
+   1.21 – 1.21.11 and 26.1 – 26.3 (see [versions](#supported-versions)).
+2. Put [Fabric API](https://modrinth.com/mod/fabric-api) and the jar for your version,
+   `MultiClicker-fabric-<mod version>+<Minecraft version>.jar` from the
+   [latest release](https://github.com/Shamanalle/MultiClicker/releases/latest), into the `mods` folder. Optional: [Mod Menu](https://modrinth.com/mod/modmenu) adds a settings
    button to the mod list.
 3. Join a world and press <kbd>O</kbd> to open the menu, <kbd>I</kbd> to turn the mod on or off.
 
@@ -110,6 +111,18 @@ mobs.
 | Settings: every module is a card, with a tooltip for every option | Survival: safety, offhand and auto eat |
 | ![Presets and profiles](docs/images/en/profiles.png) | ![Block list editor](docs/images/en/list_editor.png) |
 | Ready-made presets and your own profiles | List editor: item icons, add the held item or the block you look at |
+
+## Supported versions
+
+One jar per Minecraft version: 1.21, 1.21.1, 1.21.2, 1.21.3, 1.21.4, 1.21.5, 1.21.6, 1.21.7, 1.21.8,
+1.21.9, 1.21.10, 1.21.11, 26.1, 26.1.1, 26.1.2, 26.2 and 26.3. Minecraft 1.21.9 and newer needs
+Fabric Loader 0.17 or newer.
+
+- 1.21.4 and newer: every build plays the in-game tests.
+- 1.21 – 1.21.3: Fabric API has no client test API there, so CI only checks that the game starts with the
+  mod and that every mixin applies.
+- 1.21.9: the outline and filled highlight styles are not drawn (Fabric API for this version has no
+  world rendering events); the glow style works.
 
 ## Controls
 

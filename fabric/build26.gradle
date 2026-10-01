@@ -1,0 +1,76 @@
+dependencies {
+    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+
+    // Fabric API. The content registries module is not needed and does not load without intermediary names.
+    implementation("net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version") {
+        exclude group: "net.fabricmc.fabric-api", module: "fabric-content-registries-v0"
+    }
+
+    // Mod Menu is optional: compile against its API and run it in the dev environment only.
+    compileOnly "com.terraformersmc:modmenu:${project.modmenu}"
+    localRuntime "com.terraformersmc:modmenu:${project.modmenu}"
+    implementation project(':common')
+}
+
+// In-game tests (Fabric client game tests): a separate test mod that is never part of the release jar.
+// Run with `./gradlew :fabric:runClientGameTest` (needs a display; CI uses xvfb).
+sourceSets {
+    gametest {
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+
+dependencies {
+    gametestImplementation sourceSets.main.output
+}
+
+// Version specific test code: src/compat/<name>/gametest, layered like the main sources of the module.
+def gametestCompatDir = layout.buildDirectory.dir('compat/gametest')
+def mergeGametestCompat = tasks.register('mergeGametestCompat', Sync) {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    into gametestCompatDir
+    rootProject.compat.split(',').each { name -> from(project.file("src/compat/$name/gametest")) }
+}
+sourceSets.gametest.java.srcDir(gametestCompatDir)
+tasks.named('compileGametestJava') { dependsOn mergeGametestCompat }
+
+loom {
+    mods {
+        "multiclicker-gametest" {
+            sourceSet sourceSets.gametest
+        }
+    }
+    runs {
+        clientGameTest {
+            inherit loom.runs.getByName("client")
+            name = "Client Game Test"
+            source sourceSets.gametest
+            property "fabric.client.gametest"
+            runDir "build/run/clientGameTest"
+        }
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'minecraft_version', rootProject.minecraft_version
+    inputs.property 'java_version', rootProject.java_version
+    inputs.property 'loader_min', rootProject.loader_min
+
+    filesMatching('fabric.mod.json') {
+        expand version: project.version, minecraft_version: rootProject.minecraft_version, java_version: rootProject.java_version, loader_min: rootProject.loader_min
+    }
+}
+
+jar {
+    // The common module is part of the mod jar.
+    from project(':common').sourceSets.main.output
+    // One jar per Minecraft version: MultiClicker-fabric-<mod version>+<minecraft version>.jar
+    archiveVersion = "${rootProject.mod_version}+${rootProject.minecraft_version}"
+}
+
+// The release jar comes out of remapJar (a pass-through on unobfuscated versions); it needs the same name.
+remapJar {
+    archiveVersion = "${rootProject.mod_version}+${rootProject.minecraft_version}"
+}

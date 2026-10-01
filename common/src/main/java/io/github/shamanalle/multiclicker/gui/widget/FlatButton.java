@@ -2,10 +2,10 @@ package io.github.shamanalle.multiclicker.gui.widget;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
+import io.github.shamanalle.multiclicker.compat.Canvas;
 import io.github.shamanalle.multiclicker.gui.Anim;
 import io.github.shamanalle.multiclicker.gui.Draw;
 import io.github.shamanalle.multiclicker.gui.Theme;
@@ -44,7 +44,7 @@ public class FlatButton {
         return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
     }
 
-    public void render(GuiGraphics g, Font font, int mouseX, int mouseY, float delta) {
+    public void render(Canvas g, Font font, int mouseX, int mouseY, float delta) {
         float hovered = hover.update(active && isMouseOver(mouseX, mouseY) ? 1 : 0, delta, 20);
         int base = switch (style) {
             case NORMAL -> Theme.CONTROL;

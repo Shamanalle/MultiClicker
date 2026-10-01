@@ -26,10 +26,10 @@
     "multiclicker.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.16.0",
+    "fabricloader": ">=${loader_min}",
     "fabric-api": "*",
-    "minecraft": "1.21.8",
-    "java": ">=21"
+    "minecraft": "${minecraft_version}",
+    "java": ">=${java_version}"
   },
   "suggests": {
     "modmenu": "*"

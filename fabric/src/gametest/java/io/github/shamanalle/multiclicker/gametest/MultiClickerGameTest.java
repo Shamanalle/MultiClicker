@@ -13,7 +13,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.monster.Husk;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -24,6 +24,8 @@ import net.minecraft.world.phys.HitResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Screens;
+import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.config.Preset;
 import io.github.shamanalle.multiclicker.gui.ConfigScreen;
 import io.github.shamanalle.multiclicker.gui.ListEditScreen;
@@ -58,13 +60,18 @@ public class MultiClickerGameTest implements FabricClientGameTest {
 
     @Override
     public void runTest(ClientGameTestContext context) {
+        // A small view keeps world loading quick on slow software-rendered runners.
+        context.runOnClient(client -> {
+            client.options.renderDistance().set(4);
+            client.options.simulationDistance().set(5);
+        });
         menuScreenshots(context, "title");
 
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
             TestServerContext server = world.getServer();
             server.runCommand("time set noon");
             server.runCommand("tp @a 0.5 -60 0.5 0 0");
-            world.getClientWorld().waitForChunksRender();
+            TestCompat.waitForChunks(world);
 
             scenario(context, server, "attack waits for the cooldown and kills", this::attackCooldown);
             scenario(context, server, "target filter skips named mobs and armor stands", this::targetFilter);
@@ -148,7 +155,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         give(server, 0, new ItemStack(Items.IRON_SWORD));
         server.runCommand("summon minecraft:husk 0.5 -60 2.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b}");
         context.waitTicks(5);
-        check(context.computeOnClient(mc -> mc.hitResult instanceof EntityHitResult hit && hit.getEntity() instanceof Husk),
+        check(context.computeOnClient(mc -> mc.hitResult instanceof EntityHitResult hit && TestCompat.isHusk(hit.getEntity())),
                 "the husk is not under the crosshair, the scenario setup is wrong");
 
         activate(context);
@@ -187,12 +194,12 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         activate(context);
         boolean[] usedLootingSlot = {false};
         waitUntil(context, "the husk to die", 100, mc -> {
-            usedLootingSlot[0] |= mc.player.getInventory().getSelectedSlot() == 1;
+            usedLootingSlot[0] |= Slots.selected(mc.player.getInventory()) == 1;
             return husk(mc) == null;
         });
         check(usedLootingSlot[0], "the Looting sword was never selected");
         waitUntil(context, "the original slot to be selected again", 20,
-                mc -> mc.player.getInventory().getSelectedSlot() == 0);
+                mc -> Slots.selected(mc.player.getInventory()) == 0);
         check(context.computeOnClient(mc -> MultiClicker.get().stats().attacks()) == 1, "expected a single finishing blow");
     }
 
@@ -210,11 +217,11 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         activate(context);
         boolean[] openedContainer = {false};
         waitUntil(context, "the player to eat", 120, mc -> {
-            openedContainer[0] |= mc.screen instanceof AbstractContainerScreen<?>;
+            openedContainer[0] |= Screens.current(mc) instanceof AbstractContainerScreen<?>;
             return mc.player.getFoodData().getFoodLevel() > 6 && !MultiClicker.get().autoEat().isBusy();
         });
         check(!openedContainer[0], "eating opened the chest in front of the player");
-        check(context.computeOnClient(mc -> mc.player.getInventory().getSelectedSlot()) == 0, "the sword slot was not selected again");
+        check(context.computeOnClient(mc -> Slots.selected(mc.player.getInventory())) == 0, "the sword slot was not selected again");
         check(context.computeOnClient(mc -> mc.player.getInventory().getItem(4).getCount()) < 4, "no bread was eaten");
     }
 
@@ -241,7 +248,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         int attacksAfterEating = context.computeOnClient(mc -> MultiClicker.get().stats().attacks());
         waitUntil(context, "attacks to continue after eating", 60,
                 mc -> MultiClicker.get().stats().attacks() > attacksAfterEating);
-        check(context.computeOnClient(mc -> mc.player.getInventory().getSelectedSlot()) == 0, "the sword is not selected");
+        check(context.computeOnClient(mc -> Slots.selected(mc.player.getInventory())) == 0, "the sword is not selected");
     }
 
     private void mineAndEat(ClientGameTestContext context, TestServerContext server) {
@@ -368,7 +375,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             return mc.level.getBlockState(new BlockPos(0, -59, 2)).isAir();
         });
         check(usedPickaxe[0], "auto tool did not pick the pickaxe");
-        waitUntil(context, "auto tool to switch back to the sword", 40, mc -> mc.player.getInventory().getSelectedSlot() == 0);
+        waitUntil(context, "auto tool to switch back to the sword", 40, mc -> Slots.selected(mc.player.getInventory()) == 0);
 
         // Without mouse focus (game window in the background) held mining must keep working.
         context.runOnClient(mc -> mc.mouseHandler.releaseMouse());
@@ -480,7 +487,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
     private void languageScreenshots(ClientGameTestContext context, String code) {
         for (Category category : List.of(Category.CLICKER, Category.SURVIVAL, Category.AUTOMATION)) {
             context.setScreen(() -> new ConfigScreen(null));
-            context.runOnClient(mc -> ((ConfigScreen) mc.screen).showCategory(category));
+            context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).showCategory(category));
             parkCursor(context);
             context.takeScreenshot("lang_" + code + "_" + category.name().toLowerCase());
         }
@@ -529,7 +536,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         server.runCommand("summon minecraft:husk 0.5 -60 3.0 {NoAI:1b,Silent:1b,PersistenceRequired:1b,Rotation:[180f,0f]}");
         server.runCommand("effect give @e[type=minecraft:husk] minecraft:resistance infinite 4 true");
         context.waitTicks(70);
-        context.runOnClient(mc -> mc.gui.getChat().clearMessages(false));
+        context.runOnClient(mc -> TestCompat.clearChat(mc));
         // Between two hits, so the husk does not flash red.
         waitUntil(context, "the sword to be charged again", 100, mc -> {
             float charge = mc.player.getAttackStrengthScale(0);
@@ -539,7 +546,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
 
         for (Category category : List.of(Category.CLICKER, Category.SURVIVAL, Category.VISUAL)) {
             context.setScreen(() -> new ConfigScreen(null));
-            context.runOnClient(mc -> ((ConfigScreen) mc.screen).showCategory(category));
+            context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).showCategory(category));
             parkCursor(context);
             context.takeScreenshot("readme_" + lang + "_menu_" + category.name().toLowerCase());
         }
@@ -563,11 +570,11 @@ public class MultiClickerGameTest implements FabricClientGameTest {
     private void menuScreenshots(ClientGameTestContext context, String prefix) {
         for (Category category : Category.values()) {
             context.setScreen(() -> new ConfigScreen(null));
-            context.runOnClient(mc -> ((ConfigScreen) mc.screen).showCategory(category));
+            context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).showCategory(category));
             parkCursor(context);
             context.takeScreenshot(prefix + "_menu_" + category.name().toLowerCase());
         }
-        context.runOnClient(mc -> ((ConfigScreen) mc.screen).search("eat"));
+        context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).search("eat"));
         context.waitTicks(8);
         context.takeScreenshot(prefix + "_menu_search");
         context.setScreen(() -> new ProfilesScreen(new ConfigScreen(null)));
@@ -615,7 +622,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             player.getFoodData().setSaturation(5);
         });
         server.runCommand("tp @a 0.5 -60 0.5 0 0");
-        context.runOnClient(mc -> mc.player.getInventory().setSelectedSlot(0));
+        context.runOnClient(mc -> Slots.select(mc.player.getInventory(), 0));
         context.waitTicks(5);
     }
 
@@ -625,7 +632,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             mc.getLanguageManager().setSelected(code);
             mc.reloadResourcePacks();
         });
-        context.waitFor(mc -> mc.getOverlay() == null, 1200);
+        context.waitFor(mc -> TestCompat.overlayGone(mc), 1200);
         context.waitTicks(2);
     }
 
@@ -673,7 +680,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
 
     private static Entity husk(Minecraft mc) {
         for (Entity entity : mc.level.entitiesForRendering()) {
-            if (entity instanceof Husk husk && husk.isAlive() && !husk.isDeadOrDying()) {
+            if (TestCompat.isHusk(entity) && entity instanceof LivingEntity husk && husk.isAlive() && !husk.isDeadOrDying()) {
                 return husk;
             }
         }

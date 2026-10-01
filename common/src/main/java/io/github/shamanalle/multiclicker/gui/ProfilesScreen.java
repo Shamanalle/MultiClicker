@@ -1,13 +1,14 @@
 package io.github.shamanalle.multiclicker.gui;
 
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Canvas;
+import io.github.shamanalle.multiclicker.compat.Gfx;
 import io.github.shamanalle.multiclicker.config.ConfigManager;
 import io.github.shamanalle.multiclicker.config.Preset;
 import io.github.shamanalle.multiclicker.gui.widget.FlatButton;
@@ -106,7 +107,7 @@ public class ProfilesScreen extends PanelScreen {
     }
 
     @Override
-    protected void renderPanel(GuiGraphics g, int mouseX, int mouseY, float delta) {
+    protected void renderPanel(Canvas g, int mouseX, int mouseY, float delta) {
         Draw.text(g, font, I18n.get("multiclicker.gui.profiles.presets").toUpperCase(Locale.ROOT), panelX + 10, panelY + 37,
                 Theme.alpha(Theme.accent(), 0.9F));
         Draw.text(g, font, I18n.get("multiclicker.gui.profiles.saved_profiles").toUpperCase(Locale.ROOT), panelX + 10,
@@ -137,7 +138,7 @@ public class ProfilesScreen extends PanelScreen {
             if (button.isMouseOver(mouseX, mouseY)) {
                 for (Preset preset : Preset.values()) {
                     if (button.label.equals(preset.title())) {
-                        g.setTooltipForNextFrame(font, font.split(preset.description(), 200), mouseX, mouseY);
+                        Gfx.tooltip(g, font, font.split(preset.description(), 200), mouseX, mouseY);
                     }
                 }
             }
@@ -146,7 +147,7 @@ public class ProfilesScreen extends PanelScreen {
                 panelY + panelH - 36 + 4, statusColor);
     }
 
-    private void drawProfile(GuiGraphics g, String name, int y, int mouseX, int mouseY) {
+    private void drawProfile(Canvas g, String name, int y, int mouseX, int mouseY) {
         boolean overRow = isInList(mouseX, mouseY) && mouseY >= y && mouseY < y + ROW;
         if (overRow) {
             g.fill(listX + 1, y, listX + listW - 1, y + ROW, Theme.ROW_HOVER);
@@ -168,7 +169,7 @@ public class ProfilesScreen extends PanelScreen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    protected boolean clicked(double mouseX, double mouseY, int button) {
         if (button == 0 && isInList(mouseX, mouseY)) {
             int index = (int) ((mouseY - listY - 2 + scroll) / ROW);
             if (index >= 0 && index < profiles.size()) {
@@ -176,7 +177,7 @@ public class ProfilesScreen extends PanelScreen {
                 return true;
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.clicked(mouseX, mouseY, button);
     }
 
     private void handleProfileClick(String name, double mouseX) {
@@ -215,11 +216,11 @@ public class ProfilesScreen extends PanelScreen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if ((keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) && nameField.isFocused()) {
+    protected boolean pressed(int keyCode, int scanCode, int modifiers) {
+        if ((keyCode == InputConstants.KEY_RETURN || keyCode == InputConstants.KEY_NUMPADENTER) && nameField.isFocused()) {
             saveProfile();
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.pressed(keyCode, scanCode, modifiers);
     }
 }

@@ -1,7 +1,6 @@
 package io.github.shamanalle.multiclicker.gui;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
@@ -11,9 +10,14 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import com.mojang.blaze3d.platform.InputConstants;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Canvas;
+import io.github.shamanalle.multiclicker.compat.Gfx;
+import io.github.shamanalle.multiclicker.compat.Keys;
+import io.github.shamanalle.multiclicker.compat.ModScreen;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.gui.widget.SettingControl;
 import io.github.shamanalle.multiclicker.gui.widget.ToggleControl;
 import io.github.shamanalle.multiclicker.module.Category;
@@ -33,7 +37,7 @@ import java.util.Map;
  * The main settings menu: categories on the left, one card per module on the right, a search
  * field and the master on/off switch in the header.
  */
-public class ConfigScreen extends Screen {
+public class ConfigScreen extends ModScreen {
     private static final int HEADER = 30;
     private static final int FOOTER = 16;
     private static final int SIDEBAR_ITEM = 20;
@@ -265,13 +269,13 @@ public class ConfigScreen extends Screen {
     @Override
     public void onClose() {
         mod.saveConfig();
-        minecraft.setScreen(parent);
+        Screens.open(minecraft, parent);
     }
 
     // --- Rendering ------------------------------------------------------------------------------
 
     @Override
-    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+    protected void draw(Canvas g, int mouseX, int mouseY, float partialTick) {
         long now = System.nanoTime();
         float delta = lastFrameNanos == 0 ? 0 : Math.min(0.1F, (now - lastFrameNanos) / 1_000_000_000.0F);
         lastFrameNanos = now;
@@ -288,15 +292,15 @@ public class ConfigScreen extends Screen {
         hovered = renderContent(g, mouseX, mouseY, delta, hovered);
         renderFooter(g);
 
-        super.render(g, mouseX, mouseY, partialTick);
+        super.draw(g, mouseX, mouseY, partialTick);
         renderTooltip(g, mouseX, mouseY, hovered);
     }
 
-    private void renderHeader(GuiGraphics g, int mouseX, int mouseY, float delta) {
+    private void renderHeader(Canvas g, int mouseX, int mouseY, float delta) {
         int textY = panelY + 11;
         int accent = Theme.accent();
         Draw.rect(g, panelX + 8, panelY + 10, 3, 10, 1, accent);
-        g.drawString(font, title.copy().withStyle(ChatFormatting.BOLD), panelX + 15, textY, Theme.TEXT, false);
+        g.text(font, title.copy().withStyle(ChatFormatting.BOLD), panelX + 15, textY, Theme.TEXT);
         if (showVersion) {
             Draw.text(g, font, "v" + mod.version(), panelX + 15 + font.width(title.copy().withStyle(ChatFormatting.BOLD)) + 5,
                     textY, Theme.TEXT_MUTED);
@@ -329,7 +333,7 @@ public class ConfigScreen extends Screen {
         return panelY + panelH - SIDEBAR_ITEM - 6;
     }
 
-    private Object renderSidebar(GuiGraphics g, int mouseX, int mouseY, float delta, Object hovered) {
+    private Object renderSidebar(Canvas g, int mouseX, int mouseY, float delta, Object hovered) {
         int y = sidebarTop();
         int accent = Theme.accent();
         for (Category entry : Category.values()) {
@@ -398,7 +402,7 @@ public class ConfigScreen extends Screen {
         return count;
     }
 
-    private Object renderContent(GuiGraphics g, int mouseX, int mouseY, float delta, Object hovered) {
+    private Object renderContent(Canvas g, int mouseX, int mouseY, float delta, Object hovered) {
         scroll += (scrollTarget - scroll) * Math.min(1, delta * 16);
         if (Math.abs(scrollTarget - scroll) < 0.5F) {
             scroll = scrollTarget;
@@ -465,7 +469,7 @@ public class ConfigScreen extends Screen {
         card.description = lines.isEmpty() ? List.of("") : lines;
     }
 
-    private Object drawCard(GuiGraphics g, Card card, int x, int w, int mouseX, int mouseY, boolean mouseInView, float delta,
+    private Object drawCard(Canvas g, Card card, int x, int w, int mouseX, int mouseY, boolean mouseInView, float delta,
                             Object hovered) {
         Module module = card.module;
         boolean enabled = module.isEnabled();
@@ -476,8 +480,8 @@ public class ConfigScreen extends Screen {
         }
 
         int textRight = x + w - 10 - (card.toggle != null ? 30 : 0);
-        g.drawString(font, Component.literal(Draw.ellipsize(font, module.name().getString(), textRight - x - 12))
-                .withStyle(ChatFormatting.BOLD), x + 10, card.y + 7, enabled ? Theme.TEXT : Theme.TEXT_DIM, false);
+        g.text(font, Component.literal(Draw.ellipsize(font, module.name().getString(), textRight - x - 12))
+                .withStyle(ChatFormatting.BOLD), x + 10, card.y + 7, enabled ? Theme.TEXT : Theme.TEXT_DIM);
         for (int i = 0; i < card.description.size(); i++) {
             Draw.text(g, font, card.description.get(i), x + 10, card.y + 19 + i * DESCRIPTION_LINE, Theme.TEXT_MUTED);
         }
@@ -523,14 +527,14 @@ public class ConfigScreen extends Screen {
         return hovered;
     }
 
-    private void renderFooter(GuiGraphics g) {
+    private void renderFooter(Canvas g) {
         int y = panelY + panelH - FOOTER + 4;
         g.fill(viewX + 1, panelY + panelH - FOOTER, panelX + panelW - 1, panelY + panelH - FOOTER + 1, Theme.DIVIDER);
         String hint = I18n.get("multiclicker.gui.hint", mod.toggleKey.getTranslatedKeyMessage().getString());
         Draw.textCentered(g, font, Draw.ellipsize(font, hint, viewW - 16), viewX + viewW / 2, y, Theme.TEXT_MUTED);
     }
 
-    private void renderTooltip(GuiGraphics g, int mouseX, int mouseY, @Nullable Object hovered) {
+    private void renderTooltip(Canvas g, int mouseX, int mouseY, @Nullable Object hovered) {
         if (hovered != hoverKey) {
             hoverKey = hovered;
             hoverSince = System.currentTimeMillis();
@@ -546,7 +550,7 @@ public class ConfigScreen extends Screen {
                 if (text != null) {
                     lines.addAll(font.split(text.copy().withStyle(ChatFormatting.GRAY), 220));
                 }
-                g.setTooltipForNextFrame(font, lines, mouseX, mouseY);
+                Gfx.tooltip(g, font, lines, mouseX, mouseY);
                 return;
             }
         } else if (hovered instanceof Module module) {
@@ -559,7 +563,7 @@ public class ConfigScreen extends Screen {
                     : Component.translatable("multiclicker.gui.profiles.desc");
         }
         if (text != null) {
-            g.setTooltipForNextFrame(font, font.split(text, 220), mouseX, mouseY);
+            Gfx.tooltip(g, font, font.split(text, 220), mouseX, mouseY);
         }
     }
 
@@ -570,7 +574,7 @@ public class ConfigScreen extends Screen {
     // --- Input ----------------------------------------------------------------------------------
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    protected boolean clicked(double mouseX, double mouseY, int button) {
         boolean overSearch = mouseX >= searchX && mouseX < searchX + searchW && mouseY >= panelY + 7 && mouseY < panelY + 23;
         if (overSearch) {
             setFocused(search);
@@ -578,7 +582,7 @@ public class ConfigScreen extends Screen {
             if (button == 1) {
                 search.setValue("");
             }
-            super.mouseClicked(mouseX, mouseY, button);
+            super.clicked(mouseX, mouseY, button);
             return true;
         }
         search.setFocused(false);
@@ -602,7 +606,7 @@ public class ConfigScreen extends Screen {
         }
         if (isOverSidebarItem(mouseX, mouseY, profilesItemY())) {
             playClick();
-            minecraft.setScreen(new ProfilesScreen(this));
+            Screens.open(minecraft, new ProfilesScreen(this));
             return true;
         }
 
@@ -651,11 +655,11 @@ public class ConfigScreen extends Screen {
                 }
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.clicked(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+    protected boolean dragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         if (draggingScrollbar) {
             scrollFromMouse(mouseY);
             return true;
@@ -663,17 +667,17 @@ public class ConfigScreen extends Screen {
         if (dragging != null && dragging.mouseDragged(mouseX, mouseY)) {
             return true;
         }
-        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+        return super.dragged(mouseX, mouseY, button, dragX, dragY);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    protected boolean released(double mouseX, double mouseY, int button) {
         draggingScrollbar = false;
         if (dragging != null) {
             dragging.mouseReleased();
             dragging = null;
         }
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.released(mouseX, mouseY, button);
     }
 
     @Override
@@ -689,27 +693,27 @@ public class ConfigScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_F && hasControlDown()) {
+    protected boolean pressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == InputConstants.KEY_F && Keys.controlDown()) {
             setFocused(search);
             search.setFocused(true);
             return true;
         }
         if (!search.isFocused() && hoverKey instanceof Setting<?> setting
-                && (keyCode == GLFW.GLFW_KEY_LEFT || keyCode == GLFW.GLFW_KEY_RIGHT)) {
-            return control(setting).adjust(keyCode == GLFW.GLFW_KEY_RIGHT ? 1 : -1);
+                && (keyCode == InputConstants.KEY_LEFT || keyCode == InputConstants.KEY_RIGHT)) {
+            return control(setting).adjust(keyCode == InputConstants.KEY_RIGHT ? 1 : -1);
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.pressed(keyCode, scanCode, modifiers);
     }
 
     @Override
-    public boolean charTyped(char codePoint, int modifiers) {
+    protected boolean typed(char codePoint, int modifiers) {
         // Typing anywhere starts a search.
         if (!search.isFocused() && Character.isLetterOrDigit(codePoint)) {
             setFocused(search);
             search.setFocused(true);
         }
-        return super.charTyped(codePoint, modifiers);
+        return super.typed(codePoint, modifiers);
     }
 
     private void scrollFromMouse(double mouseY) {

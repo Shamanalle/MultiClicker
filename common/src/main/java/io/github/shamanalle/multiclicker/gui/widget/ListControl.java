@@ -2,9 +2,10 @@ package io.github.shamanalle.multiclicker.gui.widget;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
+import io.github.shamanalle.multiclicker.compat.Canvas;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.gui.Anim;
 import io.github.shamanalle.multiclicker.gui.Draw;
 import io.github.shamanalle.multiclicker.gui.ListEditScreen;
@@ -29,7 +30,7 @@ public class ListControl extends SettingControl {
     }
 
     @Override
-    protected void draw(GuiGraphics g, Font font, int mouseX, int mouseY, float delta) {
+    protected void draw(Canvas g, Font font, int mouseX, int mouseY, float delta) {
         float hovered = hover.update(isMouseOver(mouseX, mouseY) ? 1 : 0, delta, 20);
         Draw.rect(g, x, y, width, height, 3, Theme.mix(Theme.CONTROL, Theme.CONTROL_HOVER, hovered));
         Draw.text(g, font, I18n.get("multiclicker.gui.edit_list", setting.get().size()), x + 6, y + 3, Theme.TEXT);
@@ -41,7 +42,7 @@ public class ListControl extends SettingControl {
         if (!isMouseOver(mouseX, mouseY) || button != 0) {
             return false;
         }
-        Minecraft.getInstance().setScreen(new ListEditScreen(parent, setting));
+        Screens.open(Minecraft.getInstance(), new ListEditScreen(parent, setting));
         return true;
     }
 }

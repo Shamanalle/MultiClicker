@@ -9,6 +9,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -86,7 +87,7 @@ public class ClickerModule extends Module {
 
     /** Mouse movement does not turn the camera while the mod works, so the aim cannot drift. */
     public boolean isCameraLocked() {
-        return lockCamera.get() && isRunning() && Minecraft.getInstance().screen == null;
+        return lockCamera.get() && isRunning() && Screens.current(Minecraft.getInstance()) == null;
     }
 
     /** True while the attack key is held for continuous block breaking. */
@@ -130,7 +131,7 @@ public class ClickerModule extends Module {
     public void tick(Minecraft mc) {
         LocalPlayer player = mc.player;
         MultiClicker mod = MultiClicker.get();
-        if (mc.screen != null || player.isDeadOrDying() || player.isSpectator()) {
+        if (Screens.current(mc) != null || player.isDeadOrDying() || player.isSpectator()) {
             resetChannels(mc);
             if (swap.isActive()) {
                 swap.restore(mc, player);

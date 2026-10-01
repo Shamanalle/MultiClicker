@@ -8,6 +8,7 @@ import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
+import io.github.shamanalle.multiclicker.compat.Lookups;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -78,7 +79,7 @@ public class TargetFilterModule extends Module {
         if (ignoreNamed.get() && entity.hasCustomName() && !(entity instanceof Player)) {
             return false;
         }
-        if (ignorePets.get() && entity instanceof OwnableEntity ownable && ownable.getOwnerReference() != null) {
+        if (ignorePets.get() && entity instanceof OwnableEntity ownable && Lookups.hasOwner(ownable)) {
             return false;
         }
         return !(ignoreInvisible.get() && entity.isInvisible());

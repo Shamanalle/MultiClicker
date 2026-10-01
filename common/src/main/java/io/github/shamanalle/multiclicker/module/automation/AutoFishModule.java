@@ -8,6 +8,7 @@ import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.ItemStack;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.mixin.FishingHookAccessor;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
@@ -78,7 +79,7 @@ public class AutoFishModule extends Module {
     public void tick(Minecraft mc) {
         LocalPlayer player = mc.player;
         // Eating takes the main hand for a moment; the fishing state continues afterwards.
-        if (mc.screen != null || !isHoldingRod(player) || MultiClicker.get().autoEat().isBusy()) {
+        if (Screens.current(mc) != null || !isHoldingRod(player) || MultiClicker.get().autoEat().isBusy()) {
             return;
         }
         if (Inventories.isNearlyBroken(rod(player), protectRod.get())) {

@@ -1,8 +1,8 @@
 package io.github.shamanalle.multiclicker.gui.widget;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import io.github.shamanalle.multiclicker.compat.Canvas;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.EnumSetting;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
@@ -28,14 +28,14 @@ public abstract class SettingControl {
     }
 
     /** Draws the control with its left edge at {@code x}, vertically centered on the row. */
-    public final void render(GuiGraphics g, Font font, int x, int rowY, int rowHeight, int mouseX, int mouseY, float delta) {
+    public final void render(Canvas g, Font font, int x, int rowY, int rowHeight, int mouseX, int mouseY, float delta) {
         this.width = width(font);
         this.x = x;
         this.y = rowY + (rowHeight - height) / 2;
         draw(g, font, mouseX, mouseY, delta);
     }
 
-    protected abstract void draw(GuiGraphics g, Font font, int mouseX, int mouseY, float delta);
+    protected abstract void draw(Canvas g, Font font, int mouseX, int mouseY, float delta);
 
     public boolean isMouseOver(double mouseX, double mouseY) {
         return mouseX >= x - 2 && mouseX < x + width + 2 && mouseY >= y - 3 && mouseY < y + height + 3;

@@ -2,6 +2,22 @@
 
 All notable changes to **MultiClicker** will be documented in this file.
 
+## [2.1.0] - 2026-09-30
+### Added
+- Support for 17 Minecraft versions: 1.21, 1.21.1 to 1.21.11 and 26.1, 26.1.1, 26.1.2, 26.2, 26.3.
+  Every version has its own jar (`MultiClicker-fabric-2.1.0+<minecraft version>.jar`).
+- CI builds every version and plays the in-game tests on 1.21.4 and newer. 1.21 to 1.21.3 have no
+  client test API in Fabric API, so they get a start-up check (the mod loads and every mixin applies).
+
+### Changed
+- One source tree for all versions: version specific code sits in small compat classes that are
+  layered per Minecraft version.
+- Fabric Loader 0.17 or newer is required from Minecraft 1.21.9 on (Fabric API needs it anyway).
+
+### Known limits
+- Minecraft 1.21.9: the outline and filled styles of the target highlight are not drawn (Fabric API
+  for this version has no world rendering events). The glow style works. 1.21.10 and newer are fine.
+
 ## [2.0.1] - 2026-09-29
 Everything below was found and checked by playing the mod in a real game (new in-game tests).
 

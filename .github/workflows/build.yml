@@ -11,32 +11,54 @@ on:
 
 jobs:
   build:
-    name: Build MultiClicker
+    name: Build ${{ matrix.mc }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { mc: "1.21", java: 21 }
+          - { mc: "1.21.1", java: 21 }
+          - { mc: "1.21.2", java: 21 }
+          - { mc: "1.21.3", java: 21 }
+          - { mc: "1.21.4", java: 21 }
+          - { mc: "1.21.5", java: 21 }
+          - { mc: "1.21.6", java: 21 }
+          - { mc: "1.21.7", java: 21 }
+          - { mc: "1.21.8", java: 21 }
+          - { mc: "1.21.9", java: 21 }
+          - { mc: "1.21.10", java: 21 }
+          - { mc: "1.21.11", java: 21 }
+          - { mc: "26.1", java: 25 }
+          - { mc: "26.1.1", java: 25 }
+          - { mc: "26.1.2", java: 25 }
+          - { mc: "26.2", java: 25 }
+          - { mc: "26.3", java: 25 }
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Determine Java Version
-        id: java-ver
-        run: |
-          if [[ "${{ github.ref }}" == *"26."* ]]; then
-            echo "version=25" >> $GITHUB_OUTPUT
-          else
-            echo "version=21" >> $GITHUB_OUTPUT
-          fi
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: ${{ steps.java-ver.outputs.version }}
+          java-version: ${{ matrix.java }}
 
+      # Minecraft 26.1 and newer is built with Gradle 9; older versions use the wrapper.
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+        with:
+          gradle-version: ${{ startsWith(matrix.mc, '26.') && '9.8.0' || 'wrapper' }}
 
       - name: Build with Gradle
-        run: ./gradlew build --no-daemon
+        run: |
+          chmod +x gradlew
+          gradle_cmd=${{ startsWith(matrix.mc, '26.') && 'gradle' || './gradlew' }}
+          $gradle_cmd build --no-daemon -Pminecraft_version=${{ matrix.mc }}
+
+      - name: Upload jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: MultiClicker-${{ matrix.mc }}
+          path: fabric/build/libs/MultiClicker-fabric-*+${{ matrix.mc }}.jar
+          if-no-files-found: error

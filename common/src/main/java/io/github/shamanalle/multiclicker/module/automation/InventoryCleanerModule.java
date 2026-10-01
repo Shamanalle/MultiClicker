@@ -3,6 +3,7 @@ package io.github.shamanalle.multiclicker.module.automation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.item.ItemStack;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -34,7 +35,7 @@ public class InventoryCleanerModule extends Module {
         }
         LocalPlayer player = mc.player;
         // Never while a screen is open: the player may be sorting the inventory by hand.
-        if (mc.screen != null || player.isCreative() || items.get().isEmpty() || !Inventories.canClickInventory(mc)) {
+        if (Screens.current(mc) != null || player.isCreative() || items.get().isEmpty() || !Inventories.canClickInventory(mc)) {
             return;
         }
         int first = keepHotbar.get() ? Inventories.HOTBAR_SIZE : 0;

@@ -1,9 +1,9 @@
 package io.github.shamanalle.multiclicker.gui.widget;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.util.Mth;
+import io.github.shamanalle.multiclicker.compat.Canvas;
+import io.github.shamanalle.multiclicker.compat.Keys;
 import io.github.shamanalle.multiclicker.gui.Anim;
 import io.github.shamanalle.multiclicker.gui.Draw;
 import io.github.shamanalle.multiclicker.gui.Theme;
@@ -57,7 +57,7 @@ public class SliderControl extends SettingControl {
     }
 
     @Override
-    protected void draw(GuiGraphics g, Font font, int mouseX, int mouseY, float delta) {
+    protected void draw(Canvas g, Font font, int mouseX, int mouseY, float delta) {
         float hovered = hover.update(dragging || overTrack(mouseX, mouseY) ? 1 : 0, delta, 20);
         float shown = fill.update(progress(), delta, dragging ? 40 : 16);
         int trackY = y + height / 2 - 2;
@@ -110,7 +110,7 @@ public class SliderControl extends SettingControl {
 
     @Override
     public boolean adjust(int direction) {
-        int step = Screen.hasShiftDown() ? 10 : 1;
+        int step = Keys.shiftDown() ? 10 : 1;
         setting.set(setting.get() + direction * step);
         return true;
     }

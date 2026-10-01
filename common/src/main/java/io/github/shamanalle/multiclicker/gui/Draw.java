@@ -1,7 +1,7 @@
 package io.github.shamanalle.multiclicker.gui;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import io.github.shamanalle.multiclicker.compat.Canvas;
 
 /** Small drawing helpers for a flat, rounded look built from plain fills. */
 public final class Draw {
@@ -11,7 +11,7 @@ public final class Draw {
     private Draw() {
     }
 
-    public static void rect(GuiGraphics g, int x, int y, int w, int h, int radius, int color) {
+    public static void rect(Canvas g, int x, int y, int w, int h, int radius, int color) {
         if (w <= 0 || h <= 0) {
             return;
         }
@@ -26,21 +26,21 @@ public final class Draw {
     }
 
     /** A rounded rectangle with a 1px border. */
-    public static void box(GuiGraphics g, int x, int y, int w, int h, int radius, int fill, int border) {
+    public static void box(Canvas g, int x, int y, int w, int h, int radius, int fill, int border) {
         rect(g, x, y, w, h, radius, border);
         rect(g, x + 1, y + 1, w - 2, h - 2, Math.max(0, radius - 1), fill);
     }
 
-    public static void text(GuiGraphics g, Font font, String text, int x, int y, int color) {
-        g.drawString(font, text, x, y, color, false);
+    public static void text(Canvas g, Font font, String text, int x, int y, int color) {
+        g.text(font, text, x, y, color);
     }
 
-    public static void textRight(GuiGraphics g, Font font, String text, int right, int y, int color) {
-        g.drawString(font, text, right - font.width(text), y, color, false);
+    public static void textRight(Canvas g, Font font, String text, int right, int y, int color) {
+        g.text(font, text, right - font.width(text), y, color);
     }
 
-    public static void textCentered(GuiGraphics g, Font font, String text, int centerX, int y, int color) {
-        g.drawString(font, text, centerX - font.width(text) / 2, y, color, false);
+    public static void textCentered(Canvas g, Font font, String text, int centerX, int y, int color) {
+        g.text(font, text, centerX - font.width(text) / 2, y, color);
     }
 
     /** Cuts the text with an ellipsis so that it fits into the given width. */
