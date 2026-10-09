@@ -23,7 +23,12 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import com.mojang.blaze3d.platform.InputConstants;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Keys;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.config.Preset;
@@ -33,7 +38,9 @@ import io.github.shamanalle.multiclicker.gui.ProfilesScreen;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.clicker.ClickChannel;
 import io.github.shamanalle.multiclicker.module.clicker.ClickerModule;
+import io.github.shamanalle.multiclicker.module.clicker.Jitter;
 import io.github.shamanalle.multiclicker.module.visual.HighlightModule;
+import io.github.shamanalle.multiclicker.util.ServerStats;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,6 +96,11 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             scenario(context, server, "safety stops on low health", this::safety);
             scenario(context, server, "config, profiles and presets", this::config);
             scenario(context, server, "auto fish casts and catches", this::autoFish);
+            scenario(context, server, "click speed in clicks per second", this::clicksPerSecond);
+            scenario(context, server, "hotkeys toggle modules and channels and load profiles", this::hotkeys);
+            scenario(context, server, "profiles are shared as text and bound to a server", this::sharedProfiles);
+            scenario(context, server, "hotbar refill and worn tool replacement", this::hotbarRefill);
+            scenario(context, server, "auto farm harvests and replants", this::autoFarm);
             scenario(context, server, "hud and highlight", this::hudScreenshots);
 
             reset(context, server);
@@ -460,6 +472,179 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         waitUntil(context, "the rod to be cast again", 120, mc -> mc.player.fishing != null);
     }
 
+    private void clicksPerSecond(ClientGameTestContext context, TestServerContext server) {
+        context.runOnClient(mc -> {
+            ClickerModule clicker = MultiClicker.get().clicker();
+            clicker.attackTarget.set(ClickerModule.AttackTarget.ANYTHING);
+            clicker.attackCooldown.set(false);
+            clicker.attack.rate.set(ClickChannel.Rate.CPS);
+            clicker.attack.cps.set(8);
+        });
+        activate(context);
+        context.waitTicks(100);
+        int clicks = context.computeOnClient(mc -> MultiClicker.get().stats().clicks());
+        // 8 per second over 5 seconds: 2.5 ticks per click, so the fraction has to carry over.
+        check(clicks >= 39 && clicks <= 41, "expected 40 clicks at 8 CPS in 100 ticks, got " + clicks);
+        deactivate(context);
+
+        context.runOnClient(mc -> {
+            ClickerModule clicker = MultiClicker.get().clicker();
+            clicker.attack.cps.set(20);
+            clicker.attack.jitter.set(10);
+            clicker.attack.jitterType.set(Jitter.NATURAL);
+        });
+        activate(context);
+        context.waitTicks(200);
+        int jittered = context.computeOnClient(mc -> MultiClicker.get().stats().clicks());
+        // 1 tick plus 3.4 ticks of delay on average: about 45 clicks in 200 ticks.
+        check(jittered >= 25 && jittered <= 75, "expected about 45 clicks with the natural delay, got " + jittered);
+    }
+
+    private void hotkeys(ClientGameTestContext context, TestServerContext server) {
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.clicker().attack.interval.set(9);
+            check(mod.config().saveProfile("Hotkey test"), "saving the profile failed");
+            mod.config().setProfileKey("Hotkey test", Keys.keyboard(InputConstants.KEY_H).getName());
+            mod.clicker().attack.interval.set(1);
+            mod.autoWalk().keySetting().bind(Keys.keyboard(InputConstants.KEY_K));
+            mod.clicker().use.key.bind(Keys.keyboard(InputConstants.KEY_J));
+        });
+        context.getInput().pressKey(InputConstants.KEY_K);
+        context.waitTicks(2);
+        check(context.computeOnClient(mc -> MultiClicker.get().autoWalk().isEnabled()), "the module hotkey did not turn auto walk on");
+        context.getInput().pressKey(InputConstants.KEY_K);
+        context.waitTicks(2);
+        check(context.computeOnClient(mc -> !MultiClicker.get().autoWalk().isEnabled()), "the module hotkey did not turn auto walk off");
+
+        context.getInput().pressKey(InputConstants.KEY_J);
+        context.waitTicks(2);
+        check(context.computeOnClient(mc -> MultiClicker.get().clicker().use.enabled.get()), "the channel hotkey did not turn use on");
+
+        context.getInput().pressKey(InputConstants.KEY_H);
+        context.waitTicks(2);
+        check(context.computeOnClient(mc -> MultiClicker.get().clicker().attack.interval.get() == 9
+                && "Hotkey test".equals(MultiClicker.get().config().activeProfile())), "the profile hotkey did not load the profile");
+        // Loading a profile keeps the hotkeys: they are not part of it.
+        check(context.computeOnClient(mc -> MultiClicker.get().autoWalk().keySetting().isBound()), "loading a profile removed a hotkey");
+
+        // In a menu the keys type text instead.
+        context.setScreen(() -> new ConfigScreen(null));
+        context.getInput().pressKey(InputConstants.KEY_K);
+        context.waitTicks(2);
+        context.setScreen(() -> null);
+        context.waitTicks(2);
+        check(context.computeOnClient(mc -> !MultiClicker.get().autoWalk().isEnabled()), "a hotkey worked inside a menu");
+        context.runOnClient(mc -> {
+            MultiClicker.get().config().deleteProfile("Hotkey test");
+            MultiClicker.get().saveConfig();
+        });
+    }
+
+    private void sharedProfiles(ClientGameTestContext context, TestServerContext server) {
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.clicker().attack.interval.set(6);
+            mod.autoEat().enabledSetting().set(true);
+            mod.autoEat().keySetting().bind(Keys.keyboard(InputConstants.KEY_G));
+            check(mod.config().saveProfile("Shared"), "saving the profile failed");
+            String text = mod.config().exportProfile("Shared");
+            check(text != null && text.startsWith("MC1:"), "the profile was not exported: " + text);
+            mod.config().deleteProfile("Shared");
+            mod.config().resetAll();
+
+            check(mod.config().importProfile(text, "").equals("Shared"), "the profile kept no name");
+            check(mod.config().importProfile(text, "").equals("Shared 2"), "importing again overwrote the profile");
+            check(mod.config().loadProfile("Shared 2"), "the imported profile does not load");
+            check(mod.clicker().attack.interval.get() == 6 && mod.autoEat().isEnabled(), "the imported profile lost settings");
+            check(!mod.autoEat().keySetting().isBound(), "an imported profile brought a hotkey");
+            boolean refused;
+            try {
+                mod.config().importProfile("not a profile", "");
+                refused = false;
+            } catch (IllegalArgumentException e) {
+                refused = true;
+            }
+            check(refused, "text that is not a profile was imported");
+
+            check(ServerStats.address(mc).equals("singleplayer"), "a single player world is not recognized");
+            check(mod.config().toggleServer("Shared", "singleplayer"), "the server was not bound");
+            check("Shared".equals(mod.config().profileForServer("singleplayer")), "the server does not choose the profile");
+            check(mod.config().toggleServer("Shared 2", "singleplayer") && mod.config().profileForServer("singleplayer").equals("Shared 2"),
+                    "a server can load two profiles");
+            mod.config().deleteProfile("Shared");
+            mod.config().deleteProfile("Shared 2");
+            check(mod.config().profileForServer("singleplayer") == null, "a deleted profile still loads on the server");
+            mod.saveConfig();
+        });
+    }
+
+    private void hotbarRefill(ClientGameTestContext context, TestServerContext server) {
+        give(server, 0, new ItemStack(Items.COBBLESTONE, 1));
+        give(server, 20, new ItemStack(Items.COBBLESTONE, 64));
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.clicker().attack.enabled.set(false);
+            mod.hotbarRefill().enabledSetting().set(true);
+        });
+        context.waitTicks(3);
+        activate(context);
+        context.waitTicks(3);
+        // The last block of the stack is used up.
+        server.runCommand("clear @a minecraft:cobblestone 1");
+        waitUntil(context, "the stack to be refilled", 20, mc -> mc.player.getInventory().getItem(0).getCount() == 64);
+        check(context.computeOnClient(mc -> mc.player.getInventory().getItem(20).isEmpty()), "the refill came from the wrong slot");
+
+        // A whole stack thrown away is not refilled.
+        give(server, 21, new ItemStack(Items.COBBLESTONE, 64));
+        context.waitTicks(3);
+        server.runCommand("item replace entity @a hotbar.0 with minecraft:air");
+        context.waitTicks(10);
+        check(context.computeOnClient(mc -> mc.player.getInventory().getItem(0).isEmpty()), "a stack that was removed whole was refilled");
+
+        ItemStack worn = new ItemStack(Items.IRON_PICKAXE);
+        worn.setDamageValue(worn.getMaxDamage() - 5);
+        give(server, 1, worn);
+        give(server, 25, new ItemStack(Items.IRON_PICKAXE));
+        context.runOnClient(mc -> Slots.select(mc.player.getInventory(), 1));
+        waitUntil(context, "the worn pickaxe to be replaced", 20, mc -> mc.player.getMainHandItem().is(Items.IRON_PICKAXE)
+                && mc.player.getMainHandItem().getDamageValue() == 0);
+        check(context.computeOnClient(mc -> mc.player.getInventory().getItem(25).getDamageValue() > 0),
+                "the worn pickaxe was not kept in the inventory");
+    }
+
+    private void autoFarm(ClientGameTestContext context, TestServerContext server) {
+        server.runCommand("fill -1 -61 2 1 -61 3 minecraft:farmland");
+        server.runCommand("fill -1 -60 2 1 -60 3 minecraft:wheat[age=7]");
+        server.runCommand("setblock 1 -60 3 minecraft:wheat[age=3]");
+        give(server, 4, new ItemStack(Items.WHEAT_SEEDS, 16));
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.clicker().attack.enabled.set(false);
+            mod.autoFarm().enabledSetting().set(true);
+            mod.autoFarm().delay.set(1);
+        });
+        context.waitTicks(5);
+        activate(context);
+        waitUntil(context, "the ripe wheat to be harvested and replanted", 200, mc -> {
+            for (int x = -1; x <= 1; x++) {
+                for (int z = 2; z <= 3; z++) {
+                    BlockState state = mc.level.getBlockState(new BlockPos(x, -60, z));
+                    if (x == 1 && z == 3) {
+                        continue;
+                    }
+                    if (!state.is(Blocks.WHEAT) || ((CropBlock) state.getBlock()).isMaxAge(state)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        });
+        check(context.computeOnClient(mc -> mc.level.getBlockState(new BlockPos(1, -60, 3)).getValue(CropBlock.AGE) == 3),
+                "harvested wheat that was not ripe");
+        check(context.computeOnClient(mc -> Slots.selected(mc.player.getInventory())) == 0, "the slot in use was not selected again");
+    }
+
     private void hudScreenshots(ClientGameTestContext context, TestServerContext server) {
         hud(context, server, "");
     }
@@ -522,6 +707,8 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             mod.autoEat().enabledSetting().set(true);
             mod.offhand().enabledSetting().set(true);
             mod.antiAfk().enabledSetting().set(true);
+            mod.hotbarRefill().enabledSetting().set(true);
+            mod.autoFarm().keySetting().bind(Keys.keyboard(InputConstants.KEY_F7));
             mod.highlight().style.set(HighlightModule.Style.GLOW);
             mod.mining().blocks.set(List.of("minecraft:stone", "minecraft:deepslate", "minecraft:cobblestone",
                     "minecraft:andesite", "minecraft:diorite", "minecraft:granite", "minecraft:tuff"));
@@ -547,7 +734,7 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         });
         context.takeScreenshot("readme_" + lang + "_hud");
 
-        for (Category category : List.of(Category.CLICKER, Category.SURVIVAL, Category.VISUAL)) {
+        for (Category category : List.of(Category.CLICKER, Category.SURVIVAL, Category.AUTOMATION, Category.VISUAL)) {
             context.setScreen(() -> new ConfigScreen(null));
             context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).showCategory(category));
             parkCursor(context);
@@ -556,7 +743,13 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         List<String> profiles = lang.equals("ru")
                 ? List.of("Железная ферма", "Рыбалка на ночь")
                 : List.of("Iron farm", "Night fishing");
-        context.runOnClient(mc -> profiles.forEach(MultiClicker.get().config()::saveProfile));
+        context.runOnClient(mc -> {
+            profiles.forEach(MultiClicker.get().config()::saveProfile);
+            // One profile with a hotkey and loaded in single player, to show both on the picture.
+            MultiClicker.get().config().setProfileKey(profiles.get(0), Keys.keyboard(InputConstants.KEY_F6).getName());
+            MultiClicker.get().config().toggleServer(profiles.get(0), ServerStats.address(mc));
+            MultiClicker.get().config().loadProfile(profiles.get(0));
+        });
         context.setScreen(() -> new ProfilesScreen(new ConfigScreen(null)));
         parkCursor(context);
         context.takeScreenshot("readme_" + lang + "_profiles");

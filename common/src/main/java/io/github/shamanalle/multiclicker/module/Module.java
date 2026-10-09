@@ -5,6 +5,7 @@ import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
+import io.github.shamanalle.multiclicker.setting.KeySetting;
 import io.github.shamanalle.multiclicker.setting.Setting;
 
 import java.util.ArrayList;
@@ -25,11 +26,15 @@ public abstract class Module {
     private final List<Setting<?>> settings = new ArrayList<>();
     @Nullable
     private final BoolSetting enabled;
+    /** Turns the module on and off while playing; shown in the card header of the menu. */
+    @Nullable
+    private final KeySetting key;
 
     protected Module(String id, Category category, boolean toggleable, boolean enabledByDefault) {
         this.id = id;
         this.category = category;
         this.enabled = toggleable ? add(new BoolSetting("enabled", enabledByDefault)) : null;
+        this.key = toggleable ? add(new KeySetting("key")) : null;
         if (enabled != null) {
             enabled.onChange(this::onEnabledChanged);
         }
@@ -64,6 +69,11 @@ public abstract class Module {
     @Nullable
     public BoolSetting enabledSetting() {
         return enabled;
+    }
+
+    @Nullable
+    public KeySetting keySetting() {
+        return key;
     }
 
     public boolean isEnabled() {

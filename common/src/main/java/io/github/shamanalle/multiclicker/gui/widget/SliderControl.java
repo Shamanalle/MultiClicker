@@ -9,7 +9,10 @@ import io.github.shamanalle.multiclicker.gui.Draw;
 import io.github.shamanalle.multiclicker.gui.Theme;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
 
-/** A slider with the formatted value next to it. Drag, scroll over the track or use arrow keys. */
+/**
+ * A slider with the formatted value next to it. Drag, scroll over the track or use arrow keys;
+ * click the value to type an exact number.
+ */
 public class SliderControl extends SettingControl {
     private static final int MAX_TRACK = 80;
     private static final int MIN_TRACK = 32;
@@ -21,6 +24,10 @@ public class SliderControl extends SettingControl {
     private int valueWidth = -1;
     private int trackWidth = MAX_TRACK;
     private boolean dragging;
+    private boolean editing;
+    /** The first typed digit replaces the whole number, like a selected text field. */
+    private boolean replaceOnType;
+    private String editText = "";
 
     public SliderControl(IntSetting setting) {
         this.setting = setting;
@@ -66,8 +73,78 @@ public class SliderControl extends SettingControl {
         Draw.rect(g, x, trackY, Math.max(filled, 2), 4, 2, Theme.accent());
         int knobX = Mth.clamp(x + filled - 3, x, x + trackWidth - 6);
         Draw.rect(g, knobX, y + 1, 6, height - 2, 2, 0xFFFFFFFF);
+        if (editing) {
+            drawEditor(g, font);
+            return;
+        }
         String text = Draw.ellipsize(font, setting.displayValue(), valueWidth);
-        Draw.textRight(g, font, text, x + width, y + 2, setting.isDefault() ? Theme.TEXT_DIM : Theme.TEXT);
+        boolean overValue = isOverValue(mouseX, mouseY);
+        int color = overValue ? Theme.accent() : setting.isDefault() ? Theme.TEXT_DIM : Theme.TEXT;
+        Draw.textRight(g, font, text, x + width, y + 2, color);
+    }
+
+    private void drawEditor(Canvas g, Font font) {
+        int boxX = x + trackWidth + GAP - 3;
+        int boxW = width - trackWidth - GAP + 5;
+        Draw.box(g, boxX, y - 2, boxW, height + 4, 2, Theme.CONTROL, Theme.accent());
+        int textW = font.width(editText);
+        int textX = x + width - textW - 4;
+        if (replaceOnType && !editText.isEmpty()) {
+            g.fill(textX - 1, y, textX + textW + 1, y + height, Theme.alpha(Theme.accent(), 0.45F));
+        }
+        Draw.text(g, font, editText, textX, y + 2, Theme.TEXT);
+        if (System.currentTimeMillis() / 500 % 2 == 0) {
+            g.fill(x + width - 3, y + 1, x + width - 2, y + height - 1, Theme.TEXT);
+        }
+    }
+
+    /** Whether the point is over the number, which can be clicked to type a value. */
+    public boolean isOverValue(double mouseX, double mouseY) {
+        return mouseX >= x + trackWidth + GAP - 2 && mouseX < x + width + 2 && mouseY >= y - 3 && mouseY < y + height + 3;
+    }
+
+    public boolean isEditing() {
+        return editing;
+    }
+
+    public void beginEdit() {
+        editing = true;
+        replaceOnType = true;
+        editText = Integer.toString(setting.get());
+    }
+
+    /** Adds a typed digit; returns whether the character was used. */
+    public boolean type(char character) {
+        if (!editing || character < '0' || character > '9') {
+            return false;
+        }
+        if (replaceOnType) {
+            editText = "";
+            replaceOnType = false;
+        }
+        if (editText.length() < 6) {
+            editText += character;
+        }
+        return true;
+    }
+
+    public void backspace() {
+        replaceOnType = false;
+        if (!editText.isEmpty()) {
+            editText = editText.substring(0, editText.length() - 1);
+        }
+    }
+
+    /** Applies the typed number (clamped to the allowed range). */
+    public void commit() {
+        if (editing && !editText.isEmpty()) {
+            setting.set(Integer.parseInt(editText));
+        }
+        editing = false;
+    }
+
+    public void cancelEdit() {
+        editing = false;
     }
 
     @Override
@@ -76,12 +153,16 @@ public class SliderControl extends SettingControl {
             return false;
         }
         if (button == 1) {
+            editing = false;
             setting.reset();
             return true;
         }
         if (overTrack(mouseX, mouseY)) {
+            commit();
             dragging = true;
             setFromMouse(mouseX);
+        } else if (button == 0 && isOverValue(mouseX, mouseY) && !editing) {
+            beginEdit();
         }
         return true;
     }

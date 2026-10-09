@@ -15,6 +15,7 @@ public final class SessionStats {
     /** Entity id -> time of our last attack on it. */
     private final Int2LongMap attacked = new Int2LongOpenHashMap();
     private long startedAt;
+    private int clicks;
     private int attacks;
     private int kills;
 
@@ -22,11 +23,13 @@ public final class SessionStats {
         recentClicks.clear();
         attacked.clear();
         startedAt = System.currentTimeMillis();
+        clicks = 0;
         attacks = 0;
         kills = 0;
     }
 
     public void recordClick() {
+        clicks++;
         recentClicks.enqueue(System.currentTimeMillis());
     }
 
@@ -58,6 +61,11 @@ public final class SessionStats {
 
     public int clicksPerSecond() {
         return recentClicks.size();
+    }
+
+    /** All clicks of the session, on a target or not. */
+    public int clicks() {
+        return clicks;
     }
 
     public int attacks() {

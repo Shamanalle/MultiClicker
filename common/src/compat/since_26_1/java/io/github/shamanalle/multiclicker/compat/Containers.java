@@ -20,4 +20,10 @@ public final class Containers {
         LocalPlayer player = mc.player;
         mc.gameMode.handleContainerInput(player.inventoryMenu.containerId, menuSlot, 1, ContainerInput.THROW, player);
     }
+
+    /** A left click on the slot: picks the stack up, or puts down / merges the stack on the cursor. */
+    public static void pickup(Minecraft mc, int menuSlot) {
+        LocalPlayer player = mc.player;
+        mc.gameMode.handleContainerInput(player.inventoryMenu.containerId, menuSlot, 0, ContainerInput.PICKUP, player);
+    }
 }

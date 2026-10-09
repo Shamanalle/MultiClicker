@@ -24,16 +24,16 @@ the version fields · 5. Upload checklist
 | Modrinth categories (up to 3) | Utility, Game mechanics |
 | CurseForge category | Utility & QoL (if the list has no such entry: Miscellaneous) |
 
-**Summary, English** (160 characters):
+**Summary, English** (173 characters):
 
-> Auto clicker for Fabric with auto eat, auto fish, auto tool, offhand, safety stop and anti-AFK for mob farms, mining and fishing.
+> Auto clicker for Fabric with auto eat, auto fish, auto farm, auto tool, hotbar refill, offhand, safety stop, anti-AFK and hotkeys for mob farms, mining, farming and fishing.
 
 **Summary, Russian** (for the Russian description or a translation of the project):
 
-> Автокликер для Fabric с авто-едой, авто-рыбалкой, авто-инструментом, второй рукой, аварийной остановкой и анти-АФК для ферм, копания и рыбалки.
+> Автокликер для Fabric с авто-едой, авто-рыбалкой, автофермой, авто-инструментом, пополнением хотбара, второй рукой, аварийной остановкой, анти-АФК и горячими клавишами.
 
 Why this wording: both sites search the name and the summary (Modrinth has no free-form tags, CurseForge has only fixed categories). The words people type
-(`auto clicker`, `autoclicker`, `auto eat`, `auto fish`, `afk`) are in the summary and the first
+(`auto clicker`, `autoclicker`, `auto eat`, `auto fish`, `auto farm`, `afk`) are in the summary and the first
 paragraph, so the name can stay `MultiClicker`.
 
 ---
@@ -48,8 +48,8 @@ repository images, so they work on Modrinth as they are.
 # MultiClicker
 
 Auto clicker for Minecraft (Fabric). It clicks the attack, use and jump keys at a rhythm you set, and
-comes with modules for AFK farms, mining and fishing: auto eat, auto fish, auto tool, offhand, safety
-stop, anti-AFK and others.
+comes with modules for AFK farms, mining, crop farming and fishing: auto eat, auto fish, auto farm, auto
+tool, hotbar refill, offhand, safety stop, anti-AFK and others. Every module and profile can have a hotkey.
 
 ![A mob farm with MultiClicker: the status panel and the highlighted target](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/hud.png)
 
@@ -65,8 +65,10 @@ stop, anti-AFK and others.
 | **Mob farm** | Attacks on full charge with a small random delay. Passive mobs, pets and named mobs are left alone. Auto eat and anti-AFK are on. |
 | **Mining** | The attack key is held, blocks are broken, auto tool picks the pickaxe, the clicker stops when the inventory is full. Auto eat is on. |
 | **Fishing** | The clicker is off, auto fish reels in and casts again. Auto eat and anti-AFK are on. |
+| **Farming** | The clicker is off, auto farm harvests ripe crops around you and plants them again, hotbar refill brings more seeds. Auto eat is on. |
 
-Your own settings can be saved as profiles.
+Your own settings can be saved as profiles: load one with a hotkey, have it load by itself on a server, or
+share it as a line of text.
 
 > Many multiplayer servers don't allow auto clickers. Check the server rules before you use the mod online.
 
@@ -76,7 +78,11 @@ Every option has a tooltip in the menu. Right-click a setting to reset it.
 
 **Auto clicker**
 - Three channels: attack (left mouse button), use (right mouse button) and jump. Each one can click or
-  hold the key and has its own interval, hold time, pause and random delay.
+  hold the key and has its own speed, hold time, pause, random delay and hotkey.
+- Speed as an interval in ticks or in clicks per second (fractions of a tick carry over, so 12 CPS is
+  kept on average).
+- Random delay of your choice: even, bell curve (steady rhythm) or natural (mostly short, now and then a
+  longer pause).
 - Waits for full weapon charge for full damage. Turn it off for 1.8-style PvP.
 - Targets: only allowed creatures, creatures and blocks (mining), or anything.
 - Pauses while you eat, drink, block or draw a bow.
@@ -104,6 +110,10 @@ crystals) are switched separately. You can also ignore babies, named mobs, pets 
   too long, stops when the rod is about to break or after a number of catches. The rod can be in either hand.
 - Anti-AFK: jump, sneak, swing, look around or step at random intervals. Each action can be turned off.
 - Auto walk: walks forward, optionally sprinting and jumping over obstacles.
+- Auto farm: harvests ripe wheat, carrots, potatoes, beetroots, nether wart, cocoa and sweet berries
+  around you (or only under the crosshair) and plants them again.
+- Hotbar refill: a used-up stack or a broken tool is replaced from the inventory, and the tool in your hand
+  is swapped for a spare before it breaks, so a Mending tool is kept.
 - Inventory cleaner: throws out the items from your junk list, one stack at a time. It never touches
   the hotbar unless you allow it.
 
@@ -114,17 +124,22 @@ crystals) are switched separately. You can also ignore babies, named mobs, pets 
   broken tools and switches back afterwards.
 
 **Interface**
-- HUD: a status panel in any corner with the scale you choose: active channels, clicks per second,
-  attacks, kills, session time, ping, server TPS, FPS and the list of active modules. Every line can be hidden.
+- HUD: a status panel in any corner with the scale you choose: the loaded profile, active channels,
+  clicks per second, attacks, kills, session time, ping, server TPS, FPS and the list of active modules.
+  Every line can be hidden.
 - Target highlight: the creature about to be hit is outlined, filled or glowing, in a color you pick.
 - Menu: categories, module cards, search (also by English names), tooltips and a list editor with item
-  icons. It fits the window size; on small screens the sidebar turns into icons.
+  icons. Click a number to type an exact value; changed settings are marked and a module resets with one
+  click. It fits the window size; on small screens the sidebar turns into icons.
 - Feedback: accent color, a sound and a message above the hotbar when the mod turns on or off.
-- Profiles: save your settings under a name and load them later.
+- Hotkeys: any module, each clicker channel and each profile can get a key or a side mouse button.
+- Profiles: save your settings under a name and load them later, with a hotkey or by themselves on a
+  given server. Copy a profile as one line of text to share it, paste one you got from someone else.
 
 ## Screenshots
 
 ![Clicker settings](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/menu_clicker.png)
+![Automation modules](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/menu_automation.png)
 ![Survival modules](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/menu_survival.png)
 ![Presets and profiles](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/profiles.png)
 ![Block list editor](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/list_editor.png)
@@ -144,8 +159,10 @@ the file for your version. Minecraft 1.21.9 and newer needs Fabric Loader 0.17 o
 | I | Turn the mod on / off |
 | O | Open the settings |
 
-Rebind them under Options → Controls → Key Binds → MultiClicker. In the menu, start typing to search,
-and use the mouse wheel or the arrow keys to fine-tune sliders.
+Rebind them under Options → Controls → Key Binds → MultiClicker. Hotkeys for modules and clicker
+channels are set in the menu (the ⌨ button of a module), hotkeys for profiles under Profiles. In the
+menu, start typing to search, press Tab for the next category, and use the mouse wheel, the arrow keys
+or a click on the number to set sliders.
 
 ## Languages
 
@@ -155,6 +172,7 @@ Türkçe, 简体中文, 日本語, 한국어. Items, enchantments and mobs use t
 ## Configuration
 
 Settings are saved in `config/multiclicker.json`, profiles in `config/multiclicker/profiles/`.
+Settings from older versions are converted when they are loaded.
 
 ## Links
 
@@ -173,8 +191,9 @@ description of a Russian translation if the site offers one.
 # MultiClicker
 
 Автокликер для Minecraft (Fabric). Нажимает клавиши атаки, использования и прыжка в заданном ритме.
-Есть модули для AFK-ферм, копания и рыбалки: авто-еда, авто-рыбалка, авто-инструмент, вторая рука,
-аварийная остановка, анти-АФК и другие.
+Есть модули для AFK-ферм, копания, огорода и рыбалки: авто-еда, авто-рыбалка, автоферма,
+авто-инструмент, пополнение хотбара, вторая рука, аварийная остановка, анти-АФК и другие. У каждого
+модуля и профиля может быть горячая клавиша.
 
 ## Быстрый старт
 
@@ -188,8 +207,10 @@ description of a Russian translation if the site offers one.
 | **Ферма мобов** | Бьёт при полной зарядке со случайной задержкой. Мирных мобов, питомцев и мобов с именем не трогает. Включены авто-еда и анти-АФК. |
 | **Копание** | Клавиша атаки удерживается, блоки ломаются, авто-инструмент берёт кирку, кликер останавливается при полном инвентаре. Включена авто-еда. |
 | **Рыбалка** | Кликер выключен, авто-рыбалка подсекает и забрасывает удочку снова. Включены авто-еда и анти-АФК. |
+| **Ферма** | Кликер выключен, автоферма собирает созревший урожай вокруг и сажает заново, пополнение хотбара подкладывает семена. Включена авто-еда. |
 
-Свои настройки можно сохранять как профили.
+Свои настройки можно сохранять как профили: загружать горячей клавишей, автоматически на нужном сервере
+или делиться ими одной строкой текста.
 
 > Многие серверы запрещают автокликеры. Перед игрой онлайн прочитайте правила сервера.
 
@@ -199,7 +220,11 @@ description of a Russian translation if the site offers one.
 
 **Автокликер**
 - Три канала: атака (левая кнопка мыши), использование (правая) и прыжок. Каждый может нажимать или
-  удерживать клавишу и имеет свой интервал, время удержания, паузу и случайную задержку.
+  удерживать клавишу и имеет свою скорость, время удержания, паузу, случайную задержку и горячую клавишу.
+- Скорость задаётся интервалом в тиках или в кликах в секунду (доли тика переносятся, так что 12 кл/с
+  держатся в среднем).
+- Случайная задержка на выбор: равномерная, колокол (ровный ритм) или естественная (чаще коротко,
+  изредка пауза подольше).
 - Ждёт полной зарядки оружия ради полного урона. Для PvP в стиле 1.8 это можно отключить.
 - Цели: только разрешённые существа, существа и блоки (копание) или что угодно.
 - Пауза, пока вы едите, пьёте, закрываетесь щитом или натягиваете лук.
@@ -229,6 +254,10 @@ description of a Russian translation if the site offers one.
 - Анти-АФК: прыжок, приседание, взмах, взгляд по сторонам или шаг через случайные промежутки. Каждое
   действие можно отключить.
 - Авто-ходьба: идёт вперёд, при желании бежит и прыгает через препятствия.
+- Автоферма: собирает созревшие пшеницу, морковь, картофель, свёклу, незерский нарост, какао и сладкие
+  ягоды вокруг (или только под прицелом) и сажает заново.
+- Пополнение хотбара: закончившийся стак или сломанный инструмент заменяется из инвентаря, а инструмент в
+  руке меняется на запасной до поломки, так что инструмент с «Починкой» сохраняется.
 - Очистка инвентаря: выбрасывает предметы из списка мусора по одному стаку. Хотбар не трогает без разрешения.
 
 **Копание**
@@ -239,18 +268,23 @@ description of a Russian translation if the site offers one.
   пропускает почти сломанные и возвращает прежний слот.
 
 **Интерфейс**
-- HUD: панель состояния в любом углу и нужного размера: активные каналы, кликов в секунду, атаки,
-  убийства, время сессии, пинг, TPS сервера, FPS и список активных модулей. Любую строку можно скрыть.
+- HUD: панель состояния в любом углу и нужного размера: загруженный профиль, активные каналы, кликов
+  в секунду, атаки, убийства, время сессии, пинг, TPS сервера, FPS и список активных модулей. Любую
+  строку можно скрыть.
 - Подсветка цели: существо, которое сейчас ударят, обводится, заливается или светится выбранным цветом.
 - Меню: категории, карточки модулей, поиск (в том числе по английским названиям), подсказки и
-  редактор списков с иконками. Подстраивается под размер окна; на маленьких экранах боковая панель
+  редактор списков с иконками. Число можно ввести с клавиатуры, изменённые настройки отмечены, модуль
+  сбрасывается одним нажатием. Подстраивается под размер окна; на маленьких экранах боковая панель
   превращается в значки.
 - Обратная связь: цвет акцента, звук и сообщение над хотбаром при включении и выключении мода.
-- Профили: сохраняйте настройки под именем и загружайте позже.
+- Горячие клавиши: любому модулю, каналу кликера и профилю можно назначить клавишу или боковую кнопку мыши.
+- Профили: сохраняйте настройки под именем и загружайте позже — горячей клавишей или сами на нужном
+  сервере. Профиль копируется одной строкой текста, чтобы им поделиться, и так же вставляется чужой.
 
 ## Скриншоты
 
 ![Настройки кликера](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/menu_clicker.png)
+![Модули автоматизации](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/menu_automation.png)
 ![Модули выживания](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/menu_survival.png)
 ![Пресеты и профили](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/profiles.png)
 ![Редактор списка блоков](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/list_editor.png)
@@ -270,8 +304,10 @@ description of a Russian translation if the site offers one.
 | I | Включить / выключить мод |
 | O | Открыть настройки |
 
-Клавиши меняются в Настройки → Управление → Клавиши → MultiClicker. В меню начните печатать, чтобы
-искать; колесо мыши и стрелки помогают точно настроить ползунки.
+Клавиши меняются в Настройки → Управление → Клавиши → MultiClicker. Горячие клавиши модулей и каналов
+назначаются в меню (кнопка ⌨ у модуля), клавиши профилей — в разделе «Профили». В меню начните
+печатать, чтобы искать; Tab переключает категорию, а ползунки настраиваются колесом, стрелками или
+вводом числа.
 
 ## Языки
 
@@ -281,6 +317,7 @@ Türkçe, 简体中文, 日本語, 한국어. Предметы, зачарова
 ## Настройки
 
 Настройки хранятся в `config/multiclicker.json`, профили в `config/multiclicker/profiles/`.
+Настройки старых версий переводятся в новый формат при загрузке.
 
 ## Ссылки
 
@@ -294,9 +331,9 @@ Türkçe, 简体中文, 日本語, 한국어. Предметы, зачарова
 Upload every jar as its own version/file and tick the matching Minecraft version and the Fabric loader
 (1.21.9 and newer: Fabric Loader 0.17+, mention it in the changelog).
 
-**Version name:** `MultiClicker 2.1.0 for Minecraft <version>`, for example `MultiClicker 2.1.0 for Minecraft 1.21.4`.
+**Version name:** `MultiClicker 2.2.0 for Minecraft <version>`, for example `MultiClicker 2.2.0 for Minecraft 1.21.4`.
 
-**Version number:** `2.1.0+<Minecraft version>`, the same as in the file name.
+**Version number:** `2.2.0+<Minecraft version>`, the same as in the file name.
 
 **Release channel:** Release.
 
@@ -305,12 +342,16 @@ Upload every jar as its own version/file and tick the matching Minecraft version
 **Changelog** (the same text for every file):
 
 ```
-2.1.0
+2.2.0
 
-- Support for 17 Minecraft versions: 1.21, 1.21.1 to 1.21.11 and 26.1, 26.1.1, 26.1.2, 26.2, 26.3.
-  Download the file that matches your game version.
-- Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer.
-- On 1.21.9 the outline and filled highlight styles are not drawn; the glow style works.
+- Hotkeys for every module, clicker channel and profile.
+- Click speed in clicks per second, and a choice of random delay: even, bell curve or natural.
+- Profiles can be shared as one line of text and can load by themselves on a given server.
+- New modules: Auto Farm (harvests and replants crops) and Hotbar Refill (refills used-up stacks and
+  swaps a tool before it breaks). New Farming preset.
+- Menu: type exact numbers, changed settings are marked, reset a module at once, Tab switches categories.
+- Works on Minecraft 1.21 to 1.21.11 and 26.1 to 26.3; download the file for your game version.
+  Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer.
 ```
 
 Full history: https://github.com/Shamanalle/MultiClicker/blob/main/CHANGELOG.md
@@ -327,3 +368,9 @@ Full history: https://github.com/Shamanalle/MultiClicker/blob/main/CHANGELOG.md
    jar per version.
 3. CurseForge: the same text, the same 17 files (one file per game version).
 4. Both sites review new projects; the review can take from a few hours to a few days.
+5. Later versions can be uploaded by the release workflow itself. In the repository settings
+   (*Settings → Secrets and variables → Actions*) add the variables `MODRINTH_ID` and `CURSEFORGE_ID`
+   (the project ids shown on each site) and the secrets `MODRINTH_TOKEN` (Modrinth → Settings → PATs,
+   with the *Create versions* scope) and `CURSEFORGE_TOKEN` (CurseForge → API tokens). From then on every
+   release also uploads its 17 jars to both sites, with the changelog of that version. A site whose
+   token is missing is skipped.

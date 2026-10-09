@@ -10,6 +10,8 @@ public enum Unit {
     TICKS,
     /** A delay between clicks, also shown as clicks per second. */
     CLICK_INTERVAL,
+    /** Clicks per second. */
+    CPS,
     SECONDS,
     MINUTES,
     PERCENT,
@@ -21,6 +23,7 @@ public enum Unit {
             case NONE -> Integer.toString(value);
             case TICKS -> I18n.get("multiclicker.unit.ticks", value, decimal(value / 20.0));
             case CLICK_INTERVAL -> I18n.get("multiclicker.unit.click_interval", value, decimal(20.0 / Math.max(1, value)));
+            case CPS -> I18n.get("multiclicker.unit.cps", value);
             case SECONDS -> I18n.get("multiclicker.unit.seconds", value);
             case MINUTES -> I18n.get("multiclicker.unit.minutes", value);
             case PERCENT -> value + "%";

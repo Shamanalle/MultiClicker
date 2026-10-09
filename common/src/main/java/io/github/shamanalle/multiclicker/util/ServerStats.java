@@ -3,6 +3,9 @@ package io.github.shamanalle.multiclicker.util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.multiplayer.ServerData;
+import org.jetbrains.annotations.Nullable;
+import io.github.shamanalle.multiclicker.config.ConfigManager;
 
 /**
  * Estimates the server tick rate from the world-time packets (sent once per 20 server ticks)
@@ -16,6 +19,19 @@ public final class ServerStats {
     private static long lastUpdateNanos = -1;
 
     private ServerStats() {
+    }
+
+    /**
+     * The address of the server being played on as the player typed it, {@link ConfigManager#SINGLEPLAYER}
+     * in a single player world, or {@code null} when it is unknown.
+     */
+    @Nullable
+    public static String address(Minecraft mc) {
+        if (mc.isLocalServer()) {
+            return ConfigManager.SINGLEPLAYER;
+        }
+        ServerData server = mc.getCurrentServer();
+        return server == null || server.ip == null || server.ip.isBlank() ? null : ConfigManager.normalizeServer(server.ip);
     }
 
     public static synchronized void reset() {
