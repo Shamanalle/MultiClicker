@@ -43,6 +43,44 @@ public final class Draw {
         g.text(font, text, centerX - font.width(text) / 2, y, color);
     }
 
+    /** Width of a key chip showing this text; {@code null} shows the keyboard icon instead. */
+    public static int chipWidth(Font font, String text) {
+        return text == null ? 18 : Math.max(18, font.width(text) + 10);
+    }
+
+    /** A tiny keyboard (9 x 6), for a hotkey that is not set yet. */
+    public static void keyboardIcon(Canvas g, int x, int y, int color) {
+        g.fill(x, y, x + 9, y + 1, color);
+        g.fill(x, y + 5, x + 9, y + 6, color);
+        g.fill(x, y + 1, x + 1, y + 5, color);
+        g.fill(x + 8, y + 1, x + 9, y + 5, color);
+        g.fill(x + 2, y + 2, x + 3, y + 3, color);
+        g.fill(x + 4, y + 2, x + 5, y + 3, color);
+        g.fill(x + 6, y + 2, x + 7, y + 3, color);
+        g.fill(x + 3, y + 3, x + 6, y + 4, color);
+    }
+
+    /**
+     * A small rounded "key cap" with a key name, as used for hotkeys.
+     *
+     * @param hover   0..1, how much the mouse is over it
+     * @param waiting the chip waits for the player to press a key
+     */
+    public static void chip(Canvas g, Font font, String text, int x, int y, int h, float hover, boolean waiting, boolean bound) {
+        int w = chipWidth(font, text);
+        int accent = Theme.accent();
+        int fill = waiting ? Theme.alpha(accent, 0.28F) : Theme.mix(Theme.CONTROL, Theme.CONTROL_HOVER, hover);
+        int border = waiting ? accent : bound ? Theme.mix(Theme.CONTROL_HOVER, accent, 0.35F + 0.65F * hover)
+                : Theme.mix(Theme.CONTROL, Theme.CONTROL_HOVER, hover);
+        box(g, x, y, w, h, 3, fill, border);
+        int color = waiting ? Theme.TEXT : bound ? Theme.TEXT : Theme.mix(Theme.TEXT_MUTED, Theme.TEXT_DIM, hover);
+        if (text == null) {
+            keyboardIcon(g, x + (w - 9) / 2, y + (h - 6) / 2, color);
+        } else {
+            textCentered(g, font, text, x + w / 2, y + (h - 8) / 2, color);
+        }
+    }
+
     /** Cuts the text with an ellipsis so that it fits into the given width. */
     public static String ellipsize(Font font, String text, int maxWidth) {
         if (font.width(text) <= maxWidth) {

@@ -19,4 +19,9 @@ public final class Anim {
     public float value() {
         return value;
     }
+
+    /** Jumps to a value without animating, e.g. to start an animation from there. */
+    public void set(float value) {
+        this.value = value;
+    }
 }

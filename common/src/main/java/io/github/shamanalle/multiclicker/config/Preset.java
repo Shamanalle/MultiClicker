@@ -9,9 +9,12 @@ import io.github.shamanalle.multiclicker.setting.Setting;
 
 import java.util.Locale;
 
-/** Ready-made setups. Each preset starts from the defaults, keeping the interface and HUD settings. */
+/**
+ * Ready-made setups. Each preset starts from the defaults, keeping the interface and HUD settings
+ * and the hotkeys.
+ */
 public enum Preset {
-    MOB_FARM, MINING, FISHING, DEFAULTS;
+    MOB_FARM, MINING, FISHING, FARMING, DEFAULTS;
 
     public Component title() {
         return Component.translatable("multiclicker.preset." + name().toLowerCase(Locale.ROOT));
@@ -24,7 +27,9 @@ public enum Preset {
     public void apply(MultiClicker mod) {
         mod.modules().stream()
                 .filter(module -> module != mod.ui() && module != mod.hud())
-                .forEach(module -> module.settings().forEach(Setting::reset));
+                .flatMap(module -> module.settings().stream())
+                .filter(setting -> !setting.isGlobal())
+                .forEach(Setting::reset);
         ClickerModule clicker = mod.clicker();
         switch (this) {
             case MOB_FARM -> {
@@ -50,8 +55,15 @@ public enum Preset {
                 mod.autoEat().enabledSetting().set(true);
                 mod.antiAfk().enabledSetting().set(true);
             }
+            case FARMING -> {
+                clicker.attack.enabled.set(false);
+                mod.autoFarm().enabledSetting().set(true);
+                mod.hotbarRefill().enabledSetting().set(true);
+                mod.autoEat().enabledSetting().set(true);
+            }
             case DEFAULTS -> {
             }
         }
+        mod.config().clearActiveProfile();
     }
 }

@@ -26,6 +26,7 @@ public abstract class Setting<T> {
     private Module module;
     private BooleanSupplier visibility = () -> true;
     private boolean internal;
+    private boolean global;
     private final List<Runnable> listeners = new ArrayList<>();
 
     protected Setting(String key, T defaultValue) {
@@ -104,6 +105,20 @@ public abstract class Setting<T> {
 
     public boolean isInternal() {
         return internal;
+    }
+
+    /**
+     * Marks a value that belongs to the player rather than to a setup, such as a hotkey: profiles
+     * do not store it and presets do not reset it.
+     */
+    @SuppressWarnings("unchecked")
+    public <S extends Setting<T>> S global() {
+        this.global = true;
+        return (S) this;
+    }
+
+    public boolean isGlobal() {
+        return global;
     }
 
     public void onChange(Runnable listener) {

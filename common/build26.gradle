@@ -1,3 +1,15 @@
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+
+    testImplementation "org.junit.jupiter:junit-jupiter:5.11.4"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.11.4"
+}
+
+// Unit tests of the logic that needs no running game: click timing, profiles and config files.
+test {
+    useJUnitPlatform()
+    // The game's logging configuration writes a logs folder into the working directory.
+    def runDir = layout.buildDirectory.dir('test-run').get().asFile
+    workingDir = runDir
+    doFirst { runDir.mkdirs() }
 }

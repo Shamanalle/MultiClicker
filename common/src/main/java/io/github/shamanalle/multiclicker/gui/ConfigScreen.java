@@ -19,11 +19,13 @@ import io.github.shamanalle.multiclicker.compat.Keys;
 import io.github.shamanalle.multiclicker.compat.ModScreen;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.gui.widget.SettingControl;
+import io.github.shamanalle.multiclicker.gui.widget.SliderControl;
 import io.github.shamanalle.multiclicker.gui.widget.ToggleControl;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.module.clicker.ClickerModule;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
+import io.github.shamanalle.multiclicker.setting.KeySetting;
 import io.github.shamanalle.multiclicker.setting.Setting;
 
 import java.util.ArrayList;
@@ -50,6 +52,10 @@ public class ConfigScreen extends ModScreen {
     private static final int CARD_MARGIN = 8;
     private static final long TOOLTIP_DELAY_MS = 350;
     private static final String[] CLICKER_GROUPS = {"attack", "use", "jump", "general"};
+    private static final String[] HINTS = {"multiclicker.gui.hint", "multiclicker.gui.hint.value",
+            "multiclicker.gui.hint.keys", "multiclicker.gui.hint.search"};
+    private static final long HINT_MS = 6000;
+    private static final int CHIP_HEIGHT = 14;
 
     private static Category lastCategory = Category.CLICKER;
 
@@ -61,6 +67,14 @@ public class ConfigScreen extends ModScreen {
     private final Map<Category, Anim> categoryHover = new EnumMap<>(Category.class);
     private final Anim profilesHover = new Anim(0);
     private final Anim masterAnim;
+    private final Map<Object, Anim> headerHover = new HashMap<>();
+    /** Slides the cards in when another category is shown. */
+    private final Anim contentShift = new Anim(0);
+    private final KeyCapture capture = new KeyCapture();
+    private final long openedAt = System.currentTimeMillis();
+    /** The slider whose number is being typed, if any. */
+    @Nullable
+    private SliderControl editing;
 
     private Category category = lastCategory;
     private String query = "";
@@ -109,6 +123,7 @@ public class ConfigScreen extends ModScreen {
             search.setValue("");
         }
         rebuild();
+        contentShift.set(1);
     }
 
     /** Fills the search field, as if the player typed the text. */
@@ -130,6 +145,10 @@ public class ConfigScreen extends ModScreen {
         int headerHeight = CARD_HEADER;
         int y;
         int height;
+        /** Header buttons as drawn last frame; -1 when absent. */
+        int chipX = -1;
+        int chipW;
+        int resetX = -1;
 
         Card(Module module, List<Row> rows, @Nullable ToggleControl toggle) {
             this.module = module;
@@ -157,10 +176,12 @@ public class ConfigScreen extends ModScreen {
     }
 
     private SettingControl control(Setting<?> setting) {
-        return controls.computeIfAbsent(setting, s -> SettingControl.of(s, this));
+        return controls.computeIfAbsent(setting, s -> SettingControl.of(s, this, capture));
     }
 
     private void rebuild() {
+        finishEditing(true);
+        capture.cancel();
         cards.clear();
         scroll = scrollTarget = 0;
         String q = query.trim().toLowerCase(Locale.ROOT);
@@ -187,7 +208,7 @@ public class ConfigScreen extends ModScreen {
     private void addRows(Module module, List<Row> rows, @Nullable String filter) {
         List<Setting<?>> groupStarts = module instanceof ClickerModule clicker ? clicker.groupStarts() : List.of();
         for (Setting<?> setting : module.settings()) {
-            if (setting == module.enabledSetting() || setting.isInternal()) {
+            if (setting == module.enabledSetting() || setting == module.keySetting() || setting.isInternal()) {
                 continue;
             }
             if (filter != null) {
@@ -268,6 +289,7 @@ public class ConfigScreen extends ModScreen {
 
     @Override
     public void onClose() {
+        finishEditing(true);
         mod.saveConfig();
         Screens.open(minecraft, parent);
     }
@@ -412,7 +434,8 @@ public class ConfigScreen extends ModScreen {
         int cardW = viewW - CARD_MARGIN * 2 - 4;
 
         g.enableScissor(viewX + 1, viewY, viewX + viewW - 1, viewY + viewH);
-        int y = viewY + CARD_MARGIN - Math.round(scroll);
+        int slide = Math.round(contentShift.update(0, delta, 12) * 14);
+        int y = viewY + CARD_MARGIN - Math.round(scroll) + slide;
         for (Card card : cards) {
             card.y = y;
             layoutDescription(card, cardW);
@@ -433,7 +456,7 @@ public class ConfigScreen extends ModScreen {
             }
             y += card.height + CARD_GAP;
         }
-        contentHeight = y + Math.round(scroll) - viewY + CARD_MARGIN - CARD_GAP;
+        contentHeight = y - slide + Math.round(scroll) - viewY + CARD_MARGIN - CARD_GAP;
         if (cards.isEmpty()) {
             Draw.textCentered(g, font, I18n.get("multiclicker.gui.nothing_found"), viewX + viewW / 2, viewY + viewH / 2 - 4,
                     Theme.TEXT_MUTED);
@@ -453,7 +476,7 @@ public class ConfigScreen extends ModScreen {
 
     /** Wraps the module description into at most two lines (the rest is in the tooltip). */
     private void layoutDescription(Card card, int cardW) {
-        int textW = cardW - 20 - (card.toggle != null ? 30 : 0);
+        int textW = cardW - 20 - (card.toggle != null ? 30 : 0) - headerButtonsWidth(card.module);
         if (card.descriptionWidth == textW) {
             return;
         }
@@ -479,7 +502,9 @@ public class ConfigScreen extends ModScreen {
             Draw.rect(g, x + 1, card.y + 8, 2, 16, 1, enabled ? accent : Theme.CONTROL_HOVER);
         }
 
-        int textRight = x + w - 10 - (card.toggle != null ? 30 : 0);
+        int buttonsRight = x + w - 10 - (card.toggle != null ? 30 : 0);
+        int textRight = buttonsRight - headerButtonsWidth(module);
+        hovered = drawHeaderButtons(g, card, buttonsRight, mouseX, mouseY, mouseInView, delta, hovered);
         g.text(font, Component.literal(Draw.ellipsize(font, module.name().getString(), textRight - x - 12))
                 .withStyle(ChatFormatting.BOLD), x + 10, card.y + 7, enabled ? Theme.TEXT : Theme.TEXT_DIM);
         for (int i = 0; i < card.description.size(); i++) {
@@ -488,7 +513,8 @@ public class ConfigScreen extends ModScreen {
         if (card.toggle != null) {
             card.toggle.render(g, font, x + w - 32, card.y + 4, 24, mouseX, mouseY, delta);
         }
-        if (mouseInView && mouseX >= x && mouseX < textRight && mouseY >= card.y && mouseY < card.y + card.headerHeight) {
+        if (hovered == null && mouseInView && mouseX >= x && mouseX < textRight && mouseY >= card.y
+                && mouseY < card.y + card.headerHeight) {
             hovered = module;
         }
 
@@ -521,17 +547,112 @@ public class ConfigScreen extends ModScreen {
                 hovered = setting;
                 hoveredNameCut = !label.equals(name);
             }
+            if (!setting.isDefault() && !(setting instanceof KeySetting)) {
+                // Changed from the default: right-click the row resets it.
+                Draw.rect(g, x + 5, row.y + 8, 2, 2, 1, Theme.alpha(accent, enabled ? 0.9F : 0.5F));
+            }
             Draw.text(g, font, label, x + 10, row.y + 5, enabled ? Theme.TEXT : Theme.TEXT_DIM);
             control.render(g, font, controlX, row.y, ROW, mouseX, mouseY, delta);
         }
         return hovered;
     }
 
+    /** What a header button stands for, for its tooltip and hover animation. */
+    private record HeaderButton(Module module, boolean reset) {
+    }
+
+    private String chipText(KeySetting key) {
+        if (capture.isWaitingFor(key)) {
+            return I18n.get("multiclicker.key.press");
+        }
+        return key.isBound() ? key.displayValue() : null;
+    }
+
+    /** Room taken by the hotkey chip and the reset button in a module header. */
+    private int headerButtonsWidth(Module module) {
+        int width = 0;
+        if (module.keySetting() != null) {
+            width += Draw.chipWidth(font, chipText(module.keySetting())) + 6;
+        }
+        if (isModified(module)) {
+            width += 14;
+        }
+        return width;
+    }
+
+    /** Whether any setting of the module (other than its switch and hotkey) differs from the default. */
+    private static boolean isModified(Module module) {
+        for (Setting<?> setting : module.settings()) {
+            if (setting != module.enabledSetting() && !setting.isGlobal() && !setting.isInternal() && !setting.isDefault()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void resetModule(Module module) {
+        for (Setting<?> setting : module.settings()) {
+            if (setting != module.enabledSetting() && !setting.isGlobal() && !setting.isInternal()) {
+                setting.reset();
+            }
+        }
+    }
+
+    private Object drawHeaderButtons(Canvas g, Card card, int right, int mouseX, int mouseY, boolean mouseInView,
+                                     float delta, Object hovered) {
+        Module module = card.module;
+        KeySetting key = module.keySetting();
+        int buttonY = card.y + 9;
+        card.chipX = -1;
+        card.resetX = -1;
+        if (key != null) {
+            String text = chipText(key);
+            card.chipW = Draw.chipWidth(font, text);
+            card.chipX = right - card.chipW;
+            boolean over = mouseInView && isOver(mouseX, mouseY, card.chipX, buttonY, card.chipW, CHIP_HEIGHT);
+            float h = headerHover.computeIfAbsent(new HeaderButton(module, false), k -> new Anim(0)).update(over ? 1 : 0, delta, 20);
+            boolean showChip = key.isBound() || capture.isWaitingFor(key) || h > 0.01F;
+            if (showChip) {
+                Draw.chip(g, font, text, card.chipX, buttonY, CHIP_HEIGHT, h, capture.isWaitingFor(key), key.isBound());
+            } else {
+                // An unbound hotkey stays a faint icon until the mouse comes near.
+                Draw.keyboardIcon(g, card.chipX + (card.chipW - 9) / 2, buttonY + 4, Theme.alpha(Theme.TEXT_MUTED, 0.7F));
+            }
+            if (over) {
+                hovered = new HeaderButton(module, false);
+            }
+            right = card.chipX - 6;
+        }
+        if (isModified(module)) {
+            card.resetX = right - 12;
+            boolean over = mouseInView && isOver(mouseX, mouseY, card.resetX - 1, buttonY, 14, CHIP_HEIGHT);
+            float h = headerHover.computeIfAbsent(new HeaderButton(module, true), k -> new Anim(0)).update(over ? 1 : 0, delta, 20);
+            Draw.textCentered(g, font, "↺", card.resetX + 6, buttonY + 3, Theme.mix(Theme.TEXT_MUTED, Theme.accent(), h));
+            if (over) {
+                hovered = new HeaderButton(module, true);
+            }
+        }
+        return hovered;
+    }
+
+    private static boolean isOver(double mouseX, double mouseY, int x, int y, int w, int h) {
+        return mouseX >= x && mouseX < x + w && mouseY >= y && mouseY < y + h;
+    }
+
+    /** Tips in the footer take turns, fading from one to the next. */
     private void renderFooter(Canvas g) {
         int y = panelY + panelH - FOOTER + 4;
         g.fill(viewX + 1, panelY + panelH - FOOTER, panelX + panelW - 1, panelY + panelH - FOOTER + 1, Theme.DIVIDER);
-        String hint = I18n.get("multiclicker.gui.hint", mod.toggleKey.getTranslatedKeyMessage().getString());
-        Draw.textCentered(g, font, Draw.ellipsize(font, hint, viewW - 16), viewX + viewW / 2, y, Theme.TEXT_MUTED);
+        long elapsed = System.currentTimeMillis() - openedAt;
+        int index = (int) (elapsed / HINT_MS % HINTS.length);
+        long phase = elapsed % HINT_MS;
+        float visible = Math.min(1, Math.min(phase / 300.0F, (HINT_MS - phase) / 300.0F));
+        if (elapsed < HINT_MS) {
+            visible = Math.min(1, (HINT_MS - phase) / 300.0F); // no fade-in when the menu opens
+        }
+        String hint = I18n.get(HINTS[index], mod.toggleKey.getTranslatedKeyMessage().getString());
+        Draw.textCentered(g, font, Draw.ellipsize(font, hint, viewW - 16), viewX + viewW / 2, y,
+                Theme.mix(Theme.PANEL, Theme.TEXT_MUTED, visible));
     }
 
     private void renderTooltip(Canvas g, int mouseX, int mouseY, @Nullable Object hovered) {
@@ -553,6 +674,9 @@ public class ConfigScreen extends ModScreen {
                 Gfx.tooltip(g, font, lines, mouseX, mouseY);
                 return;
             }
+        } else if (hovered instanceof HeaderButton button) {
+            text = Component.translatable(button.reset() ? "multiclicker.gui.reset_module" : "multiclicker.gui.module_key",
+                    button.module().name());
         } else if (hovered instanceof Module module) {
             text = module.description();
         } else if (hovered instanceof Category entry) {
@@ -573,8 +697,29 @@ public class ConfigScreen extends ModScreen {
 
     // --- Input ----------------------------------------------------------------------------------
 
+    /** Applies (or drops) a number being typed into a slider. */
+    private void finishEditing(boolean apply) {
+        if (editing != null) {
+            if (apply) {
+                editing.commit();
+            } else {
+                editing.cancelEdit();
+            }
+            editing = null;
+        }
+    }
+
     @Override
     protected boolean clicked(double mouseX, double mouseY, int button) {
+        if (capture.isActive() && button >= 2) {
+            capture.mouseClicked(button);
+            playClick();
+            return true;
+        }
+        capture.cancel();
+        if (editing != null && !(editing.isOverValue(mouseX, mouseY) && button == 0)) {
+            finishEditing(true);
+        }
         boolean overSearch = mouseX >= searchX && mouseX < searchX + searchW && mouseY >= panelY + 7 && mouseY < panelY + 23;
         if (overSearch) {
             setFocused(search);
@@ -595,10 +740,7 @@ public class ConfigScreen extends ModScreen {
         int y = sidebarTop();
         for (Category entry : Category.values()) {
             if (isOverSidebarItem(mouseX, mouseY, y)) {
-                category = lastCategory = entry;
-                search.setValue("");
-                query = "";
-                rebuild();
+                showCategory(entry);
                 playClick();
                 return true;
             }
@@ -620,6 +762,10 @@ public class ConfigScreen extends ModScreen {
             int cardX = viewX + CARD_MARGIN;
             int cardW = viewW - CARD_MARGIN * 2 - 4;
             for (Card card : cards) {
+                if (clickedHeaderButton(card, mouseX, mouseY, button)) {
+                    playClick();
+                    return true;
+                }
                 BoolSetting enabled = card.module.enabledSetting();
                 boolean overHeader = mouseX >= cardX && mouseX < cardX + cardW
                         && mouseY >= card.y && mouseY < card.y + card.headerHeight;
@@ -638,6 +784,9 @@ public class ConfigScreen extends ModScreen {
                         SettingControl control = control(row.setting);
                         if (control.mouseClicked(mouseX, mouseY, button)) {
                             dragging = control;
+                            if (control instanceof SliderControl slider && slider.isEditing()) {
+                                editing = slider;
+                            }
                             playClick();
                             return true;
                         }
@@ -656,6 +805,24 @@ public class ConfigScreen extends ModScreen {
             }
         }
         return super.clicked(mouseX, mouseY, button);
+    }
+
+    private boolean clickedHeaderButton(Card card, double mouseX, double mouseY, int button) {
+        int buttonY = card.y + 9;
+        KeySetting key = card.module.keySetting();
+        if (key != null && card.chipX >= 0 && isOver(mouseX, mouseY, card.chipX, buttonY, card.chipW, CHIP_HEIGHT)) {
+            if (button == 0) {
+                capture.start(key, key::bind);
+            } else if (button == 1) {
+                key.clear();
+            }
+            return true;
+        }
+        if (card.resetX >= 0 && button == 0 && isOver(mouseX, mouseY, card.resetX - 1, buttonY, 14, CHIP_HEIGHT)) {
+            resetModule(card.module);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -694,6 +861,27 @@ public class ConfigScreen extends ModScreen {
 
     @Override
     protected boolean pressed(int keyCode, int scanCode, int modifiers) {
+        if (capture.keyPressed(keyCode)) {
+            // Also takes Escape, which would otherwise close the menu.
+            return true;
+        }
+        if (editing != null) {
+            switch (keyCode) {
+                case InputConstants.KEY_RETURN, InputConstants.KEY_NUMPADENTER, InputConstants.KEY_TAB -> finishEditing(true);
+                case InputConstants.KEY_ESCAPE -> finishEditing(false);
+                case InputConstants.KEY_BACKSPACE -> editing.backspace();
+                default -> {
+                }
+            }
+            return true;
+        }
+        if (keyCode == InputConstants.KEY_TAB && !search.isFocused()) {
+            // Tab and Shift+Tab step through the categories.
+            int next = Math.floorMod(category.ordinal() + (Keys.shiftDown() ? -1 : 1), Category.values().length);
+            showCategory(Category.values()[next]);
+            playClick();
+            return true;
+        }
         if (keyCode == InputConstants.KEY_F && Keys.controlDown()) {
             setFocused(search);
             search.setFocused(true);
@@ -708,6 +896,13 @@ public class ConfigScreen extends ModScreen {
 
     @Override
     protected boolean typed(char codePoint, int modifiers) {
+        if (capture.swallowTyped()) {
+            return true;
+        }
+        if (editing != null) {
+            editing.type(codePoint);
+            return true;
+        }
         // Typing anywhere starts a search.
         if (!search.isFocused() && Character.isLetterOrDigit(codePoint)) {
             setFocused(search);

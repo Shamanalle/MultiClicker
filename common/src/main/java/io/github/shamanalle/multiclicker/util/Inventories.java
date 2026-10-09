@@ -36,6 +36,23 @@ public final class Inventories {
         Containers.swap(mc, toMenuSlot(inventoryIndex), OFFHAND_BUTTON);
     }
 
+    /** Swaps a main inventory stack with a hotbar slot (either may be empty). */
+    public static void swapWithHotbar(Minecraft mc, int inventoryIndex, int hotbarSlot) {
+        Containers.swap(mc, toMenuSlot(inventoryIndex), hotbarSlot);
+    }
+
+    /**
+     * Moves as much of one stack as fits onto another stack of the same item, with cursor clicks
+     * like a player would; the rest goes back where it came from.
+     */
+    public static void mergeInto(Minecraft mc, int fromIndex, int toIndex) {
+        Containers.pickup(mc, toMenuSlot(fromIndex));
+        Containers.pickup(mc, toMenuSlot(toIndex));
+        if (!mc.player.inventoryMenu.getCarried().isEmpty()) {
+            Containers.pickup(mc, toMenuSlot(fromIndex));
+        }
+    }
+
     public static void dropStack(Minecraft mc, int inventoryIndex) {
         Containers.throwStack(mc, toMenuSlot(inventoryIndex));
     }

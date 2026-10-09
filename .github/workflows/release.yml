@@ -110,3 +110,55 @@ jobs:
           body_path: release-notes.md
           files: jars/*.jar
           fail_on_unmatched_files: true
+
+  # Uploads every jar to Modrinth and CurseForge as well. Runs once the project ids are set as repository
+  # variables (MODRINTH_ID, CURSEFORGE_ID) and the tokens as secrets (MODRINTH_TOKEN, CURSEFORGE_TOKEN);
+  # a site without a token is skipped.
+  stores:
+    name: Upload ${{ matrix.mc }} to Modrinth and CurseForge
+    needs: publish
+    if: vars.MODRINTH_ID != '' || vars.CURSEFORGE_ID != ''
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        mc: ["1.21", "1.21.1", "1.21.2", "1.21.3", "1.21.4", "1.21.5", "1.21.6", "1.21.7", "1.21.8", "1.21.9",
+             "1.21.10", "1.21.11", "26.1", "26.1.1", "26.1.2", "26.2", "26.3"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download jar
+        uses: actions/download-artifact@v4
+        with:
+          name: jar-${{ matrix.mc }}
+          path: jars
+
+      - name: Prepare upload
+        id: prep
+        run: |
+          version="$(sed -n 's/^mod_version *= *//p' gradle.properties | tr -d '[:space:]')"
+          awk -v v="$version" '
+            /^## \[/ { if (found) exit; if (index($0, "[" v "]")) { found = 1; next } }
+            found
+          ' CHANGELOG.md > release-notes.md
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Upload
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: ${{ vars.MODRINTH_ID }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          curseforge-id: ${{ vars.CURSEFORGE_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          files: jars/*.jar
+          name: MultiClicker ${{ steps.prep.outputs.version }} for Minecraft ${{ matrix.mc }}
+          version: ${{ steps.prep.outputs.version }}+${{ matrix.mc }}
+          version-type: release
+          changelog-file: release-notes.md
+          loaders: fabric
+          game-versions: ${{ matrix.mc }}
+          dependencies: |
+            fabric-api(required)
+            modmenu(optional)

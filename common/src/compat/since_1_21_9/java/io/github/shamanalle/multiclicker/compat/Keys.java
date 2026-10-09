@@ -47,6 +47,28 @@ public final class Keys {
                 || isKeyDown(mc, mac ? GLFW.GLFW_KEY_RIGHT_SUPER : GLFW.GLFW_KEY_RIGHT_CONTROL);
     }
 
+    /** A keyboard key by its GLFW key code. */
+    public static InputConstants.Key keyboard(int keyCode) {
+        return InputConstants.Type.KEYSYM.getOrCreate(keyCode);
+    }
+
+    /** A mouse button (0 = left, 1 = right, 2 = middle, 3+ = side buttons). */
+    public static InputConstants.Key mouse(int button) {
+        return InputConstants.Type.MOUSE.getOrCreate(button);
+    }
+
+    /** Reads a saved key name such as {@code key.keyboard.g}; unknown names give {@link InputConstants#UNKNOWN}. */
+    public static InputConstants.Key parse(String name) {
+        if (name == null || name.isEmpty()) {
+            return InputConstants.UNKNOWN;
+        }
+        try {
+            return InputConstants.getKey(name);
+        } catch (IllegalArgumentException e) {
+            return InputConstants.UNKNOWN;
+        }
+    }
+
     /** A key binding of this mod. */
     public static KeyMapping keyMapping(String name, int key) {
         return new KeyMapping(name, key, CATEGORY);

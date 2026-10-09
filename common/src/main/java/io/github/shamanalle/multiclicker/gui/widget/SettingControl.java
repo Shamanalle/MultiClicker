@@ -6,7 +6,9 @@ import io.github.shamanalle.multiclicker.compat.Canvas;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.EnumSetting;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
+import io.github.shamanalle.multiclicker.setting.KeySetting;
 import io.github.shamanalle.multiclicker.setting.ListSetting;
+import io.github.shamanalle.multiclicker.gui.KeyCapture;
 import io.github.shamanalle.multiclicker.setting.Setting;
 
 /**
@@ -59,7 +61,10 @@ public abstract class SettingControl {
         return false;
     }
 
-    public static SettingControl of(Setting<?> setting, Screen screen) {
+    public static SettingControl of(Setting<?> setting, Screen screen, KeyCapture capture) {
+        if (setting instanceof KeySetting key) {
+            return new KeyControl(key, capture);
+        }
         if (setting instanceof BoolSetting bool) {
             return new ToggleControl(bool);
         }

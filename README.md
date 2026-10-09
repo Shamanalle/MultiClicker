@@ -4,7 +4,7 @@
 
 # MultiClicker
 
-**Auto clicker for Fabric with helpers for AFK farms, mining and fishing.**
+**Auto clicker for Fabric with helpers for AFK farms, mining, farming and fishing.**
 
 [![Minecraft 1.21 – 26.3](https://img.shields.io/badge/Minecraft-1.21%20%E2%80%93%2026.3-62b47a)](https://minecraft.net/)
 [![Fabric](https://img.shields.io/badge/loader-Fabric-dbd0b4)](https://fabricmc.net/)
@@ -19,8 +19,9 @@
 </div>
 
 Auto clicker mod for Minecraft 1.21 – 26.3 (Fabric). Clicks the attack, use and jump keys at a rhythm you set.
-Includes modules for AFK farming, mining and fishing: auto eat, auto fish, auto tool, offhand, safety
-stop, anti-AFK and others.
+Includes modules for AFK farming, mining, crop farming and fishing: auto eat, auto fish, auto farm,
+auto tool, hotbar refill, offhand, safety stop, anti-AFK and others. Every module, clicker channel and
+profile can have its own hotkey.
 
 ## Quick start
 
@@ -39,8 +40,10 @@ Pick a ready-made setup under **Profiles → Presets**, then press <kbd>I</kbd>:
 | **Mob farm** | Attacks on full charge with a small random delay. Passive mobs, pets and named mobs are left alone. Auto eat and anti-AFK are on. |
 | **Mining** | The attack key is held, blocks are broken, auto tool picks the pickaxe, the clicker stops when the inventory is full. Auto eat is on. |
 | **Fishing** | The clicker is off, auto fish reels in and casts again. Auto eat and anti-AFK are on. |
+| **Farming** | The clicker is off, auto farm harvests ripe crops around you and plants them again, hotbar refill brings more seeds. Auto eat is on. |
 
-Your own settings can be saved as profiles.
+Your own settings can be saved as profiles: load one with a hotkey, have it load by itself on a server,
+or share it with others as a line of text.
 
 > Many multiplayer servers don't allow auto clickers. Check the rules before using the mod online.
 
@@ -50,7 +53,11 @@ Every option has a tooltip in the menu. Right-click a setting to reset it.
 
 ### Auto clicker
 - **Three channels: attack (LMB), use (RMB) and jump.** Each one can *click* or *hold* the key and has
-  its own interval, hold time, pause and random delay.
+  its own speed, hold time, pause, random delay and hotkey.
+- **Speed in ticks or in clicks per second.** Set an interval in ticks, or a rate such as 12 CPS: the
+  fractions of a tick carry over, so the rate is kept on average.
+- **Random delay of your choice.** *Even* (any value up to the maximum), *bell curve* (a steady rhythm
+  around the middle) or *natural* (mostly short, now and then a longer pause, like a person).
 - **Wait for full charge.** Attacks only when the weapon is charged, for full damage. Turn it off for
   1.8-style PvP.
 - **Targets.** Only allowed creatures, creatures and blocks (mining), or anything, even into the air.
@@ -83,6 +90,11 @@ mobs.
 - **Anti-AFK.** Jump, sneak, swing, look around or step, at random intervals between a minimum and a
   maximum. Each action can be turned off.
 - **Auto walk.** Walks forward, optionally sprinting and jumping over obstacles.
+- **Auto farm.** Harvests ripe wheat, carrots, potatoes, beetroots, nether wart, cocoa and sweet berries
+  around you (or only under the crosshair) and plants them again from the offhand or the hotbar.
+- **Hotbar refill.** When the last item of a hotbar stack is used up, or a tool breaks, the same item
+  comes in from the inventory; a stack can also be topped up before it runs out. The tool or weapon in
+  your hand is swapped for a spare before it breaks, so a tool with Mending is kept.
 - **Inventory cleaner.** Throws out the items from your junk list, one stack at a time. It never
   touches the hotbar unless you allow it.
 
@@ -93,24 +105,31 @@ mobs.
   nearly broken tools and switches back afterwards.
 
 ### Interface
-- **HUD.** A status panel in any corner with the scale you choose: active channels, clicks per second,
-  attacks, kills, session time, ping, server TPS, FPS and the list of active modules. Every line can be
-  hidden.
+- **HUD.** A status panel in any corner with the scale you choose: the loaded profile, active channels,
+  clicks per second, attacks, kills, session time, ping, server TPS, FPS and the list of active modules.
+  Every line can be hidden.
 - **Target highlight.** The creature about to be hit is outlined, filled or glowing, in a color you
   pick.
 - **Menu.** Categories, module cards, search (also by English names), tooltips and a list editor with
-  item icons. Fits the window size; on small screens the sidebar turns into icons.
+  item icons. Click a number to type an exact value; changed settings are marked with a dot and a whole
+  module can be reset with ↺. Fits the window size; on small screens the sidebar turns into icons.
 - **Feedback.** Accent color, a sound and a message above the hotbar when the mod turns on or off.
-- **Profiles.** Save your settings under a name and load them later.
+- **Hotkeys.** Any module, each clicker channel and each profile can get a key (or a side mouse button)
+  that switches it while you play. Hotkeys stay as they are when you load a profile or a preset.
+- **Profiles.** Save your settings under a name and load them later, with a hotkey or by themselves when
+  you join a given server or single player. Copy a profile as a line of text to share it, and paste one
+  you got from someone else.
 
 ## Screenshots
 
 | | |
 |:--:|:--:|
-| ![Clicker settings](docs/images/en/menu_clicker.png) | ![Survival modules](docs/images/en/menu_survival.png) |
-| Settings: every module is a card, with a tooltip for every option | Survival: safety, offhand and auto eat |
+| ![Clicker settings](docs/images/en/menu_clicker.png) | ![Automation modules](docs/images/en/menu_automation.png) |
+| Settings: every module is a card, with a tooltip for every option | Automation: auto farm with a hotkey, auto fish |
+| ![Survival modules](docs/images/en/menu_survival.png) | ![Visuals](docs/images/en/menu_visual.png) |
+| Survival: safety, offhand and auto eat | Visuals: HUD and target highlight |
 | ![Presets and profiles](docs/images/en/profiles.png) | ![Block list editor](docs/images/en/list_editor.png) |
-| Ready-made presets and your own profiles | List editor: item icons, add the held item or the block you look at |
+| Presets and your own profiles, with a hotkey, a server and sharing | List editor: item icons, add the held item or the block you look at |
 
 ## Supported versions
 
@@ -131,8 +150,12 @@ Fabric Loader 0.17 or newer.
 | <kbd>I</kbd> | Turn the mod on / off |
 | <kbd>O</kbd> | Open the settings |
 
-Rebind them under *Options → Controls → Key Binds → MultiClicker*. In the menu, start typing to
-search, and use the mouse wheel or the arrow keys to fine-tune sliders.
+Rebind them under *Options → Controls → Key Binds → MultiClicker*. Hotkeys for modules and channels are
+set in the menu with the ⌨ button of a module card or the *Hotkey* row of a channel; hotkeys for profiles
+are set in *Profiles*. Hotkeys do nothing while a menu or the chat is open.
+
+In the menu, start typing to search, press <kbd>Tab</kbd> for the next category, use the mouse wheel or
+the arrow keys to fine-tune sliders, or click a number to type it.
 
 ## Languages
 
@@ -143,18 +166,23 @@ language.
 ## Configuration
 
 Settings are saved in `config/multiclicker.json` and profiles in `config/multiclicker/profiles/`.
+The hotkeys and servers of the profiles are kept in `multiclicker.json`, so a shared profile never
+brings someone else's keys. Settings from older versions are converted when they are loaded; a file
+from a newer version is copied to `multiclicker.json.v<N>.bak` before this version saves over it.
 
 ## Building
 
 You need JDK 21.
 
 ```bash
-./gradlew build                       # → fabric/build/libs/MultiClicker-fabric-<version>.jar
+./gradlew build                       # → fabric/build/libs/MultiClicker-fabric-<version>.jar, runs the unit tests
+./gradlew :common:test                # unit tests only: click timing, profiles, config files
 ./gradlew :fabric:runClientGameTest   # starts the game and plays every scenario
 ```
 
 - `common/` holds the mod itself: modules, settings, the menu and the config.
 - `fabric/` holds the Fabric entry point.
+- `common/src/test/` holds the unit tests, which need no running game.
 - `fabric/src/gametest/` holds the in-game tests, which are not part of the release jar.
 
 ## License

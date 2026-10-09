@@ -50,14 +50,14 @@ public class ClickerModule extends Module {
 
     public ClickerModule() {
         super("clicker", Category.CLICKER, false, true);
-        attack = new ClickChannel(this, "attack", true, ClickChannel.Mode.CLICK, 1);
+        attack = new ClickChannel(this, "attack", true, ClickChannel.Mode.CLICK, 1, 10);
         attackCooldown = register(new BoolSetting("attack_cooldown", true).visibleWhen(attack.enabled::get));
         attackTarget = register(new EnumSetting<>("attack_target", AttackTarget.ENTITIES).visibleWhen(attack.enabled::get));
         pauseWhileUsing = register(new BoolSetting("pause_while_using", true).visibleWhen(attack.enabled::get));
         lootingSwap = register(new BoolSetting("looting_swap", false).visibleWhen(attack.enabled::get));
 
-        use = new ClickChannel(this, "use", false, ClickChannel.Mode.CLICK, 4);
-        jump = new ClickChannel(this, "jump", false, ClickChannel.Mode.CLICK, 10);
+        use = new ClickChannel(this, "use", false, ClickChannel.Mode.CLICK, 4, 5);
+        jump = new ClickChannel(this, "jump", false, ClickChannel.Mode.CLICK, 10, 2);
 
         startDelay = register(new IntSetting("start_delay", 0, 0, 200, Unit.TICKS).zeroMeans("options.off"));
         background = register(new BoolSetting("background", true));
@@ -232,6 +232,10 @@ public class ClickerModule extends Module {
             return true;
         }
         return false;
+    }
+
+    public List<ClickChannel> channels() {
+        return List.of(attack, use, jump);
     }
 
     /** Which channels are on, for the HUD. */

@@ -38,6 +38,7 @@ public class HudModule extends Module {
     public final EnumSetting<Corner> corner = add(new EnumSetting<>("corner", Corner.TOP_LEFT));
     public final IntSetting scale = add(new IntSetting("scale", 100, 50, 200, Unit.PERCENT));
     public final BoolSetting showWhenInactive = add(new BoolSetting("show_inactive", true));
+    public final BoolSetting showProfile = add(new BoolSetting("show_profile", true));
     public final BoolSetting showStats = add(new BoolSetting("show_stats", true));
     public final BoolSetting showServer = add(new BoolSetting("show_server", false));
     public final BoolSetting showModules = add(new BoolSetting("show_modules", true));
@@ -128,6 +129,10 @@ public class HudModule extends Module {
             statusColor = Theme.SUCCESS;
         }
         lines.add(new Line("MultiClicker", Theme.accent(), status, statusColor, false));
+        String profile = mod.config().activeProfile();
+        if (showProfile.get() && profile != null) {
+            lines.add(new Line(I18n.get("multiclicker.hud.profile"), Theme.TEXT_DIM, profile, Theme.TEXT, false));
+        }
 
         ClickerModule clicker = mod.clicker();
         List<ClickChannel> channels = clicker.enabledChannels();
@@ -189,7 +194,7 @@ public class HudModule extends Module {
         if (channel == clicker.attack && clicker.attackCooldown.get()) {
             return I18n.get("multiclicker.hud.sync");
         }
-        double cps = 20.0 / channel.interval.get();
+        double cps = channel.averageCps();
         return String.format(Locale.ROOT, cps >= 10 || cps == Math.floor(cps) ? "%.0f CPS" : "%.1f CPS", cps);
     }
 }

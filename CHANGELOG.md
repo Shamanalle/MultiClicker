@@ -2,6 +2,39 @@
 
 All notable changes to **MultiClicker** will be documented in this file.
 
+## [2.2.0] - 2026-10-09
+### Added
+- **Hotkeys.** Every module, each clicker channel (attack, use, jump) and each saved profile can get its
+  own key or side mouse button that switches it while playing. Set them with the ⌨ button on a module card,
+  the *Hotkey* row of a channel, or in *Profiles*. Profiles and presets never change hotkeys.
+- **Click speed in clicks per second.** Each clicker channel can set its speed as an interval in ticks
+  (as before) or as a rate from 1 to 20 CPS. Fractions of a tick carry over, so 12 CPS is kept on average.
+- **Choice of random delay.** *Even* (as before), *bell curve* (a steady rhythm around the middle) and
+  *natural* (mostly short, sometimes a longer pause). Natural is the new default; settings from earlier
+  versions keep the even delay.
+- **Sharing profiles.** A profile, or the current settings, can be copied as one line of text and pasted
+  by someone else. Shared profiles never bring hotkeys and never overwrite an existing profile.
+- **Profiles per server.** A profile can load by itself when you join a given server or single player.
+- **Hotbar refill** module: a used-up hotbar stack or a broken tool is replaced by the same item from the
+  inventory, a stack can be topped up before it runs out, and the tool in hand is swapped for a spare
+  before it breaks (a tool with Mending is kept).
+- **Auto farm** module: harvests ripe wheat, carrots, potatoes, beetroots, nether wart, cocoa and sweet
+  berries around you (or only under the crosshair) and plants them again.
+- **Farming** preset: auto farm, hotbar refill and auto eat.
+- The HUD shows the loaded profile.
+- Unit tests for the click timing, the random delay, profile sharing and the config files; CI runs them
+  with every build.
+
+### Changed
+- Menu: click a number to type an exact value; changed settings are marked with a dot; a module can be
+  reset at once with ↺; <kbd>Tab</kbd> switches the category; the cards slide in when the category changes;
+  tips in the footer take turns.
+- Profiles screen: wider, with a hotkey, the server binding and copying for each profile, *Paste* to add
+  a shared profile, and *Save* turns into *Overwrite* when the name is taken. The loaded profile is marked.
+- Loading a profile or a preset while the mod is on restarts the modules, so none keeps a key pressed.
+- The config file has format version 3. Older files are converted when they are loaded; a file from a
+  newer version is backed up to `multiclicker.json.v<N>.bak` before it is saved over.
+
 ## [2.1.1] - 2026-10-01
 ### Fixed
 - The author in the mod metadata (shown in Mod Menu) is now Shamanalle.

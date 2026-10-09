@@ -8,6 +8,7 @@
     "EntityMixin",
     "FishingHookAccessor",
     "KeyMappingAccessor",
+    "KeyMappingMixin",
     "MinecraftMixin",
     "MouseHandlerMixin",
     "ToggleKeyMappingAccessor"
