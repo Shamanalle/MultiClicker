@@ -2,12 +2,12 @@ package io.github.shamanalle.multiclicker.module.survival;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Slots;
+import io.github.shamanalle.multiclicker.compat.Tools;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -107,7 +107,7 @@ public class OffhandModule extends Module {
             case FOOD -> foodHunger.get() > 0 && !MultiClicker.get().autoEat().isBusy()
                     && (hunger <= foodHunger.get() || Want.FOOD.matcher.test(offhand) && hunger < FULL_HUNGER);
             // Keep the torch while auto tool briefly holds a shovel or an axe during a mining session.
-            case TORCH -> torchWithPickaxe.get() && (player.getMainHandItem().is(ItemTags.PICKAXES)
+            case TORCH -> torchWithPickaxe.get() && (Tools.kind(player.getMainHandItem()) == Tools.PICKAXE
                     || Want.TORCH.matcher.test(offhand) && MultiClicker.get().autoTool().isToolSelected());
             case SHIELD -> shield.get();
         };

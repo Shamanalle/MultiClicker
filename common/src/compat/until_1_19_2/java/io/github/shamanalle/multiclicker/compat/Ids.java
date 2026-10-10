@@ -1,6 +1,6 @@
 package io.github.shamanalle.multiclicker.compat;
 
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -14,36 +14,36 @@ public final class Ids {
 
     /** An identifier of this mod, e.g. for the HUD element. */
     public static ResourceLocation mod(String path) {
-        return ResourceLocation.fromNamespaceAndPath("multiclicker", path);
+        return new ResourceLocation("multiclicker", path);
     }
 
     public static boolean itemExists(String id) {
         ResourceLocation location = ResourceLocation.tryParse(id);
-        return location != null && BuiltInRegistries.ITEM.containsKey(location);
+        return location != null && Registry.ITEM.containsKey(location);
     }
 
     public static boolean blockExists(String id) {
         ResourceLocation location = ResourceLocation.tryParse(id);
-        return location != null && BuiltInRegistries.BLOCK.containsKey(location);
+        return location != null && Registry.BLOCK.containsKey(location);
     }
 
     /** The item with this id, or air when unknown. */
     public static Item item(String id) {
         ResourceLocation location = ResourceLocation.tryParse(id);
-        return location == null ? Items.AIR : BuiltInRegistries.ITEM.get(location);
+        return location == null ? Items.AIR : Registry.ITEM.get(location);
     }
 
     /** The block with this id, or air when unknown. */
     public static Block block(String id) {
         ResourceLocation location = ResourceLocation.tryParse(id);
-        return location == null ? Blocks.AIR : BuiltInRegistries.BLOCK.get(location);
+        return location == null ? Blocks.AIR : Registry.BLOCK.get(location);
     }
 
     public static String itemId(Item item) {
-        return BuiltInRegistries.ITEM.getKey(item).toString();
+        return Registry.ITEM.getKey(item).toString();
     }
 
     public static String blockId(Block block) {
-        return BuiltInRegistries.BLOCK.getKey(block).toString();
+        return Registry.BLOCK.getKey(block).toString();
     }
 }

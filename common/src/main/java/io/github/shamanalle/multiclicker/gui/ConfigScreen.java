@@ -4,10 +4,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -18,6 +16,8 @@ import io.github.shamanalle.multiclicker.compat.Gfx;
 import io.github.shamanalle.multiclicker.compat.Keys;
 import io.github.shamanalle.multiclicker.compat.ModScreen;
 import io.github.shamanalle.multiclicker.compat.Screens;
+import io.github.shamanalle.multiclicker.compat.Widgets;
+import io.github.shamanalle.multiclicker.compat.Sounds;
 import io.github.shamanalle.multiclicker.gui.widget.SettingControl;
 import io.github.shamanalle.multiclicker.gui.widget.SliderControl;
 import io.github.shamanalle.multiclicker.gui.widget.ToggleControl;
@@ -270,7 +270,7 @@ public class ConfigScreen extends ModScreen {
         search.setBordered(false);
         search.setMaxLength(40);
         search.setTextColor(Theme.TEXT);
-        search.setHint(Component.translatable("multiclicker.gui.search").withStyle(ChatFormatting.DARK_GRAY));
+        Widgets.hint(search, Component.translatable("multiclicker.gui.search").withStyle(ChatFormatting.DARK_GRAY));
         search.setValue(query);
         search.setResponder(value -> {
             if (!value.equals(query)) {
@@ -723,14 +723,14 @@ public class ConfigScreen extends ModScreen {
         boolean overSearch = mouseX >= searchX && mouseX < searchX + searchW && mouseY >= panelY + 7 && mouseY < panelY + 23;
         if (overSearch) {
             setFocused(search);
-            search.setFocused(true);
+            Widgets.focus(search, true);
             if (button == 1) {
                 search.setValue("");
             }
             super.clicked(mouseX, mouseY, button);
             return true;
         }
-        search.setFocused(false);
+        Widgets.focus(search, false);
         setFocused(null);
 
         if (isOverMaster(mouseX, mouseY) && button == 0 && minecraft.player != null) {
@@ -884,7 +884,7 @@ public class ConfigScreen extends ModScreen {
         }
         if (keyCode == InputConstants.KEY_F && Keys.controlDown()) {
             setFocused(search);
-            search.setFocused(true);
+            Widgets.focus(search, true);
             return true;
         }
         if (!search.isFocused() && hoverKey instanceof Setting<?> setting
@@ -906,7 +906,7 @@ public class ConfigScreen extends ModScreen {
         // Typing anywhere starts a search.
         if (!search.isFocused() && Character.isLetterOrDigit(codePoint)) {
             setFocused(search);
-            search.setFocused(true);
+            Widgets.focus(search, true);
         }
         return super.typed(codePoint, modifiers);
     }
@@ -917,6 +917,6 @@ public class ConfigScreen extends ModScreen {
     }
 
     private void playClick() {
-        minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 1.0F, 0.35F));
+        minecraft.getSoundManager().play(Sounds.click(1.0F, 0.35F));
     }
 }

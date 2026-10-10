@@ -3,7 +3,6 @@ package io.github.shamanalle.multiclicker.setting;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import io.github.shamanalle.multiclicker.compat.Ids;
@@ -55,11 +54,11 @@ public class ListSetting extends Setting<List<String>> {
     }
 
     public boolean contains(Item item) {
-        return contains(BuiltInRegistries.ITEM.getKey(item).toString());
+        return contains(Ids.itemId(item));
     }
 
     public boolean contains(Block block) {
-        return contains(BuiltInRegistries.BLOCK.getKey(block).toString());
+        return contains(Ids.blockId(block));
     }
 
     /** Whether the id refers to an existing item/block (unknown ids are highlighted in the UI). */
