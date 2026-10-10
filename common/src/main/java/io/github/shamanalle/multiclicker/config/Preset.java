@@ -14,7 +14,7 @@ import java.util.Locale;
  * and the hotkeys.
  */
 public enum Preset {
-    MOB_FARM, MINING, FISHING, FARMING, DEFAULTS;
+    MOB_FARM, MINING, FISHING, FARMING, AFK_IN_PLACE, DEFAULTS;
 
     public Component title() {
         return Component.translatable("multiclicker.preset." + name().toLowerCase(Locale.ROOT));
@@ -60,6 +60,16 @@ public enum Preset {
                 mod.autoFarm().enabledSetting().set(true);
                 mod.hotbarRefill().enabledSetting().set(true);
                 mod.autoEat().enabledSetting().set(true);
+            }
+            case AFK_IN_PLACE -> {
+                clicker.attack.enabled.set(false);
+                mod.antiAfk().enabledSetting().set(true);
+                mod.antiAfk().jump.set(false);
+                mod.antiAfk().sneak.set(true);
+                mod.antiAfk().swing.set(true);
+                mod.antiAfk().rotate.set(false);
+                mod.antiAfk().step.set(false);
+                mod.antiAfk().switchSlot.set(true);
             }
             case DEFAULTS -> {
             }

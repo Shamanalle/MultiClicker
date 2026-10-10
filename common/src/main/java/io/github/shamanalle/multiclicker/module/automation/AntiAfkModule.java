@@ -6,8 +6,10 @@ import net.minecraft.client.player.LocalPlayer;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Session;
+import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
+import io.github.shamanalle.multiclicker.module.clicker.ClickerModule;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
 import io.github.shamanalle.multiclicker.setting.Unit;
@@ -22,7 +24,7 @@ public class AntiAfkModule extends Module {
     private static final Random RANDOM = new Random();
 
     private enum Action {
-        JUMP, SNEAK, SWING, ROTATE, STEP
+        JUMP, SNEAK, SWING, ROTATE, STEP, SWITCH_SLOT
     }
 
     public final IntSetting minInterval = add(new IntSetting("min_interval", 30, 5, 600, Unit.SECONDS));
@@ -32,12 +34,15 @@ public class AntiAfkModule extends Module {
     public final BoolSetting swing = add(new BoolSetting("swing", true));
     public final BoolSetting rotate = add(new BoolSetting("rotate", false));
     public final BoolSetting step = add(new BoolSetting("step", false));
+    public final BoolSetting switchSlot = add(new BoolSetting("switch_slot", true));
 
     private int countdown;
     private Action current;
     private int actionTick;
     private float originalYaw;
     private KeyMapping heldKey;
+    private int originalSlot = -1;
+    private int switchedSlot = -1;
 
     public AntiAfkModule() {
         super("anti_afk", Category.AUTOMATION, true, false);
@@ -75,6 +80,7 @@ public class AntiAfkModule extends Module {
         if (rotate.get()) pool.add(Action.ROTATE);
         // Stepping back and forth would fight auto walk, which already keeps the player active.
         if (step.get() && !MultiClicker.get().autoWalk().isRunning()) pool.add(Action.STEP);
+        if (switchSlot.get() && canSwitchSlot(mc.player)) pool.add(Action.SWITCH_SLOT);
         if (!pool.isEmpty()) {
             current = pool.get(RANDOM.nextInt(pool.size()));
             actionTick = 0;
@@ -112,6 +118,15 @@ public class AntiAfkModule extends Module {
                 else if (tick == 3) press(mc.options.keyDown);
                 else if (tick >= 6) finishAction(mc);
             }
+            case SWITCH_SLOT -> {
+                if (tick == 0) {
+                    originalSlot = Slots.selected(player.getInventory());
+                    switchedSlot = (originalSlot + 1) % 9;
+                    Slots.select(player.getInventory(), switchedSlot);
+                } else {
+                    finishAction(mc);
+                }
+            }
         }
     }
 
@@ -128,7 +143,25 @@ public class AntiAfkModule extends Module {
             Input.release(heldKey);
             heldKey = null;
         }
+        // Back to the original slot, unless the player picked another one meanwhile.
+        if (originalSlot != -1 && mc.player != null && Slots.selected(mc.player.getInventory()) == switchedSlot) {
+            Slots.select(mc.player.getInventory(), originalSlot);
+        }
+        originalSlot = -1;
+        switchedSlot = -1;
         current = null;
+    }
+
+    /**
+     * The slot is switched for real for one tick, so it waits while anything uses the item in hand:
+     * the clicker, a fishing line or an item in use (the server drops both), or a module that picked the slot.
+     */
+    private static boolean canSwitchSlot(LocalPlayer player) {
+        MultiClicker mod = MultiClicker.get();
+        ClickerModule clicker = mod.clicker();
+        boolean clicking = clicker.isRunning() && (clicker.attack.enabled.get() || clicker.use.enabled.get());
+        return !clicking && player.fishing == null && !player.isUsingItem() && !mod.autoEat().isBusy()
+                && !mod.autoTool().isToolSelected() && !mod.autoFarm().isRunning() && !clicker.isSwappingWeapon();
     }
 
     private void scheduleNext() {

@@ -50,6 +50,7 @@ Pick a ready-made setup under **Profiles → Presets**, then press <kbd>I</kbd>:
 | **Mining** | The attack key is held, blocks are broken, auto tool picks the pickaxe, the clicker stops when the inventory is full. Auto eat is on. |
 | **Fishing** | The clicker is off, auto fish reels in and casts again. Auto eat and anti-AFK are on. |
 | **Farming** | The clicker is off, auto farm harvests ripe crops around you and plants them again, hotbar refill brings more seeds. Auto eat is on. |
+| **AFK in place** | The clicker is off. Anti-AFK only sneaks, swings and switches the hotbar slot, so you never leave the spot. |
 
 Your own settings can be saved as profiles: load one with a hotkey, have it load by itself on a server,
 or share it with others as a line of text.
@@ -96,8 +97,9 @@ mobs.
 - **Auto fish.** Reels in on a bite after a reaction time you set, casts again, recasts if nothing
   bites for too long, stops when the rod is about to break or after a number of catches. The rod can
   be in either hand.
-- **Anti-AFK.** Jump, sneak, swing, look around or step, at random intervals between a minimum and a
-  maximum. Each action can be turned off.
+- **Anti-AFK.** Jump, sneak, swing, look around, step or switch the hotbar slot for a moment, at random
+  intervals between a minimum and a maximum. Each action can be turned off. Sneak, swing and the slot
+  switch keep you on the spot; the slot switch also counts on servers that ignore swings and head turns.
 - **Auto walk.** Walks forward, optionally sprinting and jumping over obstacles.
 - **Auto farm.** Harvests ripe wheat, carrots, potatoes, beetroots, nether wart, cocoa and sweet berries
   around you (or only under the crosshair) and plants them again from the offhand or the hotbar.

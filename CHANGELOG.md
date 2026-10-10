@@ -16,6 +16,10 @@ All notable changes to **MultiClicker** will be documented in this file.
   attention while the mod works: the inventory is full, the tool in hand is about to break, the last item in
   hand is used up or broke, auto eat finds no food, a player comes within a set radius, a fish is caught, or
   the mod stopped by itself and why. Each notification can be turned off; repeats are held back for a while.
+- **Anti-AFK: switch slot.** Selects the next hotbar slot for a moment and goes back. Vanilla and most
+  servers count it as activity even where they ignore swings and head turns. It waits while the clicker,
+  a fishing line, an item in use or another module needs the item in hand. On by default.
+- **AFK in place preset.** Only anti-AFK, without walking or jumping: sneak, swing and switch slot.
 
 ## [2.2.0] - 2026-10-09
 ### Added

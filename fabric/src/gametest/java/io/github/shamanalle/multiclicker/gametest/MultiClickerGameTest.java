@@ -361,12 +361,26 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             mod.antiAfk().jump.set(false);
             mod.antiAfk().swing.set(false);
             mod.antiAfk().sneak.set(true);
+            mod.antiAfk().switchSlot.set(false);
         });
         activate(context);
         waitUntil(context, "the anti-AFK sneak", 160, mc -> mc.player.isShiftKeyDown());
         context.waitTicks(20);
         check(context.computeOnClient(mc -> !mc.options.keyShift.isDown() && !mc.player.isShiftKeyDown()),
                 "the player kept sneaking after the anti-AFK action");
+
+        // Anti-AFK slot switch: the next slot for a moment, then the original one again.
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.clicker().attack.enabled.set(false);
+            mod.antiAfk().sneak.set(false);
+            mod.antiAfk().switchSlot.set(true);
+            Slots.select(mc.player.getInventory(), 4);
+        });
+        waitUntil(context, "the anti-AFK slot switch", 160, mc -> Slots.selected(mc.player.getInventory()) == 5);
+        context.waitTicks(3);
+        check(context.computeOnClient(mc -> Slots.selected(mc.player.getInventory())) == 4,
+                "the original slot was not selected again after the anti-AFK slot switch");
     }
 
     private void mining(ClientGameTestContext context, TestServerContext server) {
