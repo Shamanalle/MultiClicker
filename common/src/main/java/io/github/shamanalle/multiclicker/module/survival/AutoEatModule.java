@@ -2,15 +2,14 @@ package io.github.shamanalle.multiclicker.module.survival;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Slots;
+import io.github.shamanalle.multiclicker.compat.Stacks;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -152,7 +151,7 @@ public class AutoEatModule extends Module {
     }
 
     public static boolean isFood(ItemStack stack) {
-        return !stack.isEmpty() && stack.has(DataComponents.FOOD);
+        return Stacks.isFood(stack);
     }
 
     /** Food that is safe to eat automatically under the given rules. */
@@ -164,7 +163,6 @@ public class AutoEatModule extends Module {
 
     /** Higher is better: nutrition plus saturation. */
     public static float foodScore(ItemStack stack) {
-        FoodProperties food = stack.get(DataComponents.FOOD);
-        return food == null ? 0 : food.nutrition() + food.saturation();
+        return Stacks.foodValue(stack);
     }
 }

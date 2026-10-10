@@ -848,7 +848,7 @@ public class ConfigScreen extends ModScreen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+    protected boolean scrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (hoverKey instanceof Setting<?> setting && control(setting).mouseScrolled(mouseX, mouseY, scrollY)) {
             return true;
         }
@@ -856,7 +856,7 @@ public class ConfigScreen extends ModScreen {
             scrollTarget = Mth.clamp(scrollTarget - (float) scrollY * 28, 0, maxScroll());
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+        return super.scrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     @Override

@@ -14,7 +14,7 @@ public abstract class MouseHandlerMixin {
      * after this method, so the camera does not jump when the lock is released.
      */
     @Inject(method = "turnPlayer", at = @At("HEAD"), cancellable = true)
-    private void multiclicker$lockCamera(double movementTime, CallbackInfo ci) {
+    private void multiclicker$lockCamera(CallbackInfo ci) {
         MultiClicker mod = MultiClicker.get();
         if (mod != null && mod.clicker().isCameraLocked()) {
             ci.cancel();

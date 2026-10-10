@@ -15,11 +15,23 @@ rootProject.name = 'MultiClicker'
 include 'common'
 include 'fabric'
 
+// The NeoForge jar is built for the versions whose versions/<minecraft_version>.properties names a NeoForge
+// (or, for 1.20.1, a NeoForged Forge) version.
+def minecraftVersion = providers.gradleProperty('minecraft_version').get()
+def versionProps = new Properties()
+file("versions/${minecraftVersion}.properties").withInputStream { versionProps.load(it) }
+if (versionProps.neoforge_version) {
+    include 'neoforge'
+}
+
 
 // Minecraft 26.1 and newer is not obfuscated: it is built with Fabric Loom on Gradle 9 and Java 25,
 // which needs its own build scripts (build26.gradle).
-if (providers.gradleProperty('minecraft_version').get().startsWith('26')) {
+if (minecraftVersion.startsWith('26')) {
     rootProject.buildFileName = 'build26.gradle'
     project(':common').buildFileName = 'build26.gradle'
     project(':fabric').buildFileName = 'build26.gradle'
+    if (versionProps.neoforge_version) {
+        project(':neoforge').buildFileName = 'build26.gradle'
+    }
 }

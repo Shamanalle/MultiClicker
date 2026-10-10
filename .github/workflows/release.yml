@@ -21,6 +21,13 @@ jobs:
       fail-fast: true
       matrix:
         include:
+          - { mc: "1.20", java: 21 }
+          - { mc: "1.20.1", java: 21 }
+          - { mc: "1.20.2", java: 21 }
+          - { mc: "1.20.3", java: 21 }
+          - { mc: "1.20.4", java: 21 }
+          - { mc: "1.20.5", java: 21 }
+          - { mc: "1.20.6", java: 21 }
           - { mc: "1.21", java: 21 }
           - { mc: "1.21.1", java: 21 }
           - { mc: "1.21.2", java: 21 }
@@ -60,11 +67,14 @@ jobs:
           gradle_cmd=${{ startsWith(matrix.mc, '26.') && 'gradle' || './gradlew' }}
           $gradle_cmd build --no-daemon -Pminecraft_version=${{ matrix.mc }}
 
-      - name: Upload jar
+      # The Fabric jar and, for every version but 1.20, the NeoForge jar.
+      - name: Upload jars
         uses: actions/upload-artifact@v4
         with:
           name: jar-${{ matrix.mc }}
-          path: fabric/build/libs/MultiClicker-fabric-*+${{ matrix.mc }}.jar
+          path: |
+            fabric/build/libs/MultiClicker-fabric-*+${{ matrix.mc }}.jar
+            neoforge/build/libs/MultiClicker-neoforge-*+${{ matrix.mc }}.jar
           if-no-files-found: error
 
   publish:
@@ -92,7 +102,8 @@ jobs:
             exit 1
           fi
           ls -1 jars
-          test "$(ls -1 jars/*.jar | wc -l)" -eq 17
+          test "$(ls -1 jars/MultiClicker-fabric-*.jar | wc -l)" -eq 24
+          test "$(ls -1 jars/MultiClicker-neoforge-*.jar | wc -l)" -eq 23
           # Release notes: the CHANGELOG section of this version.
           awk -v v="$version" '
             /^## \[/ { if (found) exit; if (index($0, "[" v "]")) { found = 1; next } }
@@ -123,8 +134,9 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        mc: ["1.21", "1.21.1", "1.21.2", "1.21.3", "1.21.4", "1.21.5", "1.21.6", "1.21.7", "1.21.8", "1.21.9",
-             "1.21.10", "1.21.11", "26.1", "26.1.1", "26.1.2", "26.2", "26.3"]
+        mc: ["1.20", "1.20.1", "1.20.2", "1.20.3", "1.20.4", "1.20.5", "1.20.6", "1.21", "1.21.1", "1.21.2",
+             "1.21.3", "1.21.4", "1.21.5", "1.21.6", "1.21.7", "1.21.8", "1.21.9", "1.21.10", "1.21.11",
+             "26.1", "26.1.1", "26.1.2", "26.2", "26.3"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -145,16 +157,16 @@ jobs:
           ' CHANGELOG.md > release-notes.md
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: Upload
+      - name: Upload the Fabric jar
         uses: Kir-Antipov/mc-publish@v3.3
         with:
           modrinth-id: ${{ vars.MODRINTH_ID }}
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           curseforge-id: ${{ vars.CURSEFORGE_ID }}
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-          files: jars/*.jar
-          name: MultiClicker ${{ steps.prep.outputs.version }} for Minecraft ${{ matrix.mc }}
-          version: ${{ steps.prep.outputs.version }}+${{ matrix.mc }}
+          files: jars/MultiClicker-fabric-*.jar
+          name: MultiClicker ${{ steps.prep.outputs.version }} for Minecraft ${{ matrix.mc }} (Fabric)
+          version: ${{ steps.prep.outputs.version }}+${{ matrix.mc }}-fabric
           version-type: release
           changelog-file: release-notes.md
           loaders: fabric
@@ -162,3 +174,20 @@ jobs:
           dependencies: |
             fabric-api(required)
             modmenu(optional)
+
+      # NeoForge has no build for Minecraft 1.20.
+      - name: Upload the NeoForge jar
+        if: matrix.mc != '1.20'
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: ${{ vars.MODRINTH_ID }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          curseforge-id: ${{ vars.CURSEFORGE_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          files: jars/MultiClicker-neoforge-*.jar
+          name: MultiClicker ${{ steps.prep.outputs.version }} for Minecraft ${{ matrix.mc }} (NeoForge)
+          version: ${{ steps.prep.outputs.version }}+${{ matrix.mc }}-neoforge
+          version-type: release
+          changelog-file: release-notes.md
+          loaders: neoforge
+          game-versions: ${{ matrix.mc }}

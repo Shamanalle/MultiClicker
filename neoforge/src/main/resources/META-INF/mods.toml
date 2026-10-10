@@ -1,0 +1,34 @@
+modLoader = "javafml"
+loaderVersion = "${loader_range}"
+license = "MIT"
+issueTrackerURL = "https://github.com/Shamanalle/MultiClicker/issues"
+
+[[mods]]
+modId = "multiclicker"
+version = "${version}"
+displayName = "MultiClicker"
+authors = "Shamanalle"
+displayURL = "https://github.com/Shamanalle/MultiClicker"
+logoFile = "assets/multiclicker/icon.png"
+${display_test}
+description = '''
+Configurable auto clicker with helpers for AFK farms, mining and fishing: attack/use/jump channels, target filter, auto eat, smart offhand, auto fish, anti-AFK, HUD and a modern settings menu.
+'''
+
+${mixins}
+
+[[dependencies.multiclicker]]
+modId = "${loader}"
+type = "required"
+mandatory = true
+versionRange = "[0,)"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.multiclicker]]
+modId = "minecraft"
+type = "required"
+mandatory = true
+versionRange = "[${minecraft_version}]"
+ordering = "NONE"
+side = "CLIENT"

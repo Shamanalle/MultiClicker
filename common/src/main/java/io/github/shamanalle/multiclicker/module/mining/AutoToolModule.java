@@ -2,16 +2,12 @@ package io.github.shamanalle.multiclicker.module.mining;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.Holder;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import io.github.shamanalle.multiclicker.MultiClicker;
-import io.github.shamanalle.multiclicker.compat.Lookups;
+import io.github.shamanalle.multiclicker.compat.Enchants;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.module.Category;
@@ -100,16 +96,16 @@ public class AutoToolModule extends Module {
     }
 
     private int findBestTool(Minecraft mc, BlockState state) {
-        Holder<Enchantment> efficiency = Lookups.enchantment(Lookups.enchantments(mc), Enchantments.EFFICIENCY);
+        Enchants enchantments = Enchants.of(mc);
         int current = Slots.selected(mc.player.getInventory());
         int bestSlot = -1;
-        float bestScore = score(mc.player.getInventory().getItem(current), state, efficiency);
+        float bestScore = score(mc.player.getInventory().getItem(current), state, enchantments);
         for (int slot = 0; slot < Inventories.HOTBAR_SIZE; slot++) {
             ItemStack stack = mc.player.getInventory().getItem(slot);
             if (stack.isEmpty() || Inventories.isNearlyBroken(stack, protectTool.get())) {
                 continue;
             }
-            float score = score(stack, state, efficiency);
+            float score = score(stack, state, enchantments);
             if (score > bestScore) {
                 bestScore = score;
                 bestSlot = slot;
@@ -119,10 +115,10 @@ public class AutoToolModule extends Module {
     }
 
     /** Mining speed, with a bonus for tools that actually make the block drop. */
-    private static float score(ItemStack stack, BlockState state, Holder<Enchantment> efficiency) {
+    private static float score(ItemStack stack, BlockState state, Enchants enchantments) {
         float speed = stack.getDestroySpeed(state);
-        if (speed > 1.0F && efficiency != null) {
-            int level = EnchantmentHelper.getItemEnchantmentLevel(efficiency, stack);
+        if (speed > 1.0F) {
+            int level = enchantments.efficiency(stack);
             if (level > 0) {
                 speed += level * level + 1;
             }

@@ -1,5 +1,6 @@
 plugins {
     id 'fabric-loom' version '1.18.2' apply false
+    id 'net.neoforged.moddev' version '2.0.148' apply false
 }
 
 // Per-version settings (Fabric API, Mod Menu, source overlays, Java) come from versions/<minecraft_version>.properties.
@@ -20,11 +21,27 @@ subprojects {
     version = project.mod_version
     group = project.maven_group
 
-    apply plugin: 'fabric-loom'
+    // The NeoForge module is built with ModDevGradle (see neoforge/build26.gradle), the others with Fabric Loom.
+    if (project.name == 'neoforge') {
+        apply plugin: 'net.neoforged.moddev'
+    } else {
+        apply plugin: 'fabric-loom'
 
-    loom {
-        noIntermediateMappings()
-        enableTransitiveAccessWideners = false
+        loom {
+            noIntermediateMappings()
+            enableTransitiveAccessWideners = false
+        }
+
+        dependencies {
+            minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
+            mappings loom.layered {
+                mappings(rootProject.file("mappings.tiny"))
+            }
+        }
+
+        tasks.withType(net.fabricmc.loom.task.RemapSourcesJarTask).configureEach {
+            enabled = false
+        }
     }
 
     base {
@@ -33,13 +50,6 @@ subprojects {
 
     repositories {
         maven { url "https://maven.terraformersmc.com/releases/" }
-    }
-
-    dependencies {
-        minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
-        mappings loom.layered {
-            mappings(rootProject.file("mappings.tiny"))
-        }
     }
 
     java {
@@ -52,10 +62,6 @@ subprojects {
     tasks.withType(JavaCompile).configureEach {
         it.options.release = Integer.parseInt(rootProject.java_version)
         it.options.encoding = "UTF-8"
-    }
-
-    tasks.withType(net.fabricmc.loom.task.RemapSourcesJarTask).configureEach {
-        enabled = false
     }
 
     // Version specific code: src/compat/<name>/java of each module is layered over src/main/java

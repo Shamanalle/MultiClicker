@@ -9,6 +9,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -26,16 +27,17 @@ public final class Lookups {
         return entity.getOwnerReference() != null;
     }
 
-    public static Holder<MobEffect> strength() {
-        return MobEffects.STRENGTH;
+    /** Level (amplifier + 1) of the effect on the entity, 0 without it. */
+    public static int strength(LivingEntity entity) {
+        return level(entity, MobEffects.STRENGTH);
     }
 
-    public static Holder<MobEffect> weakness() {
-        return MobEffects.WEAKNESS;
+    public static int weakness(LivingEntity entity) {
+        return level(entity, MobEffects.WEAKNESS);
     }
 
-    public static Holder<MobEffect> resistance() {
-        return MobEffects.RESISTANCE;
+    public static int resistance(LivingEntity entity) {
+        return level(entity, MobEffects.RESISTANCE);
     }
 
     public static Registry<Enchantment> enchantments(Minecraft mc) {
@@ -45,5 +47,10 @@ public final class Lookups {
     /** The enchantment holder, or {@code null} when the registry has no such entry. */
     public static Holder<Enchantment> enchantment(Registry<Enchantment> registry, ResourceKey<Enchantment> key) {
         return registry.get(key).orElse(null);
+    }
+
+    private static int level(LivingEntity entity, Holder<MobEffect> effect) {
+        MobEffectInstance instance = entity.getEffect(effect);
+        return instance == null ? 0 : instance.getAmplifier() + 1;
     }
 }

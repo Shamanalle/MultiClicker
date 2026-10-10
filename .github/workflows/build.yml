@@ -17,6 +17,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - { mc: "1.20", java: 21 }
+          - { mc: "1.20.1", java: 21 }
+          - { mc: "1.20.2", java: 21 }
+          - { mc: "1.20.3", java: 21 }
+          - { mc: "1.20.4", java: 21 }
+          - { mc: "1.20.5", java: 21 }
+          - { mc: "1.20.6", java: 21 }
           - { mc: "1.21", java: 21 }
           - { mc: "1.21.1", java: 21 }
           - { mc: "1.21.2", java: 21 }
@@ -56,9 +63,12 @@ jobs:
           gradle_cmd=${{ startsWith(matrix.mc, '26.') && 'gradle' || './gradlew' }}
           $gradle_cmd build --no-daemon -Pminecraft_version=${{ matrix.mc }}
 
-      - name: Upload jar
+      # The Fabric jar and, for every version but 1.20, the NeoForge jar.
+      - name: Upload jars
         uses: actions/upload-artifact@v4
         with:
           name: MultiClicker-${{ matrix.mc }}
-          path: fabric/build/libs/MultiClicker-fabric-*+${{ matrix.mc }}.jar
+          path: |
+            fabric/build/libs/MultiClicker-fabric-*+${{ matrix.mc }}.jar
+            neoforge/build/libs/MultiClicker-neoforge-*+${{ matrix.mc }}.jar
           if-no-files-found: error

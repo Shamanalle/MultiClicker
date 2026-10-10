@@ -4,10 +4,11 @@
 
 # MultiClicker
 
-**Auto clicker for Fabric with helpers for AFK farms, mining, farming and fishing.**
+**Auto clicker for Fabric and NeoForge with helpers for AFK farms, mining, farming and fishing.**
 
-[![Minecraft 1.21 – 26.3](https://img.shields.io/badge/Minecraft-1.21%20%E2%80%93%2026.3-62b47a)](https://minecraft.net/)
+[![Minecraft 1.20 – 26.3](https://img.shields.io/badge/Minecraft-1.20%20%E2%80%93%2026.3-62b47a)](https://minecraft.net/)
 [![Fabric](https://img.shields.io/badge/loader-Fabric-dbd0b4)](https://fabricmc.net/)
+[![NeoForge](https://img.shields.io/badge/loader-NeoForge-e68c37)](https://neoforged.net/)
 [![Release](https://img.shields.io/github/v/release/Shamanalle/MultiClicker?color=4c8bf5)](https://github.com/Shamanalle/MultiClicker/releases/latest)
 [![In-game tests](https://github.com/Shamanalle/MultiClicker/actions/workflows/gametest.yml/badge.svg)](https://github.com/Shamanalle/MultiClicker/actions/workflows/gametest.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
@@ -18,19 +19,23 @@
 
 </div>
 
-Auto clicker mod for Minecraft 1.21 – 26.3 (Fabric). Clicks the attack, use and jump keys at a rhythm you set.
+Auto clicker mod for Minecraft 1.20 – 26.3 (Fabric and NeoForge). Clicks the attack, use and jump keys at a rhythm you set.
 Includes modules for AFK farming, mining, crop farming and fishing: auto eat, auto fish, auto farm,
 auto tool, hotbar refill, offhand, safety stop, anti-AFK and others. Every module, clicker channel and
 profile can have its own hotkey.
 
 ## Quick start
 
-1. Install [Fabric Loader](https://fabricmc.net/use/) for your Minecraft version. Supported:
-   1.21 – 1.21.11 and 26.1 – 26.3 (see [versions](#supported-versions)).
-2. Put [Fabric API](https://modrinth.com/mod/fabric-api) and the jar for your version,
-   `MultiClicker-fabric-<mod version>+<Minecraft version>.jar` from the
-   [latest release](https://github.com/Shamanalle/MultiClicker/releases/latest), into the `mods` folder. Optional: [Mod Menu](https://modrinth.com/mod/modmenu) adds a settings
-   button to the mod list.
+1. Install [Fabric Loader](https://fabricmc.net/use/) or [NeoForge](https://neoforged.net/) for your
+   Minecraft version. Supported: 1.20 – 1.20.6, 1.21 – 1.21.11 and 26.1 – 26.3
+   (see [versions](#supported-versions)).
+2. Put the jar for your loader and version from the
+   [latest release](https://github.com/Shamanalle/MultiClicker/releases/latest) into the `mods` folder:
+   - Fabric: `MultiClicker-fabric-<mod version>+<Minecraft version>.jar` together with
+     [Fabric API](https://modrinth.com/mod/fabric-api). Optional: [Mod Menu](https://modrinth.com/mod/modmenu)
+     adds a settings button to the mod list.
+   - NeoForge: `MultiClicker-neoforge-<mod version>+<Minecraft version>.jar`, nothing else is needed. The
+     settings button is in the mod list.
 3. Join a world and press <kbd>O</kbd> to open the menu, <kbd>I</kbd> to turn the mod on or off.
 
 Pick a ready-made setup under **Profiles → Presets**, then press <kbd>I</kbd>:
@@ -133,15 +138,24 @@ mobs.
 
 ## Supported versions
 
-One jar per Minecraft version: 1.21, 1.21.1, 1.21.2, 1.21.3, 1.21.4, 1.21.5, 1.21.6, 1.21.7, 1.21.8,
-1.21.9, 1.21.10, 1.21.11, 26.1, 26.1.1, 26.1.2, 26.2 and 26.3. Minecraft 1.21.9 and newer needs
-Fabric Loader 0.17 or newer.
+One jar per loader and Minecraft version:
 
-- 1.21.4 and newer: every build plays the in-game tests.
-- 1.21 – 1.21.3: Fabric API has no client test API there, so CI only checks that the game starts with the
-  mod and that every mixin applies.
-- 1.21.9: the outline and filled highlight styles are not drawn (Fabric API for this version has no
-  world rendering events); the glow style works.
+| Minecraft | Fabric | NeoForge |
+|:--|:--:|:--:|
+| 1.20 | ✓ | — (NeoForge starts at 1.20.1) |
+| 1.20.1 | ✓ | ✓ (NeoForged Forge 47.1) |
+| 1.20.2 – 1.20.6 | ✓ | ✓ |
+| 1.21 – 1.21.11 | ✓ | ✓ |
+| 26.1 – 26.3 | ✓ | ✓ |
+
+Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer. NeoForge for 1.20.1 is the NeoForged fork of
+Forge 47 (still with the Forge API); the 1.20.1 NeoForge jar is built for it.
+
+- Fabric 1.21.4 and newer: every build plays the in-game tests.
+- Fabric 1.20 – 1.21.3 and every NeoForge version: CI checks that the game starts with the mod and that
+  every mixin applies.
+- Fabric 1.21.9: the outline and filled highlight styles are not drawn (Fabric API for this version has
+  no world rendering events); the glow style works. On NeoForge all styles work.
 
 ## Controls
 
@@ -172,16 +186,17 @@ from a newer version is copied to `multiclicker.json.v<N>.bak` before this versi
 
 ## Building
 
-You need JDK 21.
+You need JDK 21 (JDK 25 and Gradle 9 for Minecraft 26.1 and newer). The version is picked with
+`-Pminecraft_version=<version>`; each one is described in `versions/<version>.properties`.
 
 ```bash
-./gradlew build                       # → fabric/build/libs/MultiClicker-fabric-<version>.jar, runs the unit tests
+./gradlew build                       # → fabric/build/libs and neoforge/build/libs, runs the unit tests
 ./gradlew :common:test                # unit tests only: click timing, profiles, config files
 ./gradlew :fabric:runClientGameTest   # starts the game and plays every scenario
 ```
 
 - `common/` holds the mod itself: modules, settings, the menu and the config.
-- `fabric/` holds the Fabric entry point.
+- `fabric/` and `neoforge/` hold the entry points of the loaders.
 - `common/src/test/` holds the unit tests, which need no running game.
 - `fabric/src/gametest/` holds the in-game tests, which are not part of the release jar.
 

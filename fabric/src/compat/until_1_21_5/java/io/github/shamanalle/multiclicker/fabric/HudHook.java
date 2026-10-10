@@ -10,6 +10,6 @@ final class HudHook {
     }
 
     static void register(MultiClicker mod) {
-        HudRenderCallback.EVENT.register((graphics, deltaTracker) -> mod.hud().render(new Canvas(graphics), deltaTracker));
+        HudRenderCallback.EVENT.register((graphics, deltaTracker) -> mod.hud().render(new Canvas(graphics)));
     }
 }

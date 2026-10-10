@@ -1,6 +1,5 @@
 package io.github.shamanalle.multiclicker.module.visual;
 
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.resources.language.I18n;
@@ -53,11 +52,11 @@ public class HudModule extends Module {
         }
     }
 
-    public void render(Canvas g, DeltaTracker deltaTracker) {
+    public void render(Canvas g) {
         Minecraft mc = Minecraft.getInstance();
         MultiClicker mod = MultiClicker.get();
         if (!isEnabled() || mod == null || mc.player == null || Screens.hudHidden(mc)
-                || mc.getDebugOverlay().showDebugScreen()) {
+                || Screens.debugShown(mc)) {
             return;
         }
         boolean active = mod.isActive();

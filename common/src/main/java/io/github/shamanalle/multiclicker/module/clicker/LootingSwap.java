@@ -2,27 +2,16 @@ package io.github.shamanalle.multiclicker.module.clicker;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.phys.EntityHitResult;
+import io.github.shamanalle.multiclicker.compat.Enchants;
 import io.github.shamanalle.multiclicker.compat.Lookups;
 import io.github.shamanalle.multiclicker.compat.Slots;
+import io.github.shamanalle.multiclicker.compat.Stacks;
 import io.github.shamanalle.multiclicker.util.Input;
 import io.github.shamanalle.multiclicker.util.Inventories;
 
@@ -74,13 +63,12 @@ final class LootingSwap {
             retryDelay--;
             return false;
         }
-        Registry<Enchantment> enchantments = Lookups.enchantments(mc);
-        Holder<Enchantment> looting = holder(enchantments, Enchantments.LOOTING);
-        if (looting == null) {
+        Enchants enchantments = Enchants.of(mc);
+        if (!enchantments.hasLooting()) {
             return false;
         }
         int selected = Slots.selected(player.getInventory());
-        int currentLevel = EnchantmentHelper.getItemEnchantmentLevel(looting, player.getMainHandItem());
+        int currentLevel = enchantments.looting(player.getMainHandItem());
         float health = target.getHealth() + target.getAbsorptionAmount();
         // Among the weapons with more Looting than the held item that kill with one hit: highest
         // Looting first, then the highest damage.
@@ -92,7 +80,7 @@ final class LootingSwap {
             if (slot == selected || stack.isEmpty() || Inventories.isNearlyBroken(stack, 1)) {
                 continue;
             }
-            int level = EnchantmentHelper.getItemEnchantmentLevel(looting, stack);
+            int level = enchantments.looting(stack);
             if (level <= currentLevel || level < bestLevel) {
                 continue;
             }
@@ -171,12 +159,12 @@ final class LootingSwap {
     // --- Damage prediction ----------------------------------------------------------------------
 
     static float estimateDamage(LocalPlayer player, ItemStack weapon, LivingEntity target,
-                                Registry<Enchantment> enchantments) {
+                                Enchants enchantments) {
         // Built from parts: the client never receives the attack damage attribute with the held
         // item's modifiers (only the server applies them), so the attribute value alone is wrong.
-        double base = player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE) + addedAttackDamage(weapon)
-                + effectLevel(player, Lookups.strength()) * 3.0 - effectLevel(player, Lookups.weakness()) * 4.0;
-        float damage = (float) Math.max(0, base) + enchantmentBonus(weapon, target, enchantments);
+        double base = player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE) + Stacks.attackDamage(weapon)
+                + Lookups.strength(player) * 3.0 - Lookups.weakness(player) * 4.0;
+        float damage = (float) Math.max(0, base) + enchantments.damageBonus(weapon, target);
 
         float armor = target.getArmorValue();
         float toughness = (float) target.getAttributeValue(Attributes.ARMOR_TOUGHNESS);
@@ -184,51 +172,7 @@ final class LootingSwap {
         float effectiveArmor = Mth.clamp(armor - damage / toughnessFactor, armor * 0.2F, 20.0F);
         damage *= 1.0F - effectiveArmor / 25.0F;
 
-        MobEffectInstance resistance = target.getEffect(Lookups.resistance());
-        if (resistance != null) {
-            damage *= Math.max(0.0F, 1.0F - (resistance.getAmplifier() + 1) * 0.2F);
-        }
+        damage *= Math.max(0.0F, 1.0F - Lookups.resistance(target) * 0.2F);
         return damage;
-    }
-
-    private static int effectLevel(LivingEntity entity, Holder<MobEffect> effect) {
-        MobEffectInstance instance = entity.getEffect(effect);
-        return instance == null ? 0 : instance.getAmplifier() + 1;
-    }
-
-    private static double addedAttackDamage(ItemStack stack) {
-        double[] total = {0};
-        stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY)
-                .forEach(EquipmentSlot.MAINHAND, (attribute, modifier) -> {
-                    if (attribute.value() == Attributes.ATTACK_DAMAGE.value()
-                            && modifier.operation() == AttributeModifier.Operation.ADD_VALUE) {
-                        total[0] += modifier.amount();
-                    }
-                });
-        return total[0];
-    }
-
-    private static float enchantmentBonus(ItemStack weapon, LivingEntity target, Registry<Enchantment> enchantments) {
-        float bonus = 0;
-        int sharpness = level(enchantments, Enchantments.SHARPNESS, weapon);
-        if (sharpness > 0) {
-            bonus += 0.5F * sharpness + 0.5F;
-        }
-        if (Lookups.isMobOfTag(target, EntityTypeTags.SENSITIVE_TO_SMITE)) {
-            bonus += 2.5F * level(enchantments, Enchantments.SMITE, weapon);
-        }
-        if (Lookups.isMobOfTag(target, EntityTypeTags.SENSITIVE_TO_BANE_OF_ARTHROPODS)) {
-            bonus += 2.5F * level(enchantments, Enchantments.BANE_OF_ARTHROPODS, weapon);
-        }
-        return bonus;
-    }
-
-    private static int level(Registry<Enchantment> enchantments, ResourceKey<Enchantment> key, ItemStack stack) {
-        Holder<Enchantment> holder = holder(enchantments, key);
-        return holder == null ? 0 : EnchantmentHelper.getItemEnchantmentLevel(holder, stack);
-    }
-
-    private static Holder<Enchantment> holder(Registry<Enchantment> enchantments, ResourceKey<Enchantment> key) {
-        return Lookups.enchantment(enchantments, key);
     }
 }

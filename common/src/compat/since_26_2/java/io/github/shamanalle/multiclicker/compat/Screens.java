@@ -23,6 +23,11 @@ public final class Screens {
         return mc.gui.hud.isHidden();
     }
 
+    /** Whether the F3 debug screen is open. */
+    public static boolean debugShown(Minecraft mc) {
+        return mc.getDebugOverlay().showDebugScreen();
+    }
+
     /** Whether the active language has this translation key. */
     public static boolean hasTranslation(String key) {
         return Language.getInstance().has(key);
