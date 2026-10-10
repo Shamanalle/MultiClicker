@@ -15,12 +15,12 @@ rootProject.name = 'MultiClicker'
 include 'common'
 include 'fabric'
 
-// The NeoForge jar is built for the versions whose versions/<minecraft_version>.properties names a NeoForge
-// (or, for 1.20.1, a NeoForged Forge) version.
+// The NeoForge (or Forge) jar is built for the versions whose versions/<minecraft_version>.properties names a
+// NeoForge version (for 1.20.1 a NeoForged Forge one) or a Forge version.
 def minecraftVersion = providers.gradleProperty('minecraft_version').get()
 def versionProps = new Properties()
 file("versions/${minecraftVersion}.properties").withInputStream { versionProps.load(it) }
-if (versionProps.neoforge_version) {
+if (versionProps.neoforge_version || versionProps.forge_version) {
     include 'neoforge'
 }
 

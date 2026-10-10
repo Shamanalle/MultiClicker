@@ -13,10 +13,10 @@ def versionProps = new Properties()
 versionFile.withInputStream { versionProps.load(it) }
 versionProps.each { key, value -> ext.set(key as String, value) }
 
-// Loaders the common code is built for: NeoForge where the version file names one (for 1.20.1 it is the
+// Loaders the common code is built for: NeoForge or Forge where the version file names one (for 1.20.1 the
 // NeoForged Forge, built as a Forge mod).
-ext.platforms = !ext.has('neoforge_version') ? 'fabric'
-        : project.minecraft_version == '1.20.1' ? 'fabric,forge' : 'fabric,neoforge'
+ext.legacyForge = ext.has('forge_version') || project.minecraft_version == '1.20.1'
+ext.platforms = ext.legacyForge ? 'fabric,forge' : ext.has('neoforge_version') ? 'fabric,neoforge' : 'fabric'
 
 architectury {
     minecraft = project.minecraft_version
@@ -33,13 +33,15 @@ subprojects {
 
     // Architectury Loom reads the loader of a module from this property when it is applied.
     if (project.name == 'neoforge') {
-        ext.set('loom.platform', rootProject.minecraft_version == '1.20.1' ? 'forge' : 'neoforge')
+        ext.set('loom.platform', rootProject.legacyForge ? 'forge' : 'neoforge')
     }
     apply plugin: 'dev.architectury.loom'
     apply plugin: 'architectury-plugin'
 
     base {
-        archivesName = "$rootProject.archives_name-$project.name"
+        // The NeoForge module builds a Forge jar for the versions that name a Forge version.
+        def loader = project.name == 'neoforge' && rootProject.hasProperty('forge_version') ? 'forge' : project.name
+        archivesName = "$rootProject.archives_name-$loader"
     }
 
     repositories {
