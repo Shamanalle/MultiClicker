@@ -176,7 +176,7 @@ jobs:
           # NeoForge for 26.1 and newer is built with ModDevGradle, which names the task differently.
           task=${{ (matrix.loader == 'neoforge' && startsWith(matrix.mc, '26.')) && 'prepareClientRun' || 'configureClientLaunch' }}
           for attempt in 1 2 3; do
-            $gradle_cmd :${{ matrix.loader == 'forge' && 'neoforge' || matrix.loader }}:$task --no-daemon -Pminecraft_version=${{ matrix.mc }} | tee prepare.log
+            $gradle_cmd :${{ matrix.loader == 'forge' && 'neoforge' || matrix.loader }}:$task --no-daemon -Pminecraft_version=${{ matrix.mc }} 2>&1 | tee prepare.log
             [ "${PIPESTATUS[0]}" -eq 0 ] && exit 0
             grep -q "DownloadException" prepare.log || exit 1
             echo "::warning::Download failed on attempt $attempt"
