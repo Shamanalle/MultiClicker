@@ -71,8 +71,6 @@ tool, hotbar refill, offhand, safety stop, anti-AFK and others. Every module and
 Your own settings can be saved as profiles: load one with a hotkey, have it load by itself on a server, or
 share it as a line of text.
 
-> Many multiplayer servers don't allow auto clickers. Check the server rules before you use the mod online.
-
 ## Features
 
 Every option has a tooltip in the menu. Right-click a setting to reset it.
@@ -218,8 +216,6 @@ description of a Russian translation if the site offers one.
 
 Свои настройки можно сохранять как профили: загружать горячей клавишей, автоматически на нужном сервере
 или делиться ими одной строкой текста.
-
-> Многие серверы запрещают автокликеры. Перед игрой онлайн прочитайте правила сервера.
 
 ## Возможности
 
