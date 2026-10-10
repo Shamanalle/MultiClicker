@@ -30,6 +30,8 @@ METADATA = {
     'META-INF/mods.toml',
     'META-INF/neoforge.mods.toml',
 }
+# Architectury puts a helper class into every jar under a package name that is random per build.
+GENERATED = 'architectury_inject_'
 
 
 def version_key(version):
@@ -105,7 +107,7 @@ def contents(path):
         return {
             name: hashlib.sha256(archive.read(name)).hexdigest()
             for name in archive.namelist()
-            if not name.endswith('/') and name not in METADATA
+            if not name.endswith('/') and name not in METADATA and not name.startswith(GENERATED)
         }
 
 
@@ -117,12 +119,13 @@ def check(folder, release=None):
             reference = contents(shared)
             group_same = True
             for version in versions[:-1]:
-                other = jar(folder, loader, version)
+                other_jar = jar(folder, loader, version)
+                other = contents(other_jar)
                 differing = sorted(name for name in reference.keys() | other.keys()
                                    if reference.get(name) != other.get(name))
                 if differing:
                     group_same = False
-                    print(f'{loader} {version}: {other.name} differs from {shared.name} in {len(differing)} files:')
+                    print(f'{loader} {version}: {other_jar.name} differs from {shared.name} in {len(differing)} files:')
                     for name in differing[:20]:
                         print(f'  {name}')
             if group_same:
