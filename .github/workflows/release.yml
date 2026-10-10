@@ -107,6 +107,10 @@ jobs:
           merge-multiple: true
           path: jars
 
+      # The jars keep the build folders (fabric/build/libs, neoforge/build/libs) when a version has both; put them side by side.
+      - name: Gather jars
+        run: find jars -mindepth 2 -name '*.jar' -exec mv -t jars {} +
+
       - name: Prepare release
         id: prep
         run: |
@@ -162,6 +166,10 @@ jobs:
         with:
           name: jar-${{ matrix.mc }}
           path: jars
+
+      # The jars keep the build folders (fabric/build/libs, neoforge/build/libs) when a version has both; put them side by side.
+      - name: Gather jars
+        run: find jars -mindepth 2 -name '*.jar' -exec mv -t jars {} +
 
       - name: Prepare upload
         id: prep
