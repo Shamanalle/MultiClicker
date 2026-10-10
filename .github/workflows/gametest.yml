@@ -175,8 +175,11 @@ jobs:
           gradle_cmd=${{ startsWith(matrix.mc, '26.') && 'gradle' || './gradlew' }}
           # NeoForge for 26.1 and newer is built with ModDevGradle, which names the task differently.
           task=${{ (matrix.loader == 'neoforge' && startsWith(matrix.mc, '26.')) && 'prepareClientRun' || 'configureClientLaunch' }}
+          # Loom gives up on a file Mojang's servers fail a few times in a row, so the assets are fetched beforehand
+          # with more patience. ModDevGradle (NeoForge 26.1 and newer) keeps its assets elsewhere.
+          if [ "$task" = configureClientLaunch ]; then python3 .github/scripts/fetch_assets.py ${{ matrix.mc }}; fi
           for attempt in 1 2 3; do
-            $gradle_cmd :${{ matrix.loader == 'forge' && 'neoforge' || matrix.loader }}:$task --no-daemon -Pminecraft_version=${{ matrix.mc }} 2>&1 | tee prepare.log
+            $gradle_cmd :${{ matrix.loader == 'forge' && 'neoforge' || matrix.loader }}:$task --no-daemon --stacktrace -Pminecraft_version=${{ matrix.mc }} 2>&1 | tee prepare.log
             [ "${PIPESTATUS[0]}" -eq 0 ] && exit 0
             grep -q "DownloadException" prepare.log || exit 1
             echo "::warning::Download failed on attempt $attempt"
