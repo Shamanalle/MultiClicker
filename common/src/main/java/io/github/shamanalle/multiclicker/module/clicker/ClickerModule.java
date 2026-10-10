@@ -238,6 +238,29 @@ public class ClickerModule extends Module {
         return List.of(attack, use, jump);
     }
 
+    /**
+     * The clicks per second the settings aim for, for the statistics graph; -1 when no channel
+     * clicks at a set rate (holding, or attacking whenever the weapon is charged).
+     */
+    public double targetCps() {
+        if (!isRunning()) {
+            return -1;
+        }
+        double total = 0;
+        boolean any = false;
+        for (ClickChannel channel : List.of(attack, use)) {
+            if (!channel.enabled.get() || channel.mode.get() == ClickChannel.Mode.HOLD) {
+                continue;
+            }
+            if (channel == attack && attackCooldown.get()) {
+                return -1;
+            }
+            total += channel.averageCps();
+            any = true;
+        }
+        return any ? total : -1;
+    }
+
     /** Which channels are on, for the HUD. */
     public List<ClickChannel> enabledChannels() {
         List<ClickChannel> channels = new ArrayList<>(3);

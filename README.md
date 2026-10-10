@@ -117,8 +117,8 @@ mobs.
 
 ### Interface
 - **HUD.** A status panel in any corner with the scale you choose: the loaded profile, active channels,
-  clicks per second, attacks, kills, session time, ping, server TPS, FPS and the list of active modules.
-  Every line can be hidden.
+  clicks per second, attacks, kills, damage, catches, harvest, session time (with rates per hour if you
+  like), ping, server TPS, FPS and the list of active modules. Every line can be hidden.
 - **Target highlight.** The creature about to be hit is outlined, filled or glowing, in a color you
   pick.
 - **Menu.** Categories, module cards, search (also by English names), tooltips and a list editor with
@@ -129,6 +129,12 @@ mobs.
   attention while the mod works: the inventory is full, the tool in hand is about to break, the last item
   in hand is used up, auto eat finds no food, a player comes near, a fish is caught, or the mod stopped by
   itself and why. Each one can be turned off.
+- **Statistics.** What the mod did, kept between games: for the session, for each server and for all
+  time, plus the last 20 sessions. Clicks, kills by mob, damage and DPS, catches by kind and item, harvest,
+  mined blocks, food, totems, deaths, experience and more, with rates per hour. The live session shows
+  the real clicks per second against the target over the last minute and a chart per minute. Damage is
+  measured from the health of the mobs, so it is exact; where a server hides their health it says so
+  instead of guessing. Export to CSV, reset with a second click, and a summary in the chat when you stop.
 - **Hotkeys.** Any module, each clicker channel and each profile can get a key (or a side mouse button)
   that switches it while you play. Hotkeys stay as they are when you load a profile or a preset.
 - **Profiles.** Save your settings under a name and load them later, with a hotkey or by themselves when
@@ -197,6 +203,7 @@ Settings are saved in `config/multiclicker.json` and profiles in `config/multicl
 The hotkeys and servers of the profiles are kept in `multiclicker.json`, so a shared profile never
 brings someone else's keys. Settings from older versions are converted when they are loaded; a file
 from a newer version is copied to `multiclicker.json.v<N>.bak` before this version saves over it.
+Statistics are kept in `config/multiclicker/stats.json`, and CSV exports are saved next to it.
 
 ## Building
 

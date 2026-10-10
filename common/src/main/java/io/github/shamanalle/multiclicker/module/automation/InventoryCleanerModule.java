@@ -3,9 +3,11 @@ package io.github.shamanalle.multiclicker.module.automation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.item.ItemStack;
+import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
+import io.github.shamanalle.multiclicker.stats.Stat;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
 import io.github.shamanalle.multiclicker.setting.ListSetting;
@@ -42,6 +44,7 @@ public class InventoryCleanerModule extends Module {
         for (int slot = first; slot < Inventories.MAIN_SIZE; slot++) {
             ItemStack stack = player.getInventory().getItem(slot);
             if (!stack.isEmpty() && items.contains(stack.getItem())) {
+                MultiClicker.get().stats().count(Stat.DROPPED, stack.getCount());
                 Inventories.dropStack(mc, slot);
                 cooldown = delay.get();
                 return;

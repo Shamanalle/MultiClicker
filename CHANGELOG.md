@@ -2,6 +2,25 @@
 
 All notable changes to **MultiClicker** will be documented in this file.
 
+## [2.4.0] - 2026-10-10
+### Added
+- **Statistics.** A new screen in the menu (▤ *Statistics*) with what the mod did, kept between games:
+  the current session, each server, all time and the last 20 sessions. It counts clicks, attacks, kills
+  by mob, damage and DPS, catches by kind (fish, treasure, junk) and item, harvested crops, mined blocks,
+  food eaten, totems used, deaths, experience, items dropped by the inventory cleaner, hotbar refills and
+  anti-AFK actions, with rates per hour.
+- **Graphs.** For the live session: real clicks per second against the target over the last minute, and
+  a per-minute chart of clicks, kills, damage, catches, harvest, blocks or experience.
+- **Exact damage.** Damage is measured from the health the mobs lose after your hits (on 1.19.4 and
+  newer, from the server's damage events). Where a server hides the health of mobs, the screen says the
+  damage is unknown instead of guessing.
+- **Export and reset.** All statistics can be exported to a CSV file next to `stats.json`; reset asks for
+  a second click.
+- **Session summary.** When the mod is turned off after more than 30 seconds, a line in the chat sums up
+  the session (*Notifications → Session summary*).
+- **HUD.** The session lines also show damage, catches, harvest, blocks and experience, and optionally
+  the rate per hour (*HUD → Per hour*).
+
 ## [2.3.0] - 2026-10-10
 ### Added
 - **NeoForge.** A NeoForge jar for every Minecraft version from 1.20.1 to 26.3. It needs no other mods;

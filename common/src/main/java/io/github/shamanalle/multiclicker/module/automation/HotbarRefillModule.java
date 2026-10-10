@@ -11,6 +11,7 @@ import io.github.shamanalle.multiclicker.compat.Stacks;
 import io.github.shamanalle.multiclicker.compat.Tools;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
+import io.github.shamanalle.multiclicker.stats.Stat;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
 import io.github.shamanalle.multiclicker.setting.Unit;
@@ -78,6 +79,7 @@ public class HotbarRefillModule extends Module {
         }
         if (replaceTools.get() && replaceWornTool(mc, player) || refillStacks.get() && refill(mc, player)) {
             refills++;
+            mod.stats().count(Stat.REFILLS);
             cooldown = COOLDOWN;
         }
         remember(player);

@@ -12,6 +12,7 @@ import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.compat.Stacks;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
+import io.github.shamanalle.multiclicker.stats.Stat;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
 import io.github.shamanalle.multiclicker.setting.Unit;
@@ -49,6 +50,8 @@ public class AutoEatModule extends Module {
     private int cooldown;
     private boolean startedUsing;
     private boolean holdingUse;
+    /** The food stack as it was when the meal started, to tell whether it was eaten. */
+    private ItemStack mealStack = ItemStack.EMPTY;
 
     public AutoEatModule() {
         super("auto_eat", Category.SURVIVAL, true, false);
@@ -95,6 +98,7 @@ public class AutoEatModule extends Module {
         state = State.EATING;
         timer = 0;
         startedUsing = false;
+        mealStack = player.getInventory().getItem(slot).copy();
         tickEating(mc, player);
     }
 
@@ -108,6 +112,9 @@ public class AutoEatModule extends Module {
         if (!player.isUsingItem()) {
             if (startedUsing) {
                 // Finished the item; the next tick decides whether to eat another one.
+                if (wasEaten(player.getInventory().getItem(foodSlot))) {
+                    MultiClicker.get().stats().count(Stat.FOOD);
+                }
                 finish(mc);
                 return;
             }
@@ -136,6 +143,11 @@ public class AutoEatModule extends Module {
         foodSlot = -1;
         state = State.IDLE;
         cooldown = startedUsing ? 2 : RETRY_COOLDOWN;
+    }
+
+    /** One of the stack is gone (or it turned into its bowl or bottle). */
+    private boolean wasEaten(ItemStack now) {
+        return !now.is(mealStack.getItem()) || now.getCount() < mealStack.getCount();
     }
 
     private int findFood(LocalPlayer player) {

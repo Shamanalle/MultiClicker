@@ -5,12 +5,14 @@
   "compatibilityLevel": "JAVA_${mixin_java}",
   "client": [
     "ClientPacketListenerMixin",
+    "DamageEventMixin",
     "EntityMixin",
     "FishingHookAccessor",
     "KeyMappingAccessor",
     "KeyMappingMixin",
     "MinecraftMixin",
     "MouseHandlerMixin",
+    "MultiPlayerGameModeMixin",
     "ToggleKeyMappingAccessor"
   ],
   "injectors": {

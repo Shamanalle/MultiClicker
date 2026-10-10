@@ -18,8 +18,11 @@ import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.EnumSetting;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
 import io.github.shamanalle.multiclicker.setting.Unit;
+import io.github.shamanalle.multiclicker.stats.Counters;
+import io.github.shamanalle.multiclicker.stats.Stat;
+import io.github.shamanalle.multiclicker.stats.StatFormat;
+import io.github.shamanalle.multiclicker.stats.Statistics;
 import io.github.shamanalle.multiclicker.util.ServerStats;
-import io.github.shamanalle.multiclicker.util.SessionStats;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +43,7 @@ public class HudModule extends Module {
     public final BoolSetting showWhenInactive = add(new BoolSetting("show_inactive", true));
     public final BoolSetting showProfile = add(new BoolSetting("show_profile", true));
     public final BoolSetting showStats = add(new BoolSetting("show_stats", true));
+    public final BoolSetting showRates = add(new BoolSetting("show_rates", false).visibleWhen(showStats::get));
     public final BoolSetting showServer = add(new BoolSetting("show_server", false));
     public final BoolSetting showModules = add(new BoolSetting("show_modules", true));
 
@@ -145,12 +149,19 @@ public class HudModule extends Module {
         }
 
         if (active && showStats.get()) {
-            SessionStats stats = mod.stats();
+            Statistics stats = mod.stats();
+            Counters session = stats.session();
             lines.add(Line.separator());
             lines.add(stat("multiclicker.hud.cps", Integer.toString(stats.clicksPerSecond())));
-            lines.add(stat("multiclicker.hud.attacks", Integer.toString(stats.attacks())));
-            lines.add(stat("multiclicker.hud.kills", Integer.toString(stats.kills())));
-            lines.add(stat("multiclicker.hud.time", SessionStats.formatDuration(stats.elapsedMillis())));
+            lines.add(counter(session, Stat.ATTACKS, true));
+            lines.add(counter(session, Stat.KILLS, true));
+            // The rest only once there is something to show, so a fishing session does not list combat.
+            for (Stat stat : List.of(Stat.DAMAGE, Stat.CATCHES, Stat.CROPS, Stat.BLOCKS, Stat.XP)) {
+                if (session.get(stat) > 0 || stat == Stat.DAMAGE && session.get(Stat.DAMAGE_HITS) > 0) {
+                    lines.add(counter(session, stat, stat != Stat.XP));
+                }
+            }
+            lines.add(stat("multiclicker.hud.time", Statistics.formatDuration(stats.elapsedMillis())));
         }
 
         if (showServer.get()) {
@@ -181,6 +192,13 @@ public class HudModule extends Module {
             }
         }
         return lines;
+    }
+
+    /** A counter of the session, with its rate per hour when that is wanted. */
+    private Line counter(Counters session, Stat stat, boolean rate) {
+        String value = StatFormat.value(session, stat);
+        String perHour = rate && showRates.get() ? StatFormat.perHour(session, stat) : "";
+        return stat(stat.translationKey(), perHour.isEmpty() ? value : value + "  " + perHour);
     }
 
     private static Line stat(String key, String value) {
