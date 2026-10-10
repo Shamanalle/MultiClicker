@@ -354,7 +354,7 @@ changelog).
 2.3.0
 
 - NeoForge support: a NeoForge jar for every version from 1.20.1 to 26.3.
-- Forge support for Minecraft 1.19 to 1.20 (on Forge 1.20.1 the NeoForge jar works).
+- Forge support for Minecraft 1.19 to 1.20.1.
 - Fabric support for Minecraft 1.19 to 1.19.4 and 1.20 to 1.20.6.
 - Notifications: a message above the hotbar or in the chat when the inventory is full, a tool is about
   to break, the last item in hand is used up, there is no food, a player comes near, a fish is caught or
