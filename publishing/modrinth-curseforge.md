@@ -47,7 +47,7 @@ repository images, so they work on Modrinth as they are.
 ````markdown
 # MultiClicker
 
-Auto clicker for Minecraft (Fabric, NeoForge and Forge). It clicks the attack, use and jump keys at a rhythm you set, and
+Auto clicker (autoclicker) and AFK helper for Minecraft (Fabric, NeoForge and Forge). It clicks the attack, use and jump keys at a rhythm you set, and
 comes with modules for AFK farms, mining, crop farming and fishing: auto eat, auto fish, auto farm, auto
 tool, hotbar refill, offhand, safety stop, anti-AFK and others. Every module and profile can have a hotkey.
 
@@ -145,8 +145,14 @@ crystals) are switched separately. You can also ignore babies, named mobs, pets 
 ![Clicker settings](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/menu_clicker.png)
 ![Automation modules](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/menu_automation.png)
 ![Survival modules](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/menu_survival.png)
+![Visual modules](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/menu_visual.png)
 ![Presets and profiles](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/profiles.png)
 ![Block list editor](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/list_editor.png)
+
+## Servers
+
+Client-side only: nothing is installed on the server, and it works in singleplayer and on servers. Many
+servers forbid auto clickers and AFK tools, so check the rules before using it there.
 
 ## Supported versions
 
@@ -174,11 +180,6 @@ or a click on the number to set sliders.
 English, Русский, Українська, Deutsch, Français, Español, Português (Brasil), Polski, Italiano,
 Türkçe, 简体中文, 日本語, 한국어. Items, enchantments and mobs use the game's own names in each language.
 
-## Configuration
-
-Settings are saved in `config/multiclicker.json`, profiles in `config/multiclicker/profiles/`.
-Settings from older versions are converted when they are loaded.
-
 ## Links
 
 [Source code](https://github.com/Shamanalle/MultiClicker) · [Report a problem](https://github.com/Shamanalle/MultiClicker/issues) · MIT license
@@ -195,7 +196,7 @@ description of a Russian translation if the site offers one.
 ````markdown
 # MultiClicker
 
-Автокликер для Minecraft (Fabric, NeoForge и Forge). Нажимает клавиши атаки, использования и прыжка в заданном ритме.
+Автокликер и помощник для AFK в Minecraft (Fabric, NeoForge и Forge). Нажимает клавиши атаки, использования и прыжка в заданном ритме.
 Есть модули для AFK-ферм, копания, огорода и рыбалки: авто-еда, авто-рыбалка, автоферма,
 авто-инструмент, пополнение хотбара, вторая рука, аварийная остановка, анти-АФК и другие. У каждого
 модуля и профиля может быть горячая клавиша.
@@ -295,8 +296,14 @@ description of a Russian translation if the site offers one.
 ![Настройки кликера](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/menu_clicker.png)
 ![Модули автоматизации](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/menu_automation.png)
 ![Модули выживания](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/menu_survival.png)
+![Визуальные модули](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/menu_visual.png)
 ![Пресеты и профили](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/profiles.png)
 ![Редактор списка блоков](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/list_editor.png)
+
+## Серверы
+
+Мод только клиентский: на сервер ничего ставить не нужно, работает в одиночной игре и на серверах. Многие
+серверы запрещают автокликеры и анти-АФК, поэтому сначала проверьте правила.
 
 ## Поддерживаемые версии
 
@@ -323,11 +330,6 @@ description of a Russian translation if the site offers one.
 
 English, Русский, Українська, Deutsch, Français, Español, Português (Brasil), Polski, Italiano,
 Türkçe, 简体中文, 日本語, 한국어. Предметы, зачарования и мобы называются так, как в самой игре.
-
-## Настройки
-
-Настройки хранятся в `config/multiclicker.json`, профили в `config/multiclicker/profiles/`.
-Настройки старых версий переводятся в новый формат при загрузке.
 
 ## Ссылки
 
