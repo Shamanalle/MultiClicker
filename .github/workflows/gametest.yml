@@ -1,10 +1,11 @@
 name: In-game tests
 
+# Branches are tested through their pull request; a push to a branch would run the same tests a second time.
+# A branch without a pull request can still be tested by starting the workflow by hand.
 on:
   push:
     branches:
       - main
-      - 'claude/**'
   pull_request:
     branches:
       - main
