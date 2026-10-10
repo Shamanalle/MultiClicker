@@ -24,9 +24,9 @@ the version fields · 5. Upload checklist
 | Modrinth categories (up to 3) | Utility, Game mechanics |
 | CurseForge category | Utility & QoL (if the list has no such entry: Miscellaneous) |
 
-**Summary, English** (193 characters):
+**Summary, English** (209 characters):
 
-> Auto clicker for Fabric, NeoForge and Forge with auto eat, auto fish, auto farm, auto tool, hotbar refill, offhand, safety stop, anti-AFK and hotkeys for mob farms, mining, farming and fishing.
+> Auto clicker (autoclicker) and AFK helper for Fabric, NeoForge and Forge: auto attack, auto eat, auto fish, auto farm, auto tool, hotbar refill, anti-AFK and hotkeys for mob farms, mining, farming and fishing.
 
 **Summary, Russian** (for the Russian description or a translation of the project):
 
