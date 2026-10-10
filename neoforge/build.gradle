@@ -66,15 +66,25 @@ dependencies {
 // mods.toml was renamed to neoforge.mods.toml in NeoForge for 1.20.5.
 def modsToml = rootProject.java_version == '17' ? 'mods.toml' : 'neoforge.mods.toml'
 
+// The Minecraft versions this jar is released for (versions/shared-jars.txt).
+def releasedFor = rootProject.releasedFor(forgeVersion ? 'forge' : 'neoforge')
+
 processResources {
+    def minecraftRange = releasedFor.versions.size() == 1 ? "[${releasedFor.versions[0]}]"
+            : "[${releasedFor.versions.first()},${releasedFor.versions.last()}]"
+    // A Forge jar released for several versions accepts the Forge of the oldest of them.
+    def oldest = new Properties()
+    rootProject.file("versions/${releasedFor.versions[0]}.properties").withInputStream { oldest.load(it) }
+    def loaderRange = forgeVersion ? "[${oldest.getProperty('forge_version').split('-')[1].split('\\.')[0]},)"
+            : legacyForge ? '[47,)' : '[1,)'
     inputs.property 'version', project.version
-    inputs.property 'minecraft_version', rootProject.minecraft_version
+    inputs.property 'minecraft_range', minecraftRange
     inputs.property 'mods_toml', modsToml
+    inputs.property 'loader_range', loaderRange
 
     filesMatching('META-INF/mods.toml') {
-        expand version: project.version, minecraft_version: rootProject.minecraft_version,
-                loader_range: forgeVersion ? "[${forgeVersion.split('-')[1].split('\\.')[0]},)"
-                        : legacyForge ? '[47,)' : '[1,)',
+        expand version: project.version, minecraft_range: minecraftRange,
+                loader_range: loaderRange,
                 loader: legacyForge ? 'forge' : 'neoforge',
                 display_test: legacyForge ? 'displayTest = "IGNORE_ALL_VERSION"' : '',
                 mixins: legacyForge ? '' : '[[mixins]]\nconfig = "multiclicker.mixins.json"'
@@ -89,8 +99,8 @@ shadowJar {
 
 remapJar {
     input.set shadowJar.archiveFile
-    // One jar per Minecraft version: MultiClicker-neoforge-<mod version>+<minecraft version>.jar
-    archiveVersion = "${rootProject.mod_version}+${rootProject.minecraft_version}"
+    // MultiClicker-neoforge-<mod version>+<minecraft version>.jar, or +<oldest>-<newest> for a shared jar
+    archiveVersion = "${rootProject.mod_version}+${releasedFor.label}"
 }
 
 // Forge 41, 42 and 44 (Minecraft 1.19, 1.19.1 and 1.19.3) ship ASM 9.3, which cannot read the classes of

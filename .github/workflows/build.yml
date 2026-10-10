@@ -73,13 +73,40 @@ jobs:
           gradle_cmd=${{ startsWith(matrix.mc, '26.') && 'gradle' || './gradlew' }}
           $gradle_cmd build --no-daemon -Pminecraft_version=${{ matrix.mc }}
 
-      # The Fabric jar and the NeoForge (1.20.1 and newer) or Forge (1.19 to 1.20) jar.
+      # The Fabric jar and the NeoForge (1.20.1 and newer) or Forge (1.19 to 1.20) jar. A jar shared by a group
+      # of versions (versions/shared-jars.txt) is named for the group: +<oldest>-<newest>.jar.
       - name: Upload jars
         uses: actions/upload-artifact@v4
         with:
           name: MultiClicker-${{ matrix.mc }}
           path: |
-            fabric/build/libs/MultiClicker-fabric-*+${{ matrix.mc }}.jar
-            neoforge/build/libs/MultiClicker-neoforge-*+${{ matrix.mc }}.jar
-            neoforge/build/libs/MultiClicker-forge-*+${{ matrix.mc }}.jar
+            fabric/build/libs/MultiClicker-fabric-*+*.jar
+            neoforge/build/libs/MultiClicker-neoforge-*+*.jar
+            neoforge/build/libs/MultiClicker-forge-*+*.jar
           if-no-files-found: error
+
+  # The release publishes one jar for each group of versions/shared-jars.txt; this finds out before a release
+  # when a version of a group stops building into the same code.
+  shared-jars:
+    name: Shared jars
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download jars
+        uses: actions/download-artifact@v4
+        with:
+          pattern: MultiClicker-*
+          merge-multiple: true
+          path: jars
+
+      - name: Gather jars
+        run: find jars -mindepth 2 -name '*.jar' -exec mv -t jars {} +
+
+      # The 1.20.1 NeoForge jar is released under the Forge name too (see release.yml).
+      - name: Compare the jars of each group
+        run: |
+          for jar in jars/MultiClicker-neoforge-*+1.20.1.jar; do cp "$jar" "${jar/MultiClicker-neoforge-/MultiClicker-forge-}"; done
+          python3 .github/scripts/release_groups.py check jars

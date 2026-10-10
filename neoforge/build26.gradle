@@ -25,12 +25,17 @@ dependencies {
     implementation files(commonOutput)
 }
 
+// The Minecraft versions this jar is released for (versions/shared-jars.txt).
+def releasedFor = rootProject.releasedFor('neoforge')
+
 processResources {
+    def minecraftRange = releasedFor.versions.size() == 1 ? "[${releasedFor.versions[0]}]"
+            : "[${releasedFor.versions.first()},${releasedFor.versions.last()}]"
     inputs.property 'version', project.version
-    inputs.property 'minecraft_version', rootProject.minecraft_version
+    inputs.property 'minecraft_range', minecraftRange
 
     filesMatching('META-INF/mods.toml') {
-        expand version: project.version, minecraft_version: rootProject.minecraft_version,
+        expand version: project.version, minecraft_range: minecraftRange,
                 loader_range: '[1,)', loader: 'neoforge', display_test: '',
                 mixins: '[[mixins]]\nconfig = "multiclicker.mixins.json"'
         path = 'META-INF/neoforge.mods.toml'
@@ -40,6 +45,6 @@ processResources {
 jar {
     // The common module is part of the mod jar.
     from commonOutput
-    // One jar per Minecraft version: MultiClicker-neoforge-<mod version>+<minecraft version>.jar
-    archiveVersion = "${rootProject.mod_version}+${rootProject.minecraft_version}"
+    // MultiClicker-neoforge-<mod version>+<minecraft version>.jar, or +<oldest>-<newest> for a shared jar
+    archiveVersion = "${rootProject.mod_version}+${releasedFor.label}"
 }

@@ -81,21 +81,24 @@ jobs:
             cp "$jar" "${jar/MultiClicker-neoforge-/MultiClicker-forge-}"
           done
 
-      # The Fabric jar and the NeoForge (1.20.1 and newer) and/or Forge (1.19 to 1.20.1) jar.
+      # The Fabric jar and the NeoForge (1.20.1 and newer) and/or Forge (1.19 to 1.20.1) jar. A jar shared by a
+      # group of versions (versions/shared-jars.txt) is named for the group: +<oldest>-<newest>.jar.
       - name: Upload jars
         uses: actions/upload-artifact@v4
         with:
           name: jar-${{ matrix.mc }}
           path: |
-            fabric/build/libs/MultiClicker-fabric-*+${{ matrix.mc }}.jar
-            neoforge/build/libs/MultiClicker-neoforge-*+${{ matrix.mc }}.jar
-            neoforge/build/libs/MultiClicker-forge-*+${{ matrix.mc }}.jar
+            fabric/build/libs/MultiClicker-fabric-*+*.jar
+            neoforge/build/libs/MultiClicker-neoforge-*+*.jar
+            neoforge/build/libs/MultiClicker-forge-*+*.jar
           if-no-files-found: error
 
   publish:
     name: Publish release
     needs: build
     runs-on: ubuntu-latest
+    outputs:
+      entries: ${{ steps.groups.outputs.entries }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -111,6 +114,14 @@ jobs:
       - name: Gather jars
         run: find jars -mindepth 2 -name '*.jar' -exec mv -t jars {} +
 
+      # One jar per loader and group of versions (versions/shared-jars.txt). The jars built for the other
+      # versions of a group must hold the same code as the shared one, or the release stops here.
+      - name: Pick the release jars
+        id: groups
+        run: |
+          python3 .github/scripts/release_groups.py check jars release
+          echo "entries=$(python3 .github/scripts/release_groups.py entries)" >> "$GITHUB_OUTPUT"
+
       - name: Prepare release
         id: prep
         run: |
@@ -120,15 +131,8 @@ jobs:
             echo "::error::Tag $tag does not match mod_version $version"
             exit 1
           fi
-          ls -1 jars
-          test "$(ls -1 jars/MultiClicker-fabric-*.jar | wc -l)" -eq 29
-          test "$(ls -1 jars/MultiClicker-neoforge-*.jar | wc -l)" -eq 23
-          test "$(ls -1 jars/MultiClicker-forge-*.jar | wc -l)" -eq 7
           # Release notes: the CHANGELOG section of this version.
-          awk -v v="$version" '
-            /^## \[/ { if (found) exit; if (index($0, "[" v "]")) { found = 1; next } }
-            found
-          ' CHANGELOG.md > release-notes.md
+          python3 .github/scripts/release_notes.py "$version" > release-notes.md
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
@@ -139,24 +143,23 @@ jobs:
           target_commitish: ${{ github.sha }}
           name: MultiClicker ${{ steps.prep.outputs.version }}
           body_path: release-notes.md
-          files: jars/*.jar
+          files: release/*.jar
           fail_on_unmatched_files: true
 
-  # Uploads every jar to Modrinth and CurseForge as well. Runs once the project ids are set as repository
+  # Uploads every release jar to Modrinth and CurseForge as well. Runs once the project ids are set as repository
   # variables (MODRINTH_ID, CURSEFORGE_ID) and the tokens as secrets (MODRINTH_TOKEN, CURSEFORGE_TOKEN);
   # a site without a token is skipped.
   stores:
-    name: Upload ${{ matrix.mc }} to Modrinth and CurseForge
+    name: Upload ${{ matrix.loader }} ${{ matrix.label }} to Modrinth and CurseForge
     needs: publish
     if: vars.MODRINTH_ID != '' || vars.CURSEFORGE_ID != ''
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       max-parallel: 2
+      # One entry per release jar: its loader, the Minecraft versions it is for and the build that made it.
       matrix:
-        mc: ["1.19", "1.19.1", "1.19.2", "1.19.3", "1.19.4", "1.20", "1.20.1", "1.20.2", "1.20.3", "1.20.4", "1.20.5", "1.20.6", "1.21", "1.21.1", "1.21.2",
-             "1.21.3", "1.21.4", "1.21.5", "1.21.6", "1.21.7", "1.21.8", "1.21.9", "1.21.10", "1.21.11",
-             "26.1", "26.1.1", "26.1.2", "26.2", "26.3"]
+        include: ${{ fromJSON(needs.publish.outputs.entries) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -164,71 +167,45 @@ jobs:
       - name: Download jar
         uses: actions/download-artifact@v4
         with:
-          name: jar-${{ matrix.mc }}
+          name: jar-${{ matrix.build }}
           path: jars
 
       # The jars keep the build folders (fabric/build/libs, neoforge/build/libs) when a version has both; put them side by side.
       - name: Gather jars
         run: find jars -mindepth 2 -name '*.jar' -exec mv -t jars {} +
 
+      # The stores show one changelog to everyone, so the Russian one follows the English one.
       - name: Prepare upload
         id: prep
         run: |
           version="$(sed -n 's/^mod_version *= *//p' gradle.properties | tr -d '[:space:]')"
-          awk -v v="$version" '
-            /^## \[/ { if (found) exit; if (index($0, "[" v "]")) { found = 1; next } }
-            found
-          ' CHANGELOG.md > release-notes.md
+          python3 .github/scripts/release_notes.py "$version" --russian > release-notes.md
+          loader="${{ matrix.loader }}"
           echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "file=$(ls jars/MultiClicker-$loader-*+${{ matrix.label }}.jar)" >> "$GITHUB_OUTPUT"
+          echo "name=${loader^}" | sed 's/Neoforge/NeoForge/' >> "$GITHUB_OUTPUT"
+          echo "range=${{ matrix.label }}" | sed 's/-/–/' >> "$GITHUB_OUTPUT"
+          {
+            echo 'game_versions<<EOF'
+            tr ' ' '\n' <<< "${{ matrix.versions }}"
+            echo 'EOF'
+            echo 'dependencies<<EOF'
+            if [ "$loader" = fabric ]; then printf 'fabric-api(required)\nmodmenu(optional)\n'; fi
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Upload the Fabric jar
+      - name: Upload the jar
         uses: Kir-Antipov/mc-publish@v3.3
         with:
           modrinth-id: ${{ vars.MODRINTH_ID }}
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           curseforge-id: ${{ vars.CURSEFORGE_ID }}
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-          files: jars/MultiClicker-fabric-*.jar
-          name: MultiClicker ${{ steps.prep.outputs.version }} for Minecraft ${{ matrix.mc }} (Fabric)
-          version: ${{ steps.prep.outputs.version }}+${{ matrix.mc }}-fabric
+          files: ${{ steps.prep.outputs.file }}
+          name: MultiClicker ${{ steps.prep.outputs.version }} for Minecraft ${{ steps.prep.outputs.range }} (${{ steps.prep.outputs.name }})
+          version: ${{ steps.prep.outputs.version }}+${{ matrix.label }}-${{ matrix.loader }}
           version-type: release
           changelog-file: release-notes.md
-          loaders: fabric
-          game-versions: ${{ matrix.mc }}
-          dependencies: |
-            fabric-api(required)
-            modmenu(optional)
-
-      # NeoForge exists from Minecraft 1.20.1 on.
-      - name: Upload the NeoForge jar
-        if: hashFiles('jars/MultiClicker-neoforge-*.jar') != ''
-        uses: Kir-Antipov/mc-publish@v3.3
-        with:
-          modrinth-id: ${{ vars.MODRINTH_ID }}
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          curseforge-id: ${{ vars.CURSEFORGE_ID }}
-          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-          files: jars/MultiClicker-neoforge-*.jar
-          name: MultiClicker ${{ steps.prep.outputs.version }} for Minecraft ${{ matrix.mc }} (NeoForge)
-          version: ${{ steps.prep.outputs.version }}+${{ matrix.mc }}-neoforge
-          version-type: release
-          changelog-file: release-notes.md
-          loaders: neoforge
-          game-versions: ${{ matrix.mc }}
-
-      # Forge jars for Minecraft 1.19 to 1.20.1 (for 1.20.1 the copy of the NeoForge jar).
-      - name: Upload the Forge jar
-        if: hashFiles('jars/MultiClicker-forge-*.jar') != ''
-        uses: Kir-Antipov/mc-publish@v3.3
-        with:
-          modrinth-id: ${{ vars.MODRINTH_ID }}
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          curseforge-id: ${{ vars.CURSEFORGE_ID }}
-          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-          files: jars/MultiClicker-forge-*.jar
-          name: MultiClicker ${{ steps.prep.outputs.version }} for Minecraft ${{ matrix.mc }} (Forge)
-          version: ${{ steps.prep.outputs.version }}+${{ matrix.mc }}-forge
-          version-type: release
-          changelog-file: release-notes.md
-          loaders: forge
-          game-versions: ${{ matrix.mc }}
+          loaders: ${{ matrix.loader }}
+          game-versions: ${{ steps.prep.outputs.game_versions }}
+          dependencies: ${{ steps.prep.outputs.dependencies }}

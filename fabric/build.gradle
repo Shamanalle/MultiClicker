@@ -79,17 +79,25 @@ loom {
     }
 }
 
+// The Minecraft versions this jar is released for (versions/shared-jars.txt).
+def releasedFor = rootProject.releasedFor('fabric')
+
 processResources {
+    def minecraftRange = releasedFor.versions.size() == 1 ? releasedFor.versions[0]
+            : ">=${releasedFor.versions.first()} <=${releasedFor.versions.last()}"
+    // Fabric API was the mod "fabric" up to its builds for Minecraft 1.19.1, and later builds still provide
+    // that id, so a jar released for 1.19 to 1.19.2 asks for "fabric" as the 1.19 build does.
+    def oldest = new Properties()
+    rootProject.file("versions/${releasedFor.versions[0]}.properties").withInputStream { oldest.load(it) }
+    def fabricApiId = oldest.getProperty('fabric_api_id') ?: 'fabric-api'
     inputs.property 'version', project.version
-    inputs.property 'minecraft_version', rootProject.minecraft_version
+    inputs.property 'minecraft_range', minecraftRange
     inputs.property 'java_version', rootProject.java_version
     inputs.property 'loader_min', rootProject.loader_min
-    // Fabric API was the mod "fabric" up to its builds for Minecraft 1.19.1.
-    def fabricApiId = rootProject.findProperty('fabric_api_id') ?: 'fabric-api'
     inputs.property 'fabric_api_id', fabricApiId
 
     filesMatching('fabric.mod.json') {
-        expand version: project.version, minecraft_version: rootProject.minecraft_version, java_version: rootProject.java_version, loader_min: rootProject.loader_min,
+        expand version: project.version, minecraft_range: minecraftRange, java_version: rootProject.java_version, loader_min: rootProject.loader_min,
                 fabric_api_id: fabricApiId
     }
 }
@@ -101,6 +109,6 @@ shadowJar {
 
 remapJar {
     input.set shadowJar.archiveFile
-    // One jar per Minecraft version: MultiClicker-fabric-<mod version>+<minecraft version>.jar
-    archiveVersion = "${rootProject.mod_version}+${rootProject.minecraft_version}"
+    // MultiClicker-fabric-<mod version>+<minecraft version>.jar, or +<oldest>-<newest> for a shared jar
+    archiveVersion = "${rootProject.mod_version}+${releasedFor.label}"
 }

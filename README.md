@@ -33,7 +33,8 @@ profile can have its own hotkey.
    (see [versions](#supported-versions)).
 2. Put the jar for your loader and version from the
    [latest release](https://github.com/Shamanalle/MultiClicker/releases/latest) into the `mods` folder:
-   - Fabric: `MultiClicker-fabric-<mod version>+<Minecraft version>.jar` together with
+   - Fabric: `MultiClicker-fabric-<mod version>+<Minecraft version>.jar` (or a range of versions, such as
+     `+1.21.6-1.21.8`) together with
      [Fabric API](https://modrinth.com/mod/fabric-api). Optional: [Mod Menu](https://modrinth.com/mod/modmenu)
      adds a settings button to the mod list.
    - NeoForge: `MultiClicker-neoforge-<mod version>+<Minecraft version>.jar`, nothing else is needed. The
@@ -154,7 +155,8 @@ mobs.
 
 ## Supported versions
 
-One jar per loader and Minecraft version:
+One jar per loader and Minecraft version, or per range of versions where the mod builds into the same code
+for each of them (such as `MultiClicker-fabric-<mod version>+1.21.6-1.21.8.jar` for 1.21.6, 1.21.7 and 1.21.8):
 
 | Minecraft | Fabric | NeoForge | Forge |
 |:--|:--:|:--:|:--:|
