@@ -518,6 +518,14 @@ public class ConfigScreen extends ModScreen {
             hovered = module;
         }
 
+        // The sliders of a card share one value column, so their tracks start at the same place.
+        int sliderColumn = 0;
+        for (Row row : card.rows) {
+            if (row.visible && row.setting != null && control(row.setting) instanceof SliderControl slider) {
+                sliderColumn = Math.max(sliderColumn, slider.widestValue(font));
+            }
+        }
+
         boolean first = true;
         for (Row row : card.rows) {
             if (!row.visible) {
@@ -537,6 +545,9 @@ public class ConfigScreen extends ModScreen {
             Setting<?> setting = row.setting;
             boolean overRow = mouseInView && mouseX >= x + 1 && mouseX < x + w - 1 && mouseY >= row.y && mouseY < row.y + ROW;
             SettingControl control = control(setting);
+            if (control instanceof SliderControl slider) {
+                slider.column(font, sliderColumn);
+            }
             control.fit(font, (w - 20) * 11 / 20);
             int controlW = control.width(font);
             int controlX = x + w - 10 - controlW;

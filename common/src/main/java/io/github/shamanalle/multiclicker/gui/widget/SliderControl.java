@@ -21,6 +21,8 @@ public class SliderControl extends SettingControl {
     private final IntSetting setting;
     private final Anim fill;
     private final Anim hover = new Anim(0);
+    private int widestValue = -1;
+    /** Width of the value column; the sliders of one card share it so their tracks line up. */
     private int valueWidth = -1;
     private int trackWidth = MAX_TRACK;
     private boolean dragging;
@@ -38,6 +40,26 @@ public class SliderControl extends SettingControl {
         return (float) (setting.get() - setting.min()) / Math.max(1, setting.max() - setting.min());
     }
 
+    /** The width the widest value of this slider needs. */
+    public int widestValue(Font font) {
+        if (widestValue < 0) {
+            // Reserve space for the widest value so the track does not jump around while dragging.
+            int widest = 0;
+            int step = Math.max(1, (setting.max() - setting.min()) / 40);
+            for (int value = setting.min(); value <= setting.max(); value += step) {
+                widest = Math.max(widest, font.width(setting.format(value)));
+            }
+            widest = Math.max(widest, font.width(setting.format(setting.max())));
+            widestValue = Math.min(widest, 90);
+        }
+        return widestValue;
+    }
+
+    /** Sets the value column width, at least as wide as this slider's own values. */
+    public void column(Font font, int width) {
+        valueWidth = Math.max(widestValue(font), width);
+    }
+
     @Override
     public void fit(Font font, int maxWidth) {
         width(font);
@@ -47,14 +69,7 @@ public class SliderControl extends SettingControl {
     @Override
     public int width(Font font) {
         if (valueWidth < 0) {
-            // Reserve space for the widest value so the track does not jump around while dragging.
-            int widest = 0;
-            int step = Math.max(1, (setting.max() - setting.min()) / 40);
-            for (int value = setting.min(); value <= setting.max(); value += step) {
-                widest = Math.max(widest, font.width(setting.format(value)));
-            }
-            widest = Math.max(widest, font.width(setting.format(setting.max())));
-            valueWidth = Math.min(widest, 90);
+            valueWidth = widestValue(font);
         }
         return trackWidth + GAP + valueWidth;
     }
