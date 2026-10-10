@@ -13,6 +13,11 @@ def versionProps = new Properties()
 versionFile.withInputStream { versionProps.load(it) }
 versionProps.each { key, value -> ext.set(key as String, value) }
 
+// Loaders the common code is built for: NeoForge where the version file names one (for 1.20.1 it is the
+// NeoForged Forge, built as a Forge mod).
+ext.platforms = !ext.has('neoforge_version') ? 'fabric'
+        : project.minecraft_version == '1.20.1' ? 'fabric,forge' : 'fabric,neoforge'
+
 architectury {
     minecraft = project.minecraft_version
 }
@@ -26,6 +31,10 @@ subprojects {
     version = project.mod_version
     group = project.maven_group
 
+    // Architectury Loom reads the loader of a module from this property when it is applied.
+    if (project.name == 'neoforge') {
+        ext.set('loom.platform', rootProject.minecraft_version == '1.20.1' ? 'forge' : 'neoforge')
+    }
     apply plugin: 'dev.architectury.loom'
     apply plugin: 'architectury-plugin'
 
@@ -35,6 +44,8 @@ subprojects {
 
     repositories {
         maven { url "https://maven.terraformersmc.com/releases/" }
+        // Placeholder API, needed by Mod Menu for Minecraft 1.20.3 and 1.20.4.
+        maven { url "https://maven.nucleoid.xyz/" }
     }
 
     dependencies {

@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Slots;
+import io.github.shamanalle.multiclicker.compat.Stacks;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -125,7 +126,7 @@ public class HotbarRefillModule extends Module {
                     return true;
                 }
             } else if (refillAt.get() > 0 && now.isStackable() && now.getCount() <= refillAt.get()
-                    && now.getCount() < before.getCount() && ItemStack.isSameItemSameComponents(now, before)) {
+                    && now.getCount() < before.getCount() && Stacks.sameItem(now, before)) {
                 int source = findSame(inventory, now);
                 if (source != -1) {
                     Inventories.mergeInto(mc, source, slot);
@@ -139,7 +140,7 @@ public class HotbarRefillModule extends Module {
     /** A stack of exactly this item in the main inventory (not the hotbar). */
     private static int findSame(Inventory inventory, ItemStack wanted) {
         for (int slot = Inventories.HOTBAR_SIZE; slot < Inventories.MAIN_SIZE; slot++) {
-            if (ItemStack.isSameItemSameComponents(inventory.getItem(slot), wanted)) {
+            if (Stacks.sameItem(inventory.getItem(slot), wanted)) {
                 return slot;
             }
         }

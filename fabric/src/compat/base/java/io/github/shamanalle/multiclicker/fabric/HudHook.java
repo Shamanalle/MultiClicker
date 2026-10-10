@@ -12,6 +12,6 @@ final class HudHook {
 
     static void register(MultiClicker mod) {
         HudElementRegistry.addLast(Ids.mod("hud"),
-                (graphics, deltaTracker) -> mod.hud().render(new Canvas(graphics), deltaTracker));
+                (graphics, deltaTracker) -> mod.hud().render(new Canvas(graphics)));
     }
 }

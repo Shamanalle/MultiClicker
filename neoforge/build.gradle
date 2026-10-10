@@ -1,0 +1,88 @@
+plugins {
+    id 'com.github.johnrengelman.shadow'
+}
+
+// NeoForge for Minecraft 1.20.2 and newer. For 1.20.1 NeoForge is a fork of Forge 47 (net.neoforged:forge)
+// with the Forge API, so the jar is built as a Forge mod.
+def legacyForge = rootProject.minecraft_version == '1.20.1'
+
+architectury {
+    platformSetupLoomIde()
+    if (legacyForge) {
+        forge()
+    } else {
+        neoForge()
+    }
+}
+
+if (legacyForge) {
+    loom {
+        forge {
+            mixinConfig 'multiclicker.mixins.json'
+        }
+    }
+}
+
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    if (legacyForge) {
+        developmentForge.extendsFrom common
+    } else {
+        developmentNeoForge.extendsFrom common
+    }
+
+    // Files in this configuration will be bundled into the mod using the Shadow plugin.
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+repositories {
+    maven { url 'https://maven.neoforged.net/releases' }
+}
+
+dependencies {
+    if (legacyForge) {
+        forge "net.neoforged:forge:$rootProject.neoforge_version"
+    } else {
+        neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
+    }
+
+    common(project(path: ':common', configuration: 'namedElements')) { transitive false }
+    shadowBundle project(path: ':common', configuration: legacyForge ? 'transformProductionForge' : 'transformProductionNeoForge')
+}
+
+// mods.toml was renamed to neoforge.mods.toml in NeoForge for 1.20.5.
+def modsToml = rootProject.java_version == '17' ? 'mods.toml' : 'neoforge.mods.toml'
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'minecraft_version', rootProject.minecraft_version
+    inputs.property 'mods_toml', modsToml
+
+    filesMatching('META-INF/mods.toml') {
+        expand version: project.version, minecraft_version: rootProject.minecraft_version,
+                loader_range: legacyForge ? '[47,)' : '[1,)',
+                loader: legacyForge ? 'forge' : 'neoforge',
+                display_test: legacyForge ? 'displayTest = "IGNORE_ALL_VERSION"' : '',
+                mixins: legacyForge ? '' : '[[mixins]]\nconfig = "multiclicker.mixins.json"'
+        path = "META-INF/$modsToml"
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowBundle]
+    archiveClassifier = 'dev-shadow'
+}
+
+remapJar {
+    input.set shadowJar.archiveFile
+    // One jar per Minecraft version: MultiClicker-neoforge-<mod version>+<minecraft version>.jar
+    archiveVersion = "${rootProject.mod_version}+${rootProject.minecraft_version}"
+}

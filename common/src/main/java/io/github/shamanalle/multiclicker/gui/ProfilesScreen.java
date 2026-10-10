@@ -408,12 +408,12 @@ public class ProfilesScreen extends PanelScreen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+    protected boolean scrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (isInList(mouseX, mouseY)) {
             scroll -= (float) scrollY * ROW;
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+        return super.scrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     @Override

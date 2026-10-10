@@ -1,5 +1,5 @@
 architectury {
-    common rootProject.enabled_platforms.split(',')
+    common rootProject.platforms.split(',')
 }
 
 dependencies {
@@ -19,4 +19,13 @@ test {
     def runDir = layout.buildDirectory.dir('test-run').get().asFile
     workingDir = runDir
     doFirst { runDir.mkdirs() }
+}
+
+// Mixin refuses a compatibility level above the Java version the game runs on (17 before 1.20.5).
+processResources {
+    def mixinJava = Math.min(Integer.parseInt(rootProject.java_version), 21)
+    inputs.property 'mixin_java', mixinJava
+    filesMatching('multiclicker.mixins.json') {
+        expand mixin_java: mixinJava
+    }
 }

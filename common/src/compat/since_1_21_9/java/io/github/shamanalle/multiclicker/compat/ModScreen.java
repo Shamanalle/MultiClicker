@@ -10,7 +10,7 @@ import net.minecraft.network.chat.Component;
 
 /**
  * Screen base class with version independent input hooks. Screens override {@code clicked},
- * {@code dragged}, {@code released}, {@code pressed} and {@code typed} instead of the vanilla
+ * {@code dragged}, {@code released}, {@code scrolled}, {@code pressed} and {@code typed} instead of the vanilla
  * methods, whose signatures changed in Minecraft 1.21.9.
  */
 public abstract class ModScreen extends Screen {
@@ -49,6 +49,15 @@ public abstract class ModScreen extends Screen {
 
     protected boolean typed(char codePoint, int modifiers) {
         return super.charTyped(new CharacterEvent(codePoint, modifiers));
+    }
+
+    protected boolean scrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public final boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        return scrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     @Override

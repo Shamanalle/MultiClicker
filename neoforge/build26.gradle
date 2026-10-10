@@ -1,0 +1,45 @@
+// NeoForge for Minecraft 26.1 and newer, built with ModDevGradle. The game is not obfuscated, so the classes of the
+// common module (compiled by Fabric Loom against the same Minecraft names) go into the jar as they are.
+evaluationDependsOn(':common')
+
+def commonOutput = project(':common').sourceSets.main.output
+
+neoForge {
+    version = rootProject.neoforge_version
+
+    runs {
+        client {
+            client()
+        }
+    }
+
+    mods {
+        multiclicker {
+            sourceSet sourceSets.main
+            sourceSet project(':common').sourceSets.main
+        }
+    }
+}
+
+dependencies {
+    implementation files(commonOutput)
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'minecraft_version', rootProject.minecraft_version
+
+    filesMatching('META-INF/mods.toml') {
+        expand version: project.version, minecraft_version: rootProject.minecraft_version,
+                loader_range: '[1,)', loader: 'neoforge', display_test: '',
+                mixins: '[[mixins]]\nconfig = "multiclicker.mixins.json"'
+        path = 'META-INF/neoforge.mods.toml'
+    }
+}
+
+jar {
+    // The common module is part of the mod jar.
+    from commonOutput
+    // One jar per Minecraft version: MultiClicker-neoforge-<mod version>+<minecraft version>.jar
+    archiveVersion = "${rootProject.mod_version}+${rootProject.minecraft_version}"
+}
