@@ -1,0 +1,24 @@
+# Minecraft versions released as one jar: one group per line, "<loader>: <versions, oldest first>".
+#
+# The jar is built for the newest version of the group and declares the whole range in its metadata. Every
+# version is still built and tested on its own, and the release only goes ahead when the jars built for the
+# versions of a group hold the same code (.github/scripts/release_groups.py), so each reference in the shared
+# jar was resolved against every version it is released for.
+#
+# Loaders: fabric, neoforge, and forge for the Forge jars of Minecraft 1.19 to 1.20.
+
+fabric: 1.19 1.19.1 1.19.2
+fabric: 1.20 1.20.1
+fabric: 1.20.2 1.20.3 1.20.4
+fabric: 1.21 1.21.1
+fabric: 1.21.2 1.21.3 1.21.4
+fabric: 1.21.6 1.21.7 1.21.8
+fabric: 26.1 26.1.1 26.1.2
+
+forge: 1.19 1.19.1 1.19.2
+
+neoforge: 1.20.2 1.20.3 1.20.4
+neoforge: 1.21 1.21.1
+neoforge: 1.21.2 1.21.3 1.21.4
+neoforge: 1.21.6 1.21.7 1.21.8
+neoforge: 26.1 26.1.1 26.1.2

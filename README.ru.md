@@ -33,7 +33,8 @@
    (см. [версии](#поддерживаемые-версии)).
 2. Положите в папку `mods` jar под свой загрузчик и версию из
    [последнего релиза](https://github.com/Shamanalle/MultiClicker/releases/latest):
-   - Fabric: `MultiClicker-fabric-<версия мода>+<версия Minecraft>.jar` вместе с
+   - Fabric: `MultiClicker-fabric-<версия мода>+<версия Minecraft>.jar` (или диапазон версий, например
+     `+1.21.6-1.21.8`) вместе с
      [Fabric API](https://modrinth.com/mod/fabric-api). По желанию поставьте
      [Mod Menu](https://modrinth.com/mod/modmenu): он добавляет кнопку настроек в списке модов.
    - NeoForge: `MultiClicker-neoforge-<версия мода>+<версия Minecraft>.jar`, больше ничего не нужно.
@@ -158,7 +159,9 @@
 
 ## Поддерживаемые версии
 
-Для каждого загрузчика и версии Minecraft свой jar:
+Для каждого загрузчика и версии Minecraft свой jar, а для версий, под которые мод собирается в один и тот же
+код, — общий на диапазон (например, `MultiClicker-fabric-<версия мода>+1.21.6-1.21.8.jar` для 1.21.6, 1.21.7 и
+1.21.8):
 
 | Minecraft | Fabric | NeoForge | Forge |
 |:--|:--:|:--:|:--:|

@@ -196,19 +196,22 @@ Fabric 1.21.9 и новее требует Fabric Loader 0.17 или новее.
 
 ## 4. Version fields
 
-Upload every jar as its own version/file and tick the matching Minecraft version and the loader of the
+Upload every jar as its own version/file and tick the Minecraft versions in its name and the loader of the
 jar: Fabric for `MultiClicker-fabric-*`, NeoForge for `MultiClicker-neoforge-*`, Forge for `MultiClicker-forge-*` (Fabric 1.21.9 and newer: Fabric Loader 0.17+, mention it in the
-changelog).
+changelog). A jar named for a range, such as `MultiClicker-fabric-2.5.0+1.21.6-1.21.8.jar`, is for every
+version of that range (1.21.6, 1.21.7 and 1.21.8); see `versions/shared-jars.txt`.
 
-**Version name:** `MultiClicker 2.4.0 for Minecraft <version> (<loader>)`, for example `MultiClicker 2.4.0 for Minecraft 1.21.4 (Fabric)`.
+**Version name:** `MultiClicker 2.4.0 for Minecraft <versions> (<loader>)`, for example `MultiClicker 2.4.0 for Minecraft 1.21.4 (Fabric)`
+or `MultiClicker 2.5.0 for Minecraft 1.21.6–1.21.8 (Fabric)`.
 
-**Version number:** `2.4.0+<Minecraft version>-<loader>`, for example `2.4.0+1.21.4-fabric`.
+**Version number:** `2.4.0+<Minecraft versions>-<loader>`, for example `2.4.0+1.21.4-fabric` or `2.5.0+1.21.6-1.21.8-fabric`.
 
 **Release channel:** Release.
 
 **Dependencies:** Fabric jars: Fabric API (required), Mod Menu (optional). NeoForge and Forge jars: none.
 
-**Changelog** (the same text for every file):
+**Changelog** (the same text for every file; the release workflow uploads the section of `CHANGELOG.md`
+followed by the one of `CHANGELOG.ru.md`):
 
 ```
 2.4.0
@@ -253,14 +256,15 @@ Full history: https://github.com/Shamanalle/MultiClicker/blob/main/CHANGELOG.md
 1. Modrinth: create the project, set the fields from section 1, paste section 2 (add section 3 in a
    `<details>` block at the end), add the icon `common/src/main/resources/assets/multiclicker/icon.png`
    and the screenshots to the gallery (set `hud.png` as the featured image).
-2. Upload the 58 jars from the GitHub release (29 Fabric, 23 NeoForge, 6 Forge) as separate versions (section 4). Modrinth can attach
-   several Minecraft versions to one file only when the file really works on all of them, so keep one
-   jar per version.
-3. CurseForge: the same text, the same 58 files (one file per loader and game version).
+2. Upload the jars from the GitHub release as separate versions (section 4). A jar named for a range of
+   Minecraft versions gets all of them; CI checks before every release that building the mod for each of
+   them gives the same code.
+3. CurseForge: the same text, the same files (one file per loader and jar).
 4. Both sites review new projects; the review can take from a few hours to a few days.
 5. Later versions can be uploaded by the release workflow itself. In the repository settings
    (*Settings → Secrets and variables → Actions*) add the variables `MODRINTH_ID` and `CURSEFORGE_ID`
    (the project ids shown on each site) and the secrets `MODRINTH_TOKEN` (Modrinth → Settings → PATs,
    with the *Create versions* scope) and `CURSEFORGE_TOKEN` (CurseForge → API tokens). From then on every
-   release also uploads its 58 jars to both sites, with the changelog of that version. A site whose
+   release also uploads its jars to both sites, with the changelog of that version in English and
+   Russian. A site whose
    token is missing is skipped.

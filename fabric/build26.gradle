@@ -52,16 +52,21 @@ loom {
     }
 }
 
+// The Minecraft versions this jar is released for (versions/shared-jars.txt).
+def releasedFor = rootProject.releasedFor('fabric')
+
 processResources {
+    def minecraftRange = releasedFor.versions.size() == 1 ? releasedFor.versions[0]
+            : ">=${releasedFor.versions.first()} <=${releasedFor.versions.last()}"
     inputs.property 'version', project.version
-    inputs.property 'minecraft_version', rootProject.minecraft_version
+    inputs.property 'minecraft_range', minecraftRange
     inputs.property 'java_version', rootProject.java_version
     inputs.property 'loader_min', rootProject.loader_min
     // fabric.mod.json is shared with the older versions, which may name Fabric API "fabric".
     inputs.property 'fabric_api_id', 'fabric-api'
 
     filesMatching('fabric.mod.json') {
-        expand version: project.version, minecraft_version: rootProject.minecraft_version, java_version: rootProject.java_version, loader_min: rootProject.loader_min,
+        expand version: project.version, minecraft_range: minecraftRange, java_version: rootProject.java_version, loader_min: rootProject.loader_min,
                 fabric_api_id: 'fabric-api'
     }
 }
@@ -69,11 +74,11 @@ processResources {
 jar {
     // The common module is part of the mod jar.
     from project(':common').sourceSets.main.output
-    // One jar per Minecraft version: MultiClicker-fabric-<mod version>+<minecraft version>.jar
-    archiveVersion = "${rootProject.mod_version}+${rootProject.minecraft_version}"
+    // MultiClicker-fabric-<mod version>+<minecraft version>.jar, or +<oldest>-<newest> for a shared jar
+    archiveVersion = "${rootProject.mod_version}+${releasedFor.label}"
 }
 
 // The release jar comes out of remapJar (a pass-through on unobfuscated versions); it needs the same name.
 remapJar {
-    archiveVersion = "${rootProject.mod_version}+${rootProject.minecraft_version}"
+    archiveVersion = "${rootProject.mod_version}+${releasedFor.label}"
 }

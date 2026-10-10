@@ -1,6 +1,15 @@
 # Changelog
 
-All notable changes to **MultiClicker** will be documented in this file.
+All notable changes to **MultiClicker** will be documented in this file. In Russian: [CHANGELOG.ru.md](CHANGELOG.ru.md).
+
+## [Unreleased]
+### Changed
+- **Fewer files.** Minecraft versions the mod builds into the same code for share one jar: 1.19 – 1.19.2,
+  1.20.2 – 1.20.4, 1.21.2 – 1.21.4, 1.21.6 – 1.21.8 and 26.1 – 26.1.2 (where the check confirmed it for the
+  loader). The file names the range, for example `MultiClicker-fabric-<mod version>+1.21.6-1.21.8.jar`.
+  Before a release, CI builds the mod for every version of the range and checks that the code is the same
+  byte for byte.
+- The changelog on Modrinth and CurseForge is also given in Russian ([CHANGELOG.ru.md](CHANGELOG.ru.md)).
 
 ## [2.4.0] - 2026-10-10
 ### Added

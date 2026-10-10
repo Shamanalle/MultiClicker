@@ -12,6 +12,17 @@ def versionProps = new Properties()
 versionFile.withInputStream { versionProps.load(it) }
 versionProps.each { key, value -> ext.set(key as String, value) }
 
+// Minecraft versions the jar of a loader is released for (versions/shared-jars.txt): the versions of its group
+// when this is the newest of them, else this version alone. "label" names them in the jar file name.
+ext.releasedFor = { String loader ->
+    def group = file('versions/shared-jars.txt').readLines()
+            .findAll { it.trim() && !it.startsWith('#') }
+            .collect { it.split(':', 2)*.trim() }
+            .find { it[0] == loader && it[1].split(/\s+/).last() == project.minecraft_version }
+    def versions = group ? group[1].split(/\s+/) as List : [project.minecraft_version]
+    [versions: versions, label: versions.size() == 1 ? versions[0] : "${versions.first()}-${versions.last()}"]
+}
+
 allprojects {
     group = rootProject.maven_group
     version = rootProject.mod_version
