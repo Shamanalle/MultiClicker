@@ -92,7 +92,8 @@ An auto clicker and AFK helper for Minecraft: it clicks attack, use and jump at 
 - Stops when the inventory is full and protects the tool in hand.
 
 **👀 HUD and menu**
-- Status panel: profile, CPS, attacks, kills, session time, ping, TPS, FPS and active modules. Any corner, any scale.
+- Status panel: profile, CPS, attacks, kills, damage, catches, harvest, session time, ping, TPS, FPS and active modules. Any corner, any scale.
+- Statistics for the session, each server and all time: kills by mob, exact damage and DPS, catches by kind, harvest, blocks, rates per hour, a live CPS graph, history of the last 20 sessions and CSV export.
 - The target about to be hit is outlined, filled or glowing, in your color.
 - Notifications with a chime: full inventory, tool about to break, no food, a player nearby, a fish caught.
 - A menu with search, tooltips and exact values. It fits any window size.
@@ -168,7 +169,8 @@ workflow does that). On CurseForge paste it after a `---` line; both languages f
 - Останавливается при полном инвентаре и бережёт инструмент в руке.
 
 **👀 HUD и меню**
-- Панель состояния: профиль, кл/с, атаки, убийства, время сессии, пинг, TPS, FPS и активные модули. Любой угол, любой размер.
+- Панель состояния: профиль, кл/с, удары, убийства, урон, улов, урожай, время сессии, пинг, TPS, FPS и активные модули. Любой угол, любой размер.
+- Статистика за сессию, по серверам и за всё время: убийства по мобам, точный урон и DPS, улов по видам, урожай, блоки, скорость в час, живой график кл/с, история последних 20 сессий и экспорт в CSV.
 - Цель, которую сейчас ударят, обводится, заливается или светится вашим цветом.
 - Уведомления со звуком: полный инвентарь, инструмент вот-вот сломается, нет еды, рядом игрок, поймана рыба.
 - Меню с поиском, подсказками и вводом точных значений. Подстраивается под любой размер окна.
@@ -198,9 +200,9 @@ Upload every jar as its own version/file and tick the matching Minecraft version
 jar: Fabric for `MultiClicker-fabric-*`, NeoForge for `MultiClicker-neoforge-*`, Forge for `MultiClicker-forge-*` (Fabric 1.21.9 and newer: Fabric Loader 0.17+, mention it in the
 changelog).
 
-**Version name:** `MultiClicker 2.3.0 for Minecraft <version> (<loader>)`, for example `MultiClicker 2.3.0 for Minecraft 1.21.4 (Fabric)`.
+**Version name:** `MultiClicker 2.4.0 for Minecraft <version> (<loader>)`, for example `MultiClicker 2.4.0 for Minecraft 1.21.4 (Fabric)`.
 
-**Version number:** `2.3.0+<Minecraft version>-<loader>`, for example `2.3.0+1.21.4-fabric`.
+**Version number:** `2.4.0+<Minecraft version>-<loader>`, for example `2.4.0+1.21.4-fabric`.
 
 **Release channel:** Release.
 
@@ -209,6 +211,16 @@ changelog).
 **Changelog** (the same text for every file):
 
 ```
+2.4.0
+
+- Statistics: a new screen with the session, each server, all time and the last 20 sessions. Clicks,
+  kills by mob, exact damage and DPS, catches by kind and item, harvest, mined blocks, food, totems,
+  deaths, experience, rates per hour, a live clicks-per-second graph and a per-minute chart.
+- Export statistics to CSV; a summary of the session in the chat when the mod is turned off.
+- HUD: damage, catches, harvest, blocks and experience, optionally per hour.
+- Works on Minecraft 1.19 to 1.19.4, 1.20 to 1.20.6, 1.21 to 1.21.11 and 26.1 to 26.3; download the file
+  for your loader and game version. Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer.
+
 2.3.0
 
 - NeoForge support: a NeoForge jar for every version from 1.20.1 to 26.3.

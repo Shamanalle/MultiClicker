@@ -35,11 +35,15 @@ import io.github.shamanalle.multiclicker.config.Preset;
 import io.github.shamanalle.multiclicker.gui.ConfigScreen;
 import io.github.shamanalle.multiclicker.gui.ListEditScreen;
 import io.github.shamanalle.multiclicker.gui.ProfilesScreen;
+import io.github.shamanalle.multiclicker.gui.StatsScreen;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.clicker.ClickChannel;
 import io.github.shamanalle.multiclicker.module.clicker.ClickerModule;
 import io.github.shamanalle.multiclicker.module.clicker.Jitter;
 import io.github.shamanalle.multiclicker.module.visual.HighlightModule;
+import io.github.shamanalle.multiclicker.stats.Counters;
+import io.github.shamanalle.multiclicker.stats.Stat;
+import io.github.shamanalle.multiclicker.stats.Statistics;
 import io.github.shamanalle.multiclicker.util.ServerStats;
 
 import java.util.ArrayList;
@@ -180,6 +184,12 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         check(attacks >= 3 && attacks <= 6, "expected 3-6 charged hits, got " + attacks);
         context.waitTicks(5);
         check(context.computeOnClient(mc -> MultiClicker.get().stats().kills()) == 1, "the kill was not counted");
+        // The husk had 20 health points, and every one of them was taken by our hits.
+        Counters session = context.computeOnClient(mc -> MultiClicker.get().stats().session().copy());
+        check(Statistics.damageKnown(session) && Statistics.damage(session) >= 19.5,
+                "expected 20 damage to be measured, got " + Statistics.damage(session) + " (" + session.get(Stat.DAMAGE_MEASURED)
+                        + " of " + session.get(Stat.DAMAGE_HITS) + " hits measured)");
+        check(session.get(Counters.Group.MOBS, "minecraft:husk") == 1, "the kill was not credited to the husk");
     }
 
     private void targetFilter(ClientGameTestContext context, TestServerContext server) {
@@ -793,6 +803,9 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         context.setScreen(() -> new ListEditScreen(new ConfigScreen(null), MultiClicker.get().inventoryCleaner().items));
         parkCursor(context);
         context.takeScreenshot(prefix + "_list_editor");
+        context.setScreen(() -> new StatsScreen(new ConfigScreen(null)));
+        parkCursor(context);
+        context.takeScreenshot(prefix + "_stats");
         context.setScreen(() -> null);
         context.waitTicks(2);
     }
