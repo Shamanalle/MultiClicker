@@ -144,6 +144,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Forge for Minecraft 1.19 and 1.19.1 starts on Java 17 only; Gradle finds it through JAVA_HOME_17_X64.
+      - name: Setup Java 17
+        if: matrix.loader == 'forge'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
