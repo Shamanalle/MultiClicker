@@ -4,6 +4,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -16,9 +17,15 @@ import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.EnumSetting;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
 import io.github.shamanalle.multiclicker.setting.Unit;
+import io.github.shamanalle.multiclicker.stats.Counters;
+import io.github.shamanalle.multiclicker.stats.SessionRecord;
+import io.github.shamanalle.multiclicker.stats.Stat;
+import io.github.shamanalle.multiclicker.stats.StatFormat;
+import io.github.shamanalle.multiclicker.stats.Statistics;
 import io.github.shamanalle.multiclicker.util.Inventories;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,6 +44,10 @@ public class NotificationsModule extends Module {
     private static final int REPEAT_LASTING_TICKS = 1200;
     /** A held item must stay gone or worn this long, so hotbar refill gets the chance to replace it first. */
     private static final int SETTLE_TICKS = 10;
+    /** Shorter sessions (a quick toggle) get no summary. */
+    private static final long SUMMARY_MIN_MS = 30_000;
+    private static final List<Stat> SUMMARY_STATS = List.of(Stat.CLICKS, Stat.KILLS, Stat.DAMAGE, Stat.CATCHES,
+            Stat.CROPS, Stat.BLOCKS, Stat.FOOD, Stat.XP, Stat.DEATHS);
 
     public final EnumSetting<Where> where = add(new EnumSetting<>("where", Where.HOTBAR));
     public final BoolSetting sound = add(new BoolSetting("sound", true));
@@ -47,6 +58,7 @@ public class NotificationsModule extends Module {
     public final BoolSetting ranOut = add(new BoolSetting("ran_out", true));
     public final BoolSetting noFood = add(new BoolSetting("no_food", true));
     public final BoolSetting fishCaught = add(new BoolSetting("fish_caught", false));
+    public final BoolSetting sessionSummary = add(new BoolSetting("session_summary", true));
     public final IntSetting playerRadius = add(new IntSetting("player_radius", 0, 0, 64, Unit.BLOCKS)
             .zeroMeans("options.off"));
 
@@ -181,6 +193,29 @@ public class NotificationsModule extends Module {
         }
         show(mc, reason, false);
         return true;
+    }
+
+    /** The mod was turned off: a line in the chat with what the session did. */
+    public void sessionSummary(Minecraft mc, SessionRecord session) {
+        if (!isEnabled() || !sessionSummary.get() || mc.player == null || session.duration() < SUMMARY_MIN_MS) {
+            return;
+        }
+        Counters counters = session.counters();
+        MutableComponent text = Component.literal("MultiClicker: ").withStyle(ChatFormatting.GOLD)
+                .append(Component.translatable("multiclicker.notify.session_summary",
+                        Statistics.formatDuration(session.duration())).withStyle(ChatFormatting.YELLOW));
+        boolean any = false;
+        for (Stat stat : SUMMARY_STATS) {
+            if (counters.get(stat) > 0) {
+                text.append(Component.literal(any ? " · " : " ").withStyle(ChatFormatting.DARK_GRAY))
+                        .append(Component.translatable(stat.translationKey()).withStyle(ChatFormatting.GRAY))
+                        .append(Component.literal(" " + StatFormat.value(counters, stat)).withStyle(ChatFormatting.WHITE));
+                any = true;
+            }
+        }
+        if (any) {
+            Messages.chat(mc.player, text);
+        }
     }
 
     /** Shows a notification unless the one with the same key was shown less than {@code repeatTicks} ago. */

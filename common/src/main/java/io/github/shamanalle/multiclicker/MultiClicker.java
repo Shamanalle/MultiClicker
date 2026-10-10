@@ -37,9 +37,10 @@ import io.github.shamanalle.multiclicker.module.visual.NotificationsModule;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.KeySetting;
 import io.github.shamanalle.multiclicker.setting.Setting;
+import io.github.shamanalle.multiclicker.stats.SessionRecord;
+import io.github.shamanalle.multiclicker.stats.Statistics;
 import io.github.shamanalle.multiclicker.util.Hotkeys;
 import io.github.shamanalle.multiclicker.util.ServerStats;
-import io.github.shamanalle.multiclicker.util.SessionStats;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -92,7 +93,7 @@ public final class MultiClicker {
             autoFarm, autoTool, inventoryCleaner, antiAfk, autoWalk, notifications);
 
     private final ConfigManager config;
-    private final SessionStats stats = new SessionStats();
+    private final Statistics stats;
     private final String version;
     private boolean active;
     private int saveCountdown = -1;
@@ -103,6 +104,7 @@ public final class MultiClicker {
     private MultiClicker(Path configDir, String version) {
         this.version = version;
         this.config = new ConfigManager(configDir, modules);
+        this.stats = new Statistics(configDir.resolve(MOD_ID).resolve("stats.json"));
         config.load();
         for (Module module : modules) {
             for (Setting<?> setting : module.settings()) {
@@ -207,7 +209,7 @@ public final class MultiClicker {
         return config;
     }
 
-    public SessionStats stats() {
+    public Statistics stats() {
         return stats;
     }
 
@@ -391,10 +393,14 @@ public final class MultiClicker {
         }
         active = value;
         if (value) {
-            stats.reset();
+            stats.start(mc);
         }
         forEachEnabled(mc, value);
+        SessionRecord session = value ? null : stats.stop();
         feedback(mc, value, reason);
+        if (session != null) {
+            notifications.sessionSummary(mc, session);
+        }
     }
 
     private void feedback(Minecraft mc, boolean value, @Nullable Component reason) {
@@ -426,6 +432,7 @@ public final class MultiClicker {
     /** Called when the game closes: never leave the player's vanilla options modified. */
     public void onClientStopping(Minecraft mc) {
         clicker.restorePauseOnLostFocus(mc);
+        stats.stop();
         saveConfig();
     }
 

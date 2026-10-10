@@ -119,6 +119,7 @@ public class AutoFishModule extends Module {
                         return; // hands busy this tick: try again on the next one
                     }
                     catches++;
+                    MultiClicker.get().stats().onCatch(mc, hook);
                     MultiClicker.get().notifications().fishCaught(mc, catches);
                     if (catchLimit.get() > 0 && catches >= catchLimit.get()) {
                         MultiClicker.get().setActive(false,

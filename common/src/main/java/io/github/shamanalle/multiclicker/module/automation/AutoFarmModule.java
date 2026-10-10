@@ -25,6 +25,7 @@ import io.github.shamanalle.multiclicker.compat.Session;
 import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
+import io.github.shamanalle.multiclicker.stats.Stat;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
 import io.github.shamanalle.multiclicker.setting.Unit;
@@ -174,6 +175,7 @@ public class AutoFarmModule extends Module {
         }
         Session.swing(player);
         harvested++;
+        MultiClicker.get().stats().count(Stat.CROPS);
     }
 
     /**

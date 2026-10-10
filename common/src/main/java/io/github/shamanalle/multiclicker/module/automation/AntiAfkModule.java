@@ -10,6 +10,7 @@ import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.module.clicker.ClickerModule;
+import io.github.shamanalle.multiclicker.stats.Stat;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
 import io.github.shamanalle.multiclicker.setting.Unit;
@@ -83,6 +84,7 @@ public class AntiAfkModule extends Module {
         if (switchSlot.get() && canSwitchSlot(mc.player)) pool.add(Action.SWITCH_SLOT);
         if (!pool.isEmpty()) {
             current = pool.get(RANDOM.nextInt(pool.size()));
+            MultiClicker.get().stats().count(Stat.AFK_ACTIONS);
             actionTick = 0;
             tickAction(mc, mc.player);
         }
