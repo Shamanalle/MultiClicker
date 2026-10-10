@@ -269,14 +269,16 @@ public class StatsScreen extends PanelScreen {
             x += w + 4;
         }
         int right = viewX + viewW;
-        if (tab == Tab.SESSION && stats.isRunning()) {
-            String live = "● " + I18n.get("multiclicker.gui.stats.live");
-            Draw.textRight(g, font, live, right, y + 4, Theme.SUCCESS);
-        } else if (tab == Tab.SESSION && stats.startedAt() > 0) {
-            Draw.textRight(g, font, I18n.get("multiclicker.gui.stats.last_session"), right, y + 4, Theme.TEXT_MUTED);
-        } else if (tab == Tab.SERVER && server != null) {
+        // Labels on the right of the tabs are left out where the window is too narrow for them.
+        int room = right - x - 4;
+        if (tab == Tab.SESSION && stats.startedAt() > 0) {
+            String label = stats.isRunning() ? "● " + I18n.get("multiclicker.gui.stats.live") : I18n.get("multiclicker.gui.stats.last_session");
+            if (font.width(label) <= room) {
+                Draw.textRight(g, font, label, right, y + 4, stats.isRunning() ? Theme.SUCCESS : Theme.TEXT_MUTED);
+            }
+        } else if (tab == Tab.SERVER && server != null && room >= 48) {
             int count = stats.store().servers().size();
-            String name = Draw.ellipsize(font, serverName(server), Math.max(40, right - x - 40));
+            String name = Draw.ellipsize(font, serverName(server), count > 1 ? room - 12 - font.width("◀  ▶") : room);
             if (count > 1) {
                 String arrows = "◀ " + name + " ▶";
                 int w = font.width(arrows) + 12;
@@ -372,7 +374,6 @@ public class StatsScreen extends PanelScreen {
 
     private void cpsGraph(Canvas g, int x, int y, int w, int mouseX, int mouseY) {
         Draw.box(g, x, y, w, GRAPH_HEIGHT, 4, Theme.CARD, Theme.CARD_BORDER);
-        Draw.text(g, font, Draw.ellipsize(font, I18n.get("multiclicker.gui.stats.cps_graph"), w - 90), x + 8, y + 6, Theme.TEXT_DIM);
         int accent = Theme.accent();
         String target = I18n.get("multiclicker.gui.stats.target");
         String actual = I18n.get("multiclicker.gui.stats.actual");
@@ -382,6 +383,8 @@ public class StatsScreen extends PanelScreen {
         legendX -= 14 + font.width(actual);
         Draw.text(g, font, actual, legendX, y + 6, Theme.TEXT_MUTED);
         g.fill(legendX - 9, y + 7, legendX - 3, y + 13, accent);
+        Draw.text(g, font, Draw.ellipsize(font, I18n.get("multiclicker.gui.stats.cps_graph"), legendX - 16 - (x + 8)),
+                x + 8, y + 6, Theme.TEXT_DIM);
 
         Timeline timeline = stats.timeline();
         int plotX = x + 8;
@@ -399,7 +402,10 @@ public class StatsScreen extends PanelScreen {
             max = Math.max(max, Math.max(timeline.clicksAt(i), timeline.targetAt(i)));
         }
         max = (float) Math.ceil(max);
-        Draw.text(g, font, StatFormat.compact(max), plotX + 1, plotY - 1, Theme.TEXT_MUTED);
+        String scale = StatFormat.compact(max);
+        Draw.text(g, font, scale, plotX, plotY, Theme.TEXT_MUTED);
+        plotX += font.width(scale) + 4;
+        plotW -= font.width(scale) + 4;
         float barW = plotW / (float) Timeline.SECONDS;
         int hovered = -1;
         for (int i = 0; i < seconds; i++) {
@@ -451,15 +457,19 @@ public class StatsScreen extends PanelScreen {
             Draw.textCentered(g, font, I18n.get("multiclicker.gui.stats.no_data"), plotX + plotW / 2, plotY + plotH / 2 - 4, Theme.TEXT_MUTED);
             return;
         }
+        double max = 1;
+        for (int i = 0; i < minutes; i++) {
+            max = Math.max(max, minuteValue(timeline, metric, i));
+        }
+        max = Math.ceil(max);
+        String scale = StatFormat.compact(max);
+        Draw.text(g, font, scale, plotX, plotY, Theme.TEXT_MUTED);
+        plotX += font.width(scale) + 4;
+        plotW -= font.width(scale) + 4;
         // At least 3 pixels a bar; older minutes scroll off to the left.
         int visible = Math.min(minutes, plotW / 3);
         int first = minutes - visible;
         int barW = Math.min(14, plotW / Math.max(visible, 10));
-        double max = 1;
-        for (int i = first; i < minutes; i++) {
-            max = Math.max(max, minuteValue(timeline, metric, i));
-        }
-        Draw.text(g, font, StatFormat.compact(Math.ceil(max)), plotX + 1, plotY - 1, Theme.TEXT_MUTED);
         int accent = Theme.accent();
         for (int i = first; i < minutes; i++) {
             int left = plotX + (i - first) * barW;
