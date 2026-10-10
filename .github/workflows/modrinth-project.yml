@@ -1,0 +1,25 @@
+name: Create Modrinth project
+
+# Run once by hand: creates the Modrinth project as a draft with the texts of publishing/modrinth-curseforge.md,
+# the icon and the screenshots. Needs the secret MODRINTH_TOKEN with the Create projects and Write projects
+# scopes. Afterwards set the variable MODRINTH_ID and submit the project for review on the site.
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: 'Project URL (modrinth.com/mod/<slug>)'
+        required: true
+        default: 'multiclicker'
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create the project
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          SLUG: ${{ github.event.inputs.slug }}
+        run: python3 .github/scripts/modrinth_create.py

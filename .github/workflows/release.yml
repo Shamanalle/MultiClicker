@@ -21,6 +21,11 @@ jobs:
       fail-fast: true
       matrix:
         include:
+          - { mc: "1.19", java: 21 }
+          - { mc: "1.19.1", java: 21 }
+          - { mc: "1.19.2", java: 21 }
+          - { mc: "1.19.3", java: 21 }
+          - { mc: "1.19.4", java: 21 }
           - { mc: "1.20", java: 21 }
           - { mc: "1.20.1", java: 21 }
           - { mc: "1.20.2", java: 21 }
@@ -67,7 +72,7 @@ jobs:
           gradle_cmd=${{ startsWith(matrix.mc, '26.') && 'gradle' || './gradlew' }}
           $gradle_cmd build --no-daemon -Pminecraft_version=${{ matrix.mc }}
 
-      # The Fabric jar and, for every version but 1.20, the NeoForge jar.
+      # The Fabric jar and the NeoForge (1.20.1 and newer) or Forge (1.19 to 1.20) jar.
       - name: Upload jars
         uses: actions/upload-artifact@v4
         with:
@@ -75,6 +80,7 @@ jobs:
           path: |
             fabric/build/libs/MultiClicker-fabric-*+${{ matrix.mc }}.jar
             neoforge/build/libs/MultiClicker-neoforge-*+${{ matrix.mc }}.jar
+            neoforge/build/libs/MultiClicker-forge-*+${{ matrix.mc }}.jar
           if-no-files-found: error
 
   publish:
@@ -102,8 +108,9 @@ jobs:
             exit 1
           fi
           ls -1 jars
-          test "$(ls -1 jars/MultiClicker-fabric-*.jar | wc -l)" -eq 24
+          test "$(ls -1 jars/MultiClicker-fabric-*.jar | wc -l)" -eq 29
           test "$(ls -1 jars/MultiClicker-neoforge-*.jar | wc -l)" -eq 23
+          test "$(ls -1 jars/MultiClicker-forge-*.jar | wc -l)" -eq 6
           # Release notes: the CHANGELOG section of this version.
           awk -v v="$version" '
             /^## \[/ { if (found) exit; if (index($0, "[" v "]")) { found = 1; next } }
@@ -134,7 +141,7 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        mc: ["1.20", "1.20.1", "1.20.2", "1.20.3", "1.20.4", "1.20.5", "1.20.6", "1.21", "1.21.1", "1.21.2",
+        mc: ["1.19", "1.19.1", "1.19.2", "1.19.3", "1.19.4", "1.20", "1.20.1", "1.20.2", "1.20.3", "1.20.4", "1.20.5", "1.20.6", "1.21", "1.21.1", "1.21.2",
              "1.21.3", "1.21.4", "1.21.5", "1.21.6", "1.21.7", "1.21.8", "1.21.9", "1.21.10", "1.21.11",
              "26.1", "26.1.1", "26.1.2", "26.2", "26.3"]
     steps:
@@ -175,9 +182,10 @@ jobs:
             fabric-api(required)
             modmenu(optional)
 
-      # NeoForge has no build for Minecraft 1.20.
+      # NeoForge exists from Minecraft 1.20.1 on; its 1.20.1 build is a Forge 47 fork, so that jar runs on
+      # Forge 1.20.1 as well.
       - name: Upload the NeoForge jar
-        if: matrix.mc != '1.20'
+        if: hashFiles('jars/MultiClicker-neoforge-*.jar') != ''
         uses: Kir-Antipov/mc-publish@v3.3
         with:
           modrinth-id: ${{ vars.MODRINTH_ID }}
@@ -189,5 +197,22 @@ jobs:
           version: ${{ steps.prep.outputs.version }}+${{ matrix.mc }}-neoforge
           version-type: release
           changelog-file: release-notes.md
-          loaders: neoforge
+          loaders: ${{ matrix.mc == '1.20.1' && 'neoforge forge' || 'neoforge' }}
+          game-versions: ${{ matrix.mc }}
+
+      # Forge builds for Minecraft 1.19 to 1.20, where NeoForge does not exist.
+      - name: Upload the Forge jar
+        if: hashFiles('jars/MultiClicker-forge-*.jar') != ''
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: ${{ vars.MODRINTH_ID }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          curseforge-id: ${{ vars.CURSEFORGE_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          files: jars/MultiClicker-forge-*.jar
+          name: MultiClicker ${{ steps.prep.outputs.version }} for Minecraft ${{ matrix.mc }} (Forge)
+          version: ${{ steps.prep.outputs.version }}+${{ matrix.mc }}-forge
+          version-type: release
+          changelog-file: release-notes.md
+          loaders: forge
           game-versions: ${{ matrix.mc }}

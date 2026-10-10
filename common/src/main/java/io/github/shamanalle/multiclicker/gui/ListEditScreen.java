@@ -3,7 +3,6 @@ package io.github.shamanalle.multiclicker.gui;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
@@ -92,7 +91,7 @@ public class ListEditScreen extends PanelScreen {
             setStatus(Component.translatable("multiclicker.gui.list.no_item"), Theme.WARNING);
             return;
         }
-        addId(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
+        addId(Ids.itemId(stack.getItem()));
     }
 
     private void addLookedAtBlock() {
@@ -101,7 +100,7 @@ public class ListEditScreen extends PanelScreen {
             setStatus(Component.translatable("multiclicker.gui.list.no_block"), Theme.WARNING);
             return;
         }
-        addId(BuiltInRegistries.BLOCK.getKey(minecraft.level.getBlockState(hit.getBlockPos()).getBlock()).toString());
+        addId(Ids.blockId(minecraft.level.getBlockState(hit.getBlockPos()).getBlock()));
     }
 
     private void addId(String id) {

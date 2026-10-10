@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component;
 import io.github.shamanalle.multiclicker.compat.Canvas;
 import io.github.shamanalle.multiclicker.compat.ModScreen;
 import io.github.shamanalle.multiclicker.compat.Screens;
+import io.github.shamanalle.multiclicker.compat.Widgets;
 import io.github.shamanalle.multiclicker.gui.widget.FlatButton;
 
 import java.util.ArrayList;
@@ -51,12 +52,12 @@ public abstract class PanelScreen extends ModScreen {
         EditBox box = new EditBox(font, x + 6, y + 4, width - 12, 10, hint);
         box.setBordered(false);
         box.setTextColor(Theme.TEXT);
-        box.setHint(hint.copy().withStyle(ChatFormatting.DARK_GRAY));
+        Widgets.hint(box, hint.copy().withStyle(ChatFormatting.DARK_GRAY));
         return addRenderableWidget(box);
     }
 
     protected void drawFieldBackground(Canvas g, EditBox box) {
-        Draw.box(g, box.getX() - 6, box.getY() - 4, box.getWidth() + 12, 17, 3, Theme.CONTROL,
+        Draw.box(g, Widgets.x(box) - 6, Widgets.y(box) - 4, box.getWidth() + 12, 17, 3, Theme.CONTROL,
                 box.isFocused() ? Theme.alpha(Theme.accent(), 0.8F) : Theme.CONTROL);
     }
 

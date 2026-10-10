@@ -31,8 +31,10 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
 
     // Mod Menu is optional: compile against its API and run it in the dev environment only.
-    modCompileOnly "com.terraformersmc:modmenu:${project.modmenu}"
-    modLocalRuntime "com.terraformersmc:modmenu:${project.modmenu}"
+    // Mod Menu 4 (Minecraft 1.19 to 1.19.2) brings an older Fabric Loader along, which then sits on the
+    // classpath twice.
+    modCompileOnly("com.terraformersmc:modmenu:${project.modmenu}") { exclude group: 'net.fabricmc', module: 'fabric-loader' }
+    modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu}") { exclude group: 'net.fabricmc', module: 'fabric-loader' }
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
 }
@@ -82,9 +84,13 @@ processResources {
     inputs.property 'minecraft_version', rootProject.minecraft_version
     inputs.property 'java_version', rootProject.java_version
     inputs.property 'loader_min', rootProject.loader_min
+    // Fabric API was the mod "fabric" up to its builds for Minecraft 1.19.1.
+    def fabricApiId = rootProject.findProperty('fabric_api_id') ?: 'fabric-api'
+    inputs.property 'fabric_api_id', fabricApiId
 
     filesMatching('fabric.mod.json') {
-        expand version: project.version, minecraft_version: rootProject.minecraft_version, java_version: rootProject.java_version, loader_min: rootProject.loader_min
+        expand version: project.version, minecraft_version: rootProject.minecraft_version, java_version: rootProject.java_version, loader_min: rootProject.loader_min,
+                fabric_api_id: fabricApiId
     }
 }
 

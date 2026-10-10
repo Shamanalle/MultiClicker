@@ -7,6 +7,7 @@ import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Canvas;
 import io.github.shamanalle.multiclicker.compat.Gfx;
 import io.github.shamanalle.multiclicker.compat.Screens;
+import io.github.shamanalle.multiclicker.compat.Client;
 import io.github.shamanalle.multiclicker.gui.Draw;
 import io.github.shamanalle.multiclicker.gui.Theme;
 import io.github.shamanalle.multiclicker.module.Category;
@@ -158,7 +159,7 @@ public class HudModule extends Module {
             float tps = ServerStats.tps();
             lines.add(stat("multiclicker.hud.ping", ping < 0 ? "—" : ping + " ms"));
             lines.add(stat("multiclicker.hud.tps", tps < 0 ? "—" : String.format(Locale.ROOT, "%.1f", tps)));
-            lines.add(stat("multiclicker.hud.fps", Integer.toString(mc.getFps())));
+            lines.add(stat("multiclicker.hud.fps", Integer.toString(Client.fps(mc))));
         }
 
         if (showModules.get()) {

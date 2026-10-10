@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import io.github.shamanalle.multiclicker.compat.Keys;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Session;
+import io.github.shamanalle.multiclicker.compat.Client;
 import io.github.shamanalle.multiclicker.mixin.KeyMappingAccessor;
 import io.github.shamanalle.multiclicker.mixin.ToggleKeyMappingAccessor;
 
@@ -91,7 +92,7 @@ public final class Input {
             return false;
         }
         ItemStack stack = player.getItemInHand(hand);
-        if (stack.isEmpty() || !stack.isItemEnabled(mc.level.enabledFeatures())) {
+        if (stack.isEmpty() || !Client.itemEnabled(mc, stack)) {
             return false;
         }
         return Session.useItem(mc, player, hand);

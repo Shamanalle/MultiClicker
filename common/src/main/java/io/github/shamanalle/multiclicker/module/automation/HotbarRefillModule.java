@@ -2,16 +2,13 @@ package io.github.shamanalle.multiclicker.module.automation;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.compat.Stacks;
+import io.github.shamanalle.multiclicker.compat.Tools;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -20,7 +17,6 @@ import io.github.shamanalle.multiclicker.setting.Unit;
 import io.github.shamanalle.multiclicker.util.Inventories;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Keeps the hotbar stocked from the rest of the inventory:
@@ -35,8 +31,6 @@ import java.util.List;
 public class HotbarRefillModule extends Module {
     /** Ticks to wait for the server to confirm an inventory change before the next one. */
     private static final int COOLDOWN = 3;
-    private static final List<TagKey<Item>> TOOL_KINDS = List.of(ItemTags.SWORDS, ItemTags.AXES, ItemTags.PICKAXES,
-            ItemTags.SHOVELS, ItemTags.HOES);
 
     public final BoolSetting refillStacks = add(new BoolSetting("refill_stacks", true));
     public final IntSetting refillAt = add(new IntSetting("refill_at", 0, 0, 32, Unit.NONE)
@@ -152,7 +146,7 @@ public class HotbarRefillModule extends Module {
      * most durability left, otherwise a tool of the same kind, the most durable (best material) first.
      */
     private int findSpareTool(Inventory inventory, ItemStack tool) {
-        TagKey<Item> kind = kind(tool);
+        int kind = Tools.kind(tool);
         int best = -1;
         int bestScore = Integer.MIN_VALUE;
         for (int slot = Inventories.HOTBAR_SIZE; slot < Inventories.MAIN_SIZE; slot++) {
@@ -163,7 +157,7 @@ public class HotbarRefillModule extends Module {
             int score;
             if (stack.is(tool.getItem())) {
                 score = 1_000_000 + Inventories.remainingDurability(stack);
-            } else if (kind != null && stack.is(kind)) {
+            } else if (kind != Tools.NONE && Tools.kind(stack) == kind) {
                 score = stack.getMaxDamage();
             } else {
                 continue;
@@ -174,16 +168,6 @@ public class HotbarRefillModule extends Module {
             }
         }
         return best;
-    }
-
-    @Nullable
-    private static TagKey<Item> kind(ItemStack tool) {
-        for (TagKey<Item> kind : TOOL_KINDS) {
-            if (tool.is(kind)) {
-                return kind;
-            }
-        }
-        return null;
     }
 
     @Override

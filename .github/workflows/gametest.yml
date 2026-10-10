@@ -95,6 +95,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - { loader: fabric, mc: "1.19", java: 21 }
+          - { loader: fabric, mc: "1.19.1", java: 21 }
+          - { loader: fabric, mc: "1.19.2", java: 21 }
+          - { loader: fabric, mc: "1.19.3", java: 21 }
+          - { loader: fabric, mc: "1.19.4", java: 21 }
           - { loader: fabric, mc: "1.20", java: 21 }
           - { loader: fabric, mc: "1.20.1", java: 21 }
           - { loader: fabric, mc: "1.20.2", java: 21 }
@@ -106,6 +111,12 @@ jobs:
           - { loader: fabric, mc: "1.21.1", java: 21 }
           - { loader: fabric, mc: "1.21.2", java: 21 }
           - { loader: fabric, mc: "1.21.3", java: 21 }
+          - { loader: forge, mc: "1.19", java: 21 }
+          - { loader: forge, mc: "1.19.1", java: 21 }
+          - { loader: forge, mc: "1.19.2", java: 21 }
+          - { loader: forge, mc: "1.19.3", java: 21 }
+          - { loader: forge, mc: "1.19.4", java: 21 }
+          - { loader: forge, mc: "1.20", java: 21 }
           - { loader: neoforge, mc: "1.20.1", java: 21 }
           - { loader: neoforge, mc: "1.20.2", java: 21 }
           - { loader: neoforge, mc: "1.20.3", java: 21 }
@@ -133,6 +144,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Forge for Minecraft 1.19 and 1.19.1 starts on Java 17 only; Gradle finds it through JAVA_HOME_17_X64.
+      - name: Setup Java 17
+        if: matrix.loader == 'forge'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -155,7 +174,7 @@ jobs:
           # The game is stopped by the timeout, so the exit code means nothing; the log check decides.
           # A failed download of the game files (network) is the one thing worth a second try.
           for attempt in 1 2; do
-            xvfb-run -a -s "-screen 0 1280x720x24" timeout 300 $gradle_cmd :${{ matrix.loader }}:runClient --no-daemon -Pminecraft_version=${{ matrix.mc }} | tee smoke.log || true
+            xvfb-run -a -s "-screen 0 1280x720x24" timeout 300 $gradle_cmd :${{ matrix.loader == 'forge' && 'neoforge' || matrix.loader }}:runClient --no-daemon -Pminecraft_version=${{ matrix.mc }} | tee smoke.log || true
             grep -q "DownloadException" smoke.log || break
             echo "::warning::Download failed on attempt $attempt"
           done

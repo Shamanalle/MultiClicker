@@ -3,8 +3,10 @@ plugins {
 }
 
 // NeoForge for Minecraft 1.20.2 and newer. For 1.20.1 NeoForge is a fork of Forge 47 (net.neoforged:forge)
-// with the Forge API, so the jar is built as a Forge mod.
-def legacyForge = rootProject.minecraft_version == '1.20.1'
+// with the Forge API, so the jar is built as a Forge mod. Versions that name a forge_version (1.19 to 1.20)
+// get a Forge jar built against Forge itself.
+def legacyForge = rootProject.legacyForge
+def forgeVersion = rootProject.findProperty('forge_version')
 
 architectury {
     platformSetupLoomIde()
@@ -45,10 +47,13 @@ configurations {
 
 repositories {
     maven { url 'https://maven.neoforged.net/releases' }
+    maven { url 'https://maven.minecraftforge.net/' }
 }
 
 dependencies {
-    if (legacyForge) {
+    if (forgeVersion) {
+        forge "net.minecraftforge:forge:$forgeVersion"
+    } else if (legacyForge) {
         forge "net.neoforged:forge:$rootProject.neoforge_version"
     } else {
         neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
@@ -68,7 +73,8 @@ processResources {
 
     filesMatching('META-INF/mods.toml') {
         expand version: project.version, minecraft_version: rootProject.minecraft_version,
-                loader_range: legacyForge ? '[47,)' : '[1,)',
+                loader_range: forgeVersion ? "[${forgeVersion.split('-')[1].split('\\.')[0]},)"
+                        : legacyForge ? '[47,)' : '[1,)',
                 loader: legacyForge ? 'forge' : 'neoforge',
                 display_test: legacyForge ? 'displayTest = "IGNORE_ALL_VERSION"' : '',
                 mixins: legacyForge ? '' : '[[mixins]]\nconfig = "multiclicker.mixins.json"'
@@ -85,4 +91,13 @@ remapJar {
     input.set shadowJar.archiveFile
     // One jar per Minecraft version: MultiClicker-neoforge-<mod version>+<minecraft version>.jar
     archiveVersion = "${rootProject.mod_version}+${rootProject.minecraft_version}"
+}
+
+// Forge 41 and 42 (Minecraft 1.19 and 1.19.1) ship ASM 9.3, which cannot read the classes of Java 21, so
+// the game only starts on Java 17 there, as it does for players. Gradle finds that JDK through the
+// JAVA_HOME_17_X64 variable (see gradle.properties).
+if (forgeVersion && forgeVersion.split('-')[1].split('\\.')[0].toInteger() < 43) {
+    tasks.withType(JavaExec).configureEach {
+        javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(17) }
+    }
 }

@@ -12,6 +12,7 @@ import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Canvas;
 import io.github.shamanalle.multiclicker.compat.Gfx;
 import io.github.shamanalle.multiclicker.compat.Keys;
+import io.github.shamanalle.multiclicker.compat.Widgets;
 import io.github.shamanalle.multiclicker.config.ConfigManager;
 import io.github.shamanalle.multiclicker.config.Preset;
 import io.github.shamanalle.multiclicker.gui.widget.FlatButton;
@@ -187,7 +188,7 @@ public class ProfilesScreen extends PanelScreen {
         Draw.text(g, font, I18n.get("multiclicker.gui.profiles.presets").toUpperCase(Locale.ROOT), panelX + 10, panelY + 37,
                 Theme.alpha(Theme.accent(), 0.9F));
         Draw.text(g, font, I18n.get("multiclicker.gui.profiles.saved_profiles").toUpperCase(Locale.ROOT), panelX + 10,
-                nameField.getY() - 15, Theme.alpha(Theme.accent(), 0.9F));
+                Widgets.y(nameField) - 15, Theme.alpha(Theme.accent(), 0.9F));
         drawFieldBackground(g, nameField);
         Draw.box(g, listX, listY, listW, listH, 3, Theme.CARD, Theme.CARD_BORDER);
 
@@ -355,7 +356,7 @@ public class ProfilesScreen extends PanelScreen {
         RowLayout row = layout(name);
         if (mouseX >= row.chipX() && mouseX < row.chipX() + row.chipW()) {
             setFocused(null);
-            nameField.setFocused(false);
+            Widgets.focus(nameField, false);
             if (button == 1) {
                 mod.config().setProfileKey(name, "");
                 refresh();

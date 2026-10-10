@@ -38,4 +38,12 @@ public final class Ids {
         ResourceLocation location = ResourceLocation.tryParse(id);
         return location == null ? Blocks.AIR : BuiltInRegistries.BLOCK.getValue(location);
     }
+
+    public static String itemId(Item item) {
+        return BuiltInRegistries.ITEM.getKey(item).toString();
+    }
+
+    public static String blockId(Block block) {
+        return BuiltInRegistries.BLOCK.getKey(block).toString();
+    }
 }

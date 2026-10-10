@@ -33,6 +33,7 @@ import io.github.shamanalle.multiclicker.module.survival.SafetyModule;
 import io.github.shamanalle.multiclicker.module.visual.HighlightModule;
 import io.github.shamanalle.multiclicker.module.visual.HudModule;
 import io.github.shamanalle.multiclicker.module.visual.InterfaceModule;
+import io.github.shamanalle.multiclicker.module.visual.NotificationsModule;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.KeySetting;
 import io.github.shamanalle.multiclicker.setting.Setting;
@@ -74,19 +75,21 @@ public final class MultiClicker {
     private final AutoToolModule autoTool = new AutoToolModule();
     private final HudModule hud = new HudModule();
     private final HighlightModule highlight = new HighlightModule();
+    private final NotificationsModule notifications = new NotificationsModule();
     private final InterfaceModule ui = new InterfaceModule();
 
     /** Display order (grouped by category in the menu). */
     private final List<Module> modules = List.of(clicker, targetFilter, safety, offhand, autoEat, autoFarm,
-            autoFish, hotbarRefill, antiAfk, autoWalk, inventoryCleaner, mining, autoTool, hud, highlight, ui);
+            autoFish, hotbarRefill, antiAfk, autoWalk, inventoryCleaner, mining, autoTool, hud, highlight, notifications, ui);
     /**
      * Tick order. Safety first, so nothing else runs once it stops the mod. Auto eat decides before
      * the clicker, so the clicker already pauses on the tick a meal starts. Hotbar refill swaps a
      * worn tool before the clicker would refuse to mine with it. Auto tool runs after the clicker,
-     * so the tool is selected before vanilla processes the click of the same tick.
+     * so the tool is selected before vanilla processes the click of the same tick. Notifications
+     * run last and see what the other modules did.
      */
     private final List<Module> tickOrder = List.of(safety, autoEat, hotbarRefill, clicker, offhand, autoFish,
-            autoFarm, autoTool, inventoryCleaner, antiAfk, autoWalk);
+            autoFarm, autoTool, inventoryCleaner, antiAfk, autoWalk, notifications);
 
     private final ConfigManager config;
     private final SessionStats stats = new SessionStats();
@@ -194,6 +197,10 @@ public final class MultiClicker {
 
     public InterfaceModule ui() {
         return ui;
+    }
+
+    public NotificationsModule notifications() {
+        return notifications;
     }
 
     public ConfigManager config() {
@@ -395,8 +402,10 @@ public final class MultiClicker {
             return;
         }
         if (reason != null) {
-            Messages.overlay(mc.player, Component.literal("MultiClicker: ").withStyle(ChatFormatting.GOLD)
-                    .append(reason.copy().withStyle(ChatFormatting.YELLOW)));
+            if (!notifications.stopped(mc, reason)) {
+                Messages.overlay(mc.player, Component.literal("MultiClicker: ").withStyle(ChatFormatting.GOLD)
+                        .append(reason.copy().withStyle(ChatFormatting.YELLOW)));
+            }
         } else if (ui.toggleMessage.get()) {
             Messages.overlay(mc.player, Component.translatable(value ? "multiclicker.message.on" : "multiclicker.message.off")
                     .withStyle(value ? ChatFormatting.GREEN : ChatFormatting.RED));

@@ -2,6 +2,7 @@ package io.github.shamanalle.multiclicker.module.automation;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import io.github.shamanalle.multiclicker.compat.Entities;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
@@ -32,7 +33,7 @@ public class AutoWalkModule extends Module {
         if (sprint.get()) {
             Input.hold(mc.options.keySprint);
         }
-        boolean shouldJump = jumpObstacles.get() && player.horizontalCollision && player.onGround();
+        boolean shouldJump = jumpObstacles.get() && player.horizontalCollision && Entities.onGround(player);
         if (shouldJump) {
             Input.hold(mc.options.keyJump);
             jumping = true;

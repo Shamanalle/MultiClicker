@@ -4,11 +4,12 @@
 
 # MultiClicker
 
-**Auto clicker for Fabric and NeoForge with helpers for AFK farms, mining, farming and fishing.**
+**Auto clicker for Fabric, NeoForge and Forge with helpers for AFK farms, mining, farming and fishing.**
 
-[![Minecraft 1.20 – 26.3](https://img.shields.io/badge/Minecraft-1.20%20%E2%80%93%2026.3-62b47a)](https://minecraft.net/)
+[![Minecraft 1.19 – 26.3](https://img.shields.io/badge/Minecraft-1.19%20%E2%80%93%2026.3-62b47a)](https://minecraft.net/)
 [![Fabric](https://img.shields.io/badge/loader-Fabric-dbd0b4)](https://fabricmc.net/)
 [![NeoForge](https://img.shields.io/badge/loader-NeoForge-e68c37)](https://neoforged.net/)
+[![Forge](https://img.shields.io/badge/loader-Forge-2b2b33)](https://files.minecraftforge.net/)
 [![Release](https://img.shields.io/github/v/release/Shamanalle/MultiClicker?color=4c8bf5)](https://github.com/Shamanalle/MultiClicker/releases/latest)
 [![In-game tests](https://github.com/Shamanalle/MultiClicker/actions/workflows/gametest.yml/badge.svg)](https://github.com/Shamanalle/MultiClicker/actions/workflows/gametest.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
@@ -19,15 +20,16 @@
 
 </div>
 
-Auto clicker mod for Minecraft 1.20 – 26.3 (Fabric and NeoForge). Clicks the attack, use and jump keys at a rhythm you set.
+Auto clicker mod for Minecraft 1.19 – 26.3 (Fabric, NeoForge and Forge). Clicks the attack, use and jump keys at a rhythm you set.
 Includes modules for AFK farming, mining, crop farming and fishing: auto eat, auto fish, auto farm,
 auto tool, hotbar refill, offhand, safety stop, anti-AFK and others. Every module, clicker channel and
 profile can have its own hotkey.
 
 ## Quick start
 
-1. Install [Fabric Loader](https://fabricmc.net/use/) or [NeoForge](https://neoforged.net/) for your
-   Minecraft version. Supported: 1.20 – 1.20.6, 1.21 – 1.21.11 and 26.1 – 26.3
+1. Install [Fabric Loader](https://fabricmc.net/use/), [NeoForge](https://neoforged.net/) or
+   [Forge](https://files.minecraftforge.net/) for your Minecraft version. Supported: 1.19 – 1.19.4,
+   1.20 – 1.20.6, 1.21 – 1.21.11 and 26.1 – 26.3
    (see [versions](#supported-versions)).
 2. Put the jar for your loader and version from the
    [latest release](https://github.com/Shamanalle/MultiClicker/releases/latest) into the `mods` folder:
@@ -36,6 +38,8 @@ profile can have its own hotkey.
      adds a settings button to the mod list.
    - NeoForge: `MultiClicker-neoforge-<mod version>+<Minecraft version>.jar`, nothing else is needed. The
      settings button is in the mod list.
+   - Forge (1.19 – 1.20): `MultiClicker-forge-<mod version>+<Minecraft version>.jar`, nothing else is
+     needed. On Forge 1.20.1 use the NeoForge jar.
 3. Join a world and press <kbd>O</kbd> to open the menu, <kbd>I</kbd> to turn the mod on or off.
 
 Pick a ready-made setup under **Profiles → Presets**, then press <kbd>I</kbd>:
@@ -119,6 +123,10 @@ mobs.
   item icons. Click a number to type an exact value; changed settings are marked with a dot and a whole
   module can be reset with ↺. Fits the window size; on small screens the sidebar turns into icons.
 - **Feedback.** Accent color, a sound and a message above the hotbar when the mod turns on or off.
+- **Notifications.** A message above the hotbar or in the chat, with a chime, when something needs your
+  attention while the mod works: the inventory is full, the tool in hand is about to break, the last item
+  in hand is used up, auto eat finds no food, a player comes near, a fish is caught, or the mod stopped by
+  itself and why. Each one can be turned off.
 - **Hotkeys.** Any module, each clicker channel and each profile can get a key (or a side mouse button)
   that switches it while you play. Hotkeys stay as they are when you load a profile or a preset.
 - **Profiles.** Save your settings under a name and load them later, with a hotkey or by themselves when
@@ -140,22 +148,25 @@ mobs.
 
 One jar per loader and Minecraft version:
 
-| Minecraft | Fabric | NeoForge |
-|:--|:--:|:--:|
-| 1.20 | ✓ | — (NeoForge starts at 1.20.1) |
-| 1.20.1 | ✓ | ✓ (NeoForged Forge 47.1) |
-| 1.20.2 – 1.20.6 | ✓ | ✓ |
-| 1.21 – 1.21.11 | ✓ | ✓ |
-| 26.1 – 26.3 | ✓ | ✓ |
+| Minecraft | Fabric | NeoForge | Forge |
+|:--|:--:|:--:|:--:|
+| 1.19 – 1.19.4 | ✓ | — | ✓ |
+| 1.20 | ✓ | — (NeoForge starts at 1.20.1) | ✓ |
+| 1.20.1 | ✓ | ✓ (NeoForged Forge 47.1) | the NeoForge jar |
+| 1.20.2 – 1.20.6 | ✓ | ✓ | — |
+| 1.21 – 1.21.11 | ✓ | ✓ | — |
+| 26.1 – 26.3 | ✓ | ✓ | — |
 
 Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer. NeoForge for 1.20.1 is the NeoForged fork of
-Forge 47 (still with the Forge API); the 1.20.1 NeoForge jar is built for it.
+Forge 47 (still with the Forge API); the 1.20.1 NeoForge jar is built for it and also runs on Forge 1.20.1.
+From 1.20.2 on there are NeoForge jars only.
 
 - Fabric 1.21.4 and newer: every build plays the in-game tests.
-- Fabric 1.20 – 1.21.3 and every NeoForge version: CI checks that the game starts with the mod and that
+- Fabric 1.19 – 1.21.3 and every NeoForge and Forge version: CI checks that the game starts with the mod and that
   every mixin applies.
 - Fabric 1.21.9: the outline and filled highlight styles are not drawn (Fabric API for this version has
-  no world rendering events); the glow style works. On NeoForge all styles work.
+  no world rendering events); the glow style works. On NeoForge and Forge all styles work.
+- Before 1.19.3 search fields have no grey hint text.
 
 ## Controls
 
@@ -196,7 +207,8 @@ You need JDK 21 (JDK 25 and Gradle 9 for Minecraft 26.1 and newer). The version 
 ```
 
 - `common/` holds the mod itself: modules, settings, the menu and the config.
-- `fabric/` and `neoforge/` hold the entry points of the loaders.
+- `fabric/` and `neoforge/` hold the entry points of the loaders; `neoforge/` also builds the Forge jar
+  for the versions that name a `forge_version`.
 - `common/src/test/` holds the unit tests, which need no running game.
 - `fabric/src/gametest/` holds the in-game tests, which are not part of the release jar.
 
