@@ -38,8 +38,8 @@ profile can have its own hotkey.
      adds a settings button to the mod list.
    - NeoForge: `MultiClicker-neoforge-<mod version>+<Minecraft version>.jar`, nothing else is needed. The
      settings button is in the mod list.
-   - Forge (1.19 – 1.20): `MultiClicker-forge-<mod version>+<Minecraft version>.jar`, nothing else is
-     needed. On Forge 1.20.1 use the NeoForge jar.
+   - Forge (1.19 – 1.20.1): `MultiClicker-forge-<mod version>+<Minecraft version>.jar`, nothing else is
+     needed.
 3. Join a world and press <kbd>O</kbd> to open the menu, <kbd>I</kbd> to turn the mod on or off.
 
 Pick a ready-made setup under **Profiles → Presets**, then press <kbd>I</kbd>:
@@ -152,13 +152,14 @@ One jar per loader and Minecraft version:
 |:--|:--:|:--:|:--:|
 | 1.19 – 1.19.4 | ✓ | — | ✓ |
 | 1.20 | ✓ | — (NeoForge starts at 1.20.1) | ✓ |
-| 1.20.1 | ✓ | ✓ (NeoForged Forge 47.1) | the NeoForge jar |
+| 1.20.1 | ✓ | ✓ (NeoForged Forge 47.1) | ✓ |
 | 1.20.2 – 1.20.6 | ✓ | ✓ | — |
 | 1.21 – 1.21.11 | ✓ | ✓ | — |
 | 26.1 – 26.3 | ✓ | ✓ | — |
 
 Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer. NeoForge for 1.20.1 is the NeoForged fork of
-Forge 47 (still with the Forge API); the 1.20.1 NeoForge jar is built for it and also runs on Forge 1.20.1.
+Forge 47 (still with the Forge API); the 1.20.1 NeoForge jar is built for it and also runs on Forge 1.20.1,
+so the 1.20.1 Forge jar is the same file.
 From 1.20.2 on there are NeoForge jars only.
 
 - Fabric 1.21.4 and newer: every build plays the in-game tests.

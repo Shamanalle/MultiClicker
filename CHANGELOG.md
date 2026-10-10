@@ -2,6 +2,11 @@
 
 All notable changes to **MultiClicker** will be documented in this file.
 
+## [Unreleased]
+### Changed
+- Minecraft 1.20.1 also gets a Forge jar (`MultiClicker-forge-…+1.20.1.jar`). It is the same file as the
+  NeoForge one, published under the Forge name so Forge players find it.
+
 ## [2.3.0] - 2026-10-10
 ### Added
 - **NeoForge.** A NeoForge jar for every Minecraft version from 1.20.1 to 26.3. It needs no other mods;
