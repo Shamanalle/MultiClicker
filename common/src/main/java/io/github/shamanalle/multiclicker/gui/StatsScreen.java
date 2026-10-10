@@ -327,9 +327,12 @@ public class StatsScreen extends PanelScreen {
             int x = viewX + (i % columns) * (w + GAP);
             int tileY = y + (i / columns) * (TILE_HEIGHT + GAP);
             Draw.box(g, x, tileY, w, TILE_HEIGHT, 4, Theme.CARD, Theme.CARD_BORDER);
+            // The name comes first; the note gets the room left beside it, or is left out when too little remains.
+            String label = I18n.get(stat.translationKey());
+            int noteRoom = w - 16 - font.width(label) - 6;
             String sub = tileNote(counters, stat, live);
-            int subW = sub.isEmpty() ? 0 : font.width(sub) + 6;
-            Draw.text(g, font, Draw.ellipsize(font, I18n.get(stat.translationKey()), w - 16 - subW), x + 8, tileY + 6, Theme.TEXT_DIM);
+            sub = noteRoom < 24 ? "" : Draw.ellipsize(font, sub, noteRoom);
+            Draw.text(g, font, Draw.ellipsize(font, label, w - 16), x + 8, tileY + 6, Theme.TEXT_DIM);
             if (!sub.isEmpty()) {
                 Draw.textRight(g, font, sub, x + w - 8, tileY + 6, Theme.TEXT_MUTED);
             }
