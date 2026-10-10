@@ -41,7 +41,7 @@ def texts():
     doc = open('publishing/modrinth-curseforge.md', encoding='utf-8').read()
     summary = re.search(r'\*\*Summary, English\*\*.*?\n\n> (.+)\n', doc).group(1).strip()
     blocks = re.findall(r'````markdown\n(.*?)\n````', doc, re.S)
-    body = blocks[0] + '\n\n<details>\n<summary>Описание на русском</summary>\n\n' + blocks[1] + '\n\n</details>\n'
+    body = blocks[0] + '\n\n---\n\n<details>\n<summary><b>🇷🇺 Русский</b></summary>\n\n' + blocks[1] + '\n\n</details>\n'
     return summary, body
 
 
