@@ -109,4 +109,18 @@ class StatsStoreTest {
         assertTrue(store.servers().isEmpty());
         assertTrue(store.history().isEmpty());
     }
+
+    @Test
+    void exportsCsv() {
+        StatsStore store = new StatsStore(dir.resolve("stats.json"));
+        store.total().addAll(sample());
+        store.server("a,b").addAll(sample());
+        store.addHistory(new SessionRecord(0, "a,b", sample()));
+        String[] lines = StatsCsv.write(store, java.time.ZoneOffset.UTC).split("\n");
+        assertEquals(4, lines.length);
+        assertTrue(lines[0].startsWith("scope,server,start,active_time,sessions,clicks"));
+        assertTrue(lines[1].startsWith("total,,,600,0,1200,0,7,140.5,"), lines[1]);
+        assertTrue(lines[2].startsWith("server,\"a,b\",,600,"), lines[2]);
+        assertTrue(lines[3].startsWith("session,\"a,b\",1970-01-01 00:00:00,600,"), lines[3]);
+    }
 }

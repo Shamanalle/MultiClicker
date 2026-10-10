@@ -66,6 +66,7 @@ public class ConfigScreen extends ModScreen {
     private final Map<Setting<?>, SettingControl> controls = new HashMap<>();
     private final Map<Category, Anim> categoryHover = new EnumMap<>(Category.class);
     private final Anim profilesHover = new Anim(0);
+    private final Anim statsHover = new Anim(0);
     private final Anim masterAnim;
     private final Map<Object, Anim> headerHover = new HashMap<>();
     /** Slides the cards in when another category is shown. */
@@ -355,6 +356,10 @@ public class ConfigScreen extends ModScreen {
         return panelY + panelH - SIDEBAR_ITEM - 6;
     }
 
+    private int statsItemY() {
+        return profilesItemY() - SIDEBAR_ITEM;
+    }
+
     private Object renderSidebar(Canvas g, int mouseX, int mouseY, float delta, Object hovered) {
         int y = sidebarTop();
         int accent = Theme.accent();
@@ -389,25 +394,34 @@ public class ConfigScreen extends ModScreen {
             y += SIDEBAR_ITEM;
         }
 
-        int profilesY = profilesItemY();
-        g.fill(panelX + 8, profilesY - 5, panelX + sidebarW - 8, profilesY - 4, Theme.DIVIDER);
-        boolean over = isOverSidebarItem(mouseX, mouseY, profilesY);
-        float h = profilesHover.update(over ? 1 : 0, delta, 18);
-        if (h > 0) {
-            Draw.rect(g, panelX + 4, profilesY, sidebarW - 8, SIDEBAR_ITEM - 2, 3, Theme.alpha(0xFFFFFFFF, 0.05F * h));
+        int statsY = statsItemY();
+        g.fill(panelX + 8, statsY - 5, panelX + sidebarW - 8, statsY - 4, Theme.DIVIDER);
+        if (renderSidebarLink(g, mouseX, mouseY, delta, statsY, statsHover, "▤", "multiclicker.gui.stats")) {
+            hovered = "stats";
         }
-        int iconColor = Theme.mix(Theme.TEXT_MUTED, accent, h);
-        if (compactSidebar) {
-            Draw.textCentered(g, font, "☰", panelX + sidebarW / 2, profilesY + 5, iconColor);
-        } else {
-            Draw.text(g, font, "☰", panelX + 12, profilesY + 5, iconColor);
-            Draw.text(g, font, Draw.ellipsize(font, I18n.get("multiclicker.gui.profiles"), sidebarW - 34),
-                    panelX + 24, profilesY + 5, Theme.mix(Theme.TEXT_DIM, Theme.TEXT, h));
-        }
-        if (over) {
+        if (renderSidebarLink(g, mouseX, mouseY, delta, profilesItemY(), profilesHover, "☰", "multiclicker.gui.profiles")) {
             hovered = "profiles";
         }
         return hovered;
+    }
+
+    /** An item at the bottom of the sidebar that opens another screen; returns whether it is hovered. */
+    private boolean renderSidebarLink(Canvas g, int mouseX, int mouseY, float delta, int y, Anim hover, String icon,
+                                      String titleKey) {
+        boolean over = isOverSidebarItem(mouseX, mouseY, y);
+        float h = hover.update(over ? 1 : 0, delta, 18);
+        if (h > 0) {
+            Draw.rect(g, panelX + 4, y, sidebarW - 8, SIDEBAR_ITEM - 2, 3, Theme.alpha(0xFFFFFFFF, 0.05F * h));
+        }
+        int iconColor = Theme.mix(Theme.TEXT_MUTED, Theme.accent(), h);
+        if (compactSidebar) {
+            Draw.textCentered(g, font, icon, panelX + sidebarW / 2, y + 5, iconColor);
+        } else {
+            Draw.text(g, font, icon, panelX + 12, y + 5, iconColor);
+            Draw.text(g, font, Draw.ellipsize(font, I18n.get(titleKey), sidebarW - 34),
+                    panelX + 24, y + 5, Theme.mix(Theme.TEXT_DIM, Theme.TEXT, h));
+        }
+        return over;
     }
 
     private boolean isOverSidebarItem(double mouseX, double mouseY, int itemY) {
@@ -692,6 +706,10 @@ public class ConfigScreen extends ModScreen {
             text = module.description();
         } else if (hovered instanceof Category entry) {
             text = entry.title();
+        } else if ("stats".equals(hovered)) {
+            text = compactSidebar
+                    ? Component.translatable("multiclicker.gui.stats").append(" — ").append(Component.translatable("multiclicker.gui.stats.desc"))
+                    : Component.translatable("multiclicker.gui.stats.desc");
         } else if ("profiles".equals(hovered)) {
             text = compactSidebar
                     ? Component.translatable("multiclicker.gui.profiles").append(" — ").append(Component.translatable("multiclicker.gui.profiles.desc"))
@@ -756,6 +774,11 @@ public class ConfigScreen extends ModScreen {
                 return true;
             }
             y += SIDEBAR_ITEM;
+        }
+        if (isOverSidebarItem(mouseX, mouseY, statsItemY())) {
+            playClick();
+            Screens.open(minecraft, new StatsScreen(this));
+            return true;
         }
         if (isOverSidebarItem(mouseX, mouseY, profilesItemY())) {
             playClick();
