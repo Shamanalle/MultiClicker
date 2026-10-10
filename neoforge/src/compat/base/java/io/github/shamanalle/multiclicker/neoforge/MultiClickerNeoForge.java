@@ -10,16 +10,13 @@ import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.GameShuttingDownEvent;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Canvas;
 import io.github.shamanalle.multiclicker.compat.Ids;
-import io.github.shamanalle.multiclicker.compat.Shapes;
 import io.github.shamanalle.multiclicker.gui.ConfigScreen;
-import io.github.shamanalle.multiclicker.render.HighlightRenderer;
 
 /** NeoForge entrypoint: wires the platform independent core into NeoForge events. */
 @Mod(value = MultiClicker.MOD_ID, dist = Dist.CLIENT)
@@ -39,12 +36,6 @@ public class MultiClickerNeoForge {
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Pre event) -> mod.onClientTick(Minecraft.getInstance()));
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> Minecraft.getInstance().execute(mod::onDisconnect));
         NeoForge.EVENT_BUS.addListener((GameShuttingDownEvent event) -> mod.onClientStopping(Minecraft.getInstance()));
-        NeoForge.EVENT_BUS.addListener((RenderLevelStageEvent event) -> {
-            if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES) {
-                Minecraft mc = Minecraft.getInstance();
-                HighlightRenderer.render(new Shapes.Sink(event.getPoseStack(), mc.renderBuffers().bufferSource()),
-                        Shapes.cameraPosition(event.getCamera()), event.getPartialTick().getGameTimeDeltaPartialTick(false));
-            }
-        });
+        WorldHook.register();
     }
 }

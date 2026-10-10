@@ -4,10 +4,11 @@
 
 # MultiClicker
 
-**Автокликер для Fabric с помощниками для AFK-ферм, копания, фермы и рыбалки.**
+**Автокликер для Fabric и NeoForge с помощниками для AFK-ферм, копания, фермы и рыбалки.**
 
-[![Minecraft 1.21 – 26.3](https://img.shields.io/badge/Minecraft-1.21%20%E2%80%93%2026.3-62b47a)](https://minecraft.net/)
+[![Minecraft 1.20 – 26.3](https://img.shields.io/badge/Minecraft-1.20%20%E2%80%93%2026.3-62b47a)](https://minecraft.net/)
 [![Fabric](https://img.shields.io/badge/loader-Fabric-dbd0b4)](https://fabricmc.net/)
+[![NeoForge](https://img.shields.io/badge/loader-NeoForge-e68c37)](https://neoforged.net/)
 [![Релиз](https://img.shields.io/github/v/release/Shamanalle/MultiClicker?color=4c8bf5&label=релиз)](https://github.com/Shamanalle/MultiClicker/releases/latest)
 [![Игровые тесты](https://github.com/Shamanalle/MultiClicker/actions/workflows/gametest.yml/badge.svg)](https://github.com/Shamanalle/MultiClicker/actions/workflows/gametest.yml)
 [![Лицензия: MIT](https://img.shields.io/badge/лицензия-MIT-lightgrey)](LICENSE)
@@ -18,20 +19,23 @@
 
 </div>
 
-Мод-автокликер для Minecraft 1.21 – 26.3 (Fabric). Нажимает клавиши атаки, использования и прыжка в заданном
+Мод-автокликер для Minecraft 1.20 – 26.3 (Fabric и NeoForge). Нажимает клавиши атаки, использования и прыжка в заданном
 ритме. Включает модули для AFK-ферм, копания, огорода и рыбалки: авто-еда, авто-рыбалка, автоферма,
 авто-инструмент, пополнение хотбара, вторая рука, аварийная остановка, анти-АФК и другие. У каждого
 модуля, канала кликера и профиля может быть своя горячая клавиша.
 
 ## Быстрый старт
 
-1. Установите [Fabric Loader](https://fabricmc.net/use/) для своей версии Minecraft. Поддерживаются
-   1.21 – 1.21.11 и 26.1 – 26.3 (см. [версии](#поддерживаемые-версии)).
-2. Положите в папку `mods` [Fabric API](https://modrinth.com/mod/fabric-api) и jar под свою версию,
-   `MultiClicker-fabric-<версия мода>+<версия Minecraft>.jar` из
-   [последнего релиза](https://github.com/Shamanalle/MultiClicker/releases/latest).
-   По желанию поставьте [Mod Menu](https://modrinth.com/mod/modmenu): он добавляет кнопку настроек
-   в списке модов.
+1. Установите [Fabric Loader](https://fabricmc.net/use/) или [NeoForge](https://neoforged.net/) для своей
+   версии Minecraft. Поддерживаются 1.20 – 1.20.6, 1.21 – 1.21.11 и 26.1 – 26.3
+   (см. [версии](#поддерживаемые-версии)).
+2. Положите в папку `mods` jar под свой загрузчик и версию из
+   [последнего релиза](https://github.com/Shamanalle/MultiClicker/releases/latest):
+   - Fabric: `MultiClicker-fabric-<версия мода>+<версия Minecraft>.jar` вместе с
+     [Fabric API](https://modrinth.com/mod/fabric-api). По желанию поставьте
+     [Mod Menu](https://modrinth.com/mod/modmenu): он добавляет кнопку настроек в списке модов.
+   - NeoForge: `MultiClicker-neoforge-<версия мода>+<версия Minecraft>.jar`, больше ничего не нужно.
+     Кнопка настроек есть в списке модов.
 3. Зайдите в мир, нажмите <kbd>O</kbd>, чтобы открыть меню, и <kbd>I</kbd>, чтобы включить или выключить мод.
 
 Выберите готовую настройку в **Профили → Пресеты** и нажмите <kbd>I</kbd>:
@@ -137,15 +141,24 @@
 
 ## Поддерживаемые версии
 
-Для каждой версии Minecraft свой jar: 1.21, 1.21.1, 1.21.2, 1.21.3, 1.21.4, 1.21.5, 1.21.6, 1.21.7,
-1.21.8, 1.21.9, 1.21.10, 1.21.11, 26.1, 26.1.1, 26.1.2, 26.2 и 26.3. Для Minecraft 1.21.9 и новее нужен
-Fabric Loader 0.17 или новее.
+Для каждого загрузчика и версии Minecraft свой jar:
 
-- 1.21.4 и новее: каждая сборка проходит игровые тесты.
-- 1.21 – 1.21.3: в Fabric API для них нет клиентского тестового API, поэтому CI лишь проверяет, что игра
-  запускается с модом и все миксины применяются.
-- 1.21.9: стили подсветки «контур» и «заливка» не рисуются (в Fabric API для этой версии нет событий
-  отрисовки мира), «свечение» работает.
+| Minecraft | Fabric | NeoForge |
+|:--|:--:|:--:|
+| 1.20 | ✓ | — (NeoForge начинается с 1.20.1) |
+| 1.20.1 | ✓ | ✓ (NeoForged Forge 47.1) |
+| 1.20.2 – 1.20.6 | ✓ | ✓ |
+| 1.21 – 1.21.11 | ✓ | ✓ |
+| 26.1 – 26.3 | ✓ | ✓ |
+
+Для Minecraft 1.21.9 и новее нужен Fabric Loader 0.17 или новее. NeoForge для 1.20.1 — это форк Forge 47
+от NeoForged (ещё с API Forge); jar NeoForge для 1.20.1 собран под него.
+
+- Fabric 1.21.4 и новее: каждая сборка проходит игровые тесты.
+- Fabric 1.20 – 1.21.3 и все версии NeoForge: CI проверяет, что игра запускается с модом и все миксины
+  применяются.
+- Fabric 1.21.9: стили подсветки «контур» и «заливка» не рисуются (в Fabric API для этой версии нет
+  событий отрисовки мира), «свечение» работает. На NeoForge работают все стили.
 
 ## Управление
 
@@ -175,16 +188,17 @@ Türkçe, 简体中文, 日本語, 한국어. Предметы, чары и мо
 
 ## Сборка
 
-Нужен JDK 21.
+Нужен JDK 21 (для Minecraft 26.1 и новее — JDK 25 и Gradle 9). Версия выбирается через
+`-Pminecraft_version=<версия>`; каждая описана в `versions/<версия>.properties`.
 
 ```bash
-./gradlew build                       # → fabric/build/libs/MultiClicker-fabric-<версия>.jar, плюс юнит-тесты
+./gradlew build                       # → fabric/build/libs и neoforge/build/libs, плюс юнит-тесты
 ./gradlew :common:test                # только юнит-тесты: тайминги кликов, профили, файлы настроек
 ./gradlew :fabric:runClientGameTest   # запускает игру и проигрывает все сценарии
 ```
 
 - `common/` содержит сам мод: модули, настройки, меню и конфиг.
-- `fabric/` содержит точку входа Fabric.
+- `fabric/` и `neoforge/` содержат точки входа загрузчиков.
 - `common/src/test/` содержит юнит-тесты, им не нужна запущенная игра.
 - `fabric/src/gametest/` содержит игровые тесты. В релизный jar они не попадают.
 

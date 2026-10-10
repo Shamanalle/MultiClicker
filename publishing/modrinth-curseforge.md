@@ -15,22 +15,22 @@ the version fields · 5. Upload checklist
 | Name | `MultiClicker` |
 | Slug / URL | `multiclicker` (if it is taken: `multiclicker-fabric`) |
 | Summary (Modrinth, 256 characters max; CurseForge, 250 max) | see below |
-| Loader | Fabric |
+| Loaders | Fabric, NeoForge |
 | Environment | Client: required. Server: unsupported (the mod is client-only) |
 | License | MIT |
 | Source code | https://github.com/Shamanalle/MultiClicker |
 | Issues | https://github.com/Shamanalle/MultiClicker/issues |
-| Dependencies | Fabric API: required. Mod Menu: optional |
+| Dependencies | Fabric: Fabric API required, Mod Menu optional. NeoForge: none |
 | Modrinth categories (up to 3) | Utility, Game mechanics |
 | CurseForge category | Utility & QoL (if the list has no such entry: Miscellaneous) |
 
 **Summary, English** (173 characters):
 
-> Auto clicker for Fabric with auto eat, auto fish, auto farm, auto tool, hotbar refill, offhand, safety stop, anti-AFK and hotkeys for mob farms, mining, farming and fishing.
+> Auto clicker for Fabric and NeoForge with auto eat, auto fish, auto farm, auto tool, hotbar refill, offhand, safety stop, anti-AFK and hotkeys for mob farms, mining, farming and fishing.
 
 **Summary, Russian** (for the Russian description or a translation of the project):
 
-> Автокликер для Fabric с авто-едой, авто-рыбалкой, автофермой, авто-инструментом, пополнением хотбара, второй рукой, аварийной остановкой, анти-АФК и горячими клавишами.
+> Автокликер для Fabric и NeoForge с авто-едой, авто-рыбалкой, автофермой, авто-инструментом, пополнением хотбара, второй рукой, аварийной остановкой, анти-АФК и горячими клавишами.
 
 Why this wording: both sites search the name and the summary (Modrinth has no free-form tags, CurseForge has only fixed categories). The words people type
 (`auto clicker`, `autoclicker`, `auto eat`, `auto fish`, `auto farm`, `afk`) are in the summary and the first
@@ -47,7 +47,7 @@ repository images, so they work on Modrinth as they are.
 ````markdown
 # MultiClicker
 
-Auto clicker for Minecraft (Fabric). It clicks the attack, use and jump keys at a rhythm you set, and
+Auto clicker for Minecraft (Fabric and NeoForge). It clicks the attack, use and jump keys at a rhythm you set, and
 comes with modules for AFK farms, mining, crop farming and fishing: auto eat, auto fish, auto farm, auto
 tool, hotbar refill, offhand, safety stop, anti-AFK and others. Every module and profile can have a hotkey.
 
@@ -55,8 +55,9 @@ tool, hotbar refill, offhand, safety stop, anti-AFK and others. Every module and
 
 ## Quick start
 
-1. Install Fabric Loader and put **Fabric API** and the MultiClicker jar into the `mods` folder.
+1. Fabric: install Fabric Loader and put **Fabric API** and the MultiClicker jar into the `mods` folder.
    [Mod Menu](https://modrinth.com/mod/modmenu) is optional and adds a settings button to the mod list.
+   NeoForge: put the MultiClicker jar into the `mods` folder; nothing else is needed.
 2. Join a world. Press **O** to open the menu and **I** to turn the mod on or off.
 3. Open **Profiles → Presets**, pick a setup and press **I**.
 
@@ -146,11 +147,12 @@ crystals) are switched separately. You can also ignore babies, named mobs, pets 
 
 ## Supported versions
 
-One jar per Minecraft version: 1.21, 1.21.1 to 1.21.11, and 26.1, 26.1.1, 26.1.2, 26.2, 26.3. Download
-the file for your version. Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer.
+One jar per loader and Minecraft version: Fabric for 1.20 to 1.20.6, 1.21 to 1.21.11 and 26.1 to 26.3;
+NeoForge for the same versions except 1.20 (NeoForge starts at 1.20.1). Download the file for your loader
+and version. Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer.
 
-- On 1.21.9 the outline and filled highlight styles are not drawn (Fabric API for that version has no
-  world rendering events); the glow style works.
+- On Fabric 1.21.9 the outline and filled highlight styles are not drawn (Fabric API for that version
+  has no world rendering events); the glow style works.
 
 ## Controls
 
@@ -190,15 +192,16 @@ description of a Russian translation if the site offers one.
 ````markdown
 # MultiClicker
 
-Автокликер для Minecraft (Fabric). Нажимает клавиши атаки, использования и прыжка в заданном ритме.
+Автокликер для Minecraft (Fabric и NeoForge). Нажимает клавиши атаки, использования и прыжка в заданном ритме.
 Есть модули для AFK-ферм, копания, огорода и рыбалки: авто-еда, авто-рыбалка, автоферма,
 авто-инструмент, пополнение хотбара, вторая рука, аварийная остановка, анти-АФК и другие. У каждого
 модуля и профиля может быть горячая клавиша.
 
 ## Быстрый старт
 
-1. Установите Fabric Loader, положите в папку `mods` **Fabric API** и jar мода для вашей версии.
+1. Fabric: установите Fabric Loader, положите в папку `mods` **Fabric API** и jar мода для вашей версии.
    [Mod Menu](https://modrinth.com/mod/modmenu) не обязателен: он добавляет кнопку настроек в список модов.
+   NeoForge: положите jar мода в папку `mods`, больше ничего не нужно.
 2. Зайдите в мир. **O** открывает меню, **I** включает и выключает мод.
 3. Откройте **Профили → Пресеты**, выберите набор и нажмите **I**.
 
@@ -291,10 +294,11 @@ description of a Russian translation if the site offers one.
 
 ## Поддерживаемые версии
 
-Один jar на каждую версию Minecraft: 1.21, 1.21.1–1.21.11 и 26.1, 26.1.1, 26.1.2, 26.2, 26.3. Скачайте
-файл для своей версии. Для Minecraft 1.21.9 и новее нужен Fabric Loader 0.17 или новее.
+Один jar на каждый загрузчик и версию Minecraft: Fabric для 1.20–1.20.6, 1.21–1.21.11 и 26.1–26.3;
+NeoForge для тех же версий, кроме 1.20 (NeoForge начинается с 1.20.1). Скачайте файл для своего загрузчика
+и версии. Для Minecraft 1.21.9 и новее нужен Fabric Loader 0.17 или новее.
 
-- На 1.21.9 стили подсветки «обводка» и «заливка» не рисуются (в Fabric API для этой версии нет событий
+- На Fabric 1.21.9 стили подсветки «обводка» и «заливка» не рисуются (в Fabric API для этой версии нет событий
   отрисовки мира); стиль «свечение» работает.
 
 ## Управление
@@ -328,20 +332,28 @@ Türkçe, 简体中文, 日本語, 한국어. Предметы, зачарова
 
 ## 4. Version fields
 
-Upload every jar as its own version/file and tick the matching Minecraft version and the Fabric loader
-(1.21.9 and newer: Fabric Loader 0.17+, mention it in the changelog).
+Upload every jar as its own version/file and tick the matching Minecraft version and the loader of the
+jar: Fabric for `MultiClicker-fabric-*`, NeoForge for `MultiClicker-neoforge-*` (Fabric 1.21.9 and newer:
+Fabric Loader 0.17+, mention it in the changelog).
 
-**Version name:** `MultiClicker 2.2.0 for Minecraft <version>`, for example `MultiClicker 2.2.0 for Minecraft 1.21.4`.
+**Version name:** `MultiClicker 2.3.0 for Minecraft <version> (<loader>)`, for example `MultiClicker 2.3.0 for Minecraft 1.21.4 (Fabric)`.
 
-**Version number:** `2.2.0+<Minecraft version>`, the same as in the file name.
+**Version number:** `2.3.0+<Minecraft version>-<loader>`, for example `2.3.0+1.21.4-fabric`.
 
 **Release channel:** Release.
 
-**Dependencies:** Fabric API (required), Mod Menu (optional).
+**Dependencies:** Fabric jars: Fabric API (required), Mod Menu (optional). NeoForge jars: none.
 
 **Changelog** (the same text for every file):
 
 ```
+2.3.0
+
+- NeoForge support: a NeoForge jar for every version from 1.20.1 to 26.3.
+- Fabric support for Minecraft 1.20 to 1.20.6.
+- Works on Minecraft 1.20 to 1.20.6, 1.21 to 1.21.11 and 26.1 to 26.3; download the file for your loader
+  and game version. Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer.
+
 2.2.0
 
 - Hotkeys for every module, clicker channel and profile.
@@ -363,14 +375,14 @@ Full history: https://github.com/Shamanalle/MultiClicker/blob/main/CHANGELOG.md
 1. Modrinth: create the project, set the fields from section 1, paste section 2 (add section 3 in a
    `<details>` block at the end), add the icon `common/src/main/resources/assets/multiclicker/icon.png`
    and the screenshots to the gallery (set `hud.png` as the featured image).
-2. Upload the 17 jars from the GitHub release as separate versions (section 4). Modrinth can attach
+2. Upload the 47 jars from the GitHub release (24 Fabric, 23 NeoForge) as separate versions (section 4). Modrinth can attach
    several Minecraft versions to one file only when the file really works on all of them, so keep one
    jar per version.
-3. CurseForge: the same text, the same 17 files (one file per game version).
+3. CurseForge: the same text, the same 47 files (one file per loader and game version).
 4. Both sites review new projects; the review can take from a few hours to a few days.
 5. Later versions can be uploaded by the release workflow itself. In the repository settings
    (*Settings → Secrets and variables → Actions*) add the variables `MODRINTH_ID` and `CURSEFORGE_ID`
    (the project ids shown on each site) and the secrets `MODRINTH_TOKEN` (Modrinth → Settings → PATs,
    with the *Create versions* scope) and `CURSEFORGE_TOKEN` (CurseForge → API tokens). From then on every
-   release also uploads its 17 jars to both sites, with the changelog of that version. A site whose
+   release also uploads its 47 jars to both sites, with the changelog of that version. A site whose
    token is missing is skipped.

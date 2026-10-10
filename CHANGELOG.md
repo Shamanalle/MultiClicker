@@ -2,6 +2,13 @@
 
 All notable changes to **MultiClicker** will be documented in this file.
 
+## [2.3.0] - 2026-10-10
+### Added
+- **NeoForge.** A NeoForge jar for every Minecraft version from 1.20.1 to 26.3. It needs no other mods;
+  the settings button is in the mod list. NeoForge does not exist for 1.20, and on 1.20.1 the jar runs on
+  NeoForged Forge 47.1. All highlight styles work on NeoForge, including 1.21.9.
+- **Minecraft 1.20 to 1.20.6** on Fabric.
+
 ## [2.2.0] - 2026-10-09
 ### Added
 - **Hotkeys.** Every module, each clicker channel (attack, use, jump) and each saved profile can get its

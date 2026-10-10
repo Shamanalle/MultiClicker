@@ -6,7 +6,6 @@ import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
-import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.GameShuttingDownEvent;
 import net.minecraftforge.event.TickEvent;
@@ -18,9 +17,7 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.loading.FMLPaths;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Canvas;
-import io.github.shamanalle.multiclicker.compat.Shapes;
 import io.github.shamanalle.multiclicker.gui.ConfigScreen;
-import io.github.shamanalle.multiclicker.render.HighlightRenderer;
 
 /** Entrypoint for the NeoForged Forge of Minecraft 1.20.1, which still has the Forge API. */
 @Mod(MultiClicker.MOD_ID)
@@ -50,12 +47,6 @@ public class MultiClickerNeoForge {
         });
         MinecraftForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> Minecraft.getInstance().execute(mod::onDisconnect));
         MinecraftForge.EVENT_BUS.addListener((GameShuttingDownEvent event) -> mod.onClientStopping(Minecraft.getInstance()));
-        MinecraftForge.EVENT_BUS.addListener((RenderLevelStageEvent event) -> {
-            if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES) {
-                Minecraft mc = Minecraft.getInstance();
-                HighlightRenderer.render(new Shapes.Sink(event.getPoseStack(), mc.renderBuffers().bufferSource()),
-                        Shapes.cameraPosition(event.getCamera()), event.getPartialTick());
-            }
-        });
+        WorldHook.register();
     }
 }
