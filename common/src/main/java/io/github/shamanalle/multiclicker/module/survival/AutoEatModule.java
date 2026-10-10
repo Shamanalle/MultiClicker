@@ -85,6 +85,7 @@ public class AutoEatModule extends Module {
         }
         int slot = findFood(player);
         if (slot == -1) {
+            MultiClicker.get().notifications().noFood(mc);
             return;
         }
         int selected = Slots.selected(player.getInventory());

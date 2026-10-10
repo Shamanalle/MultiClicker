@@ -12,4 +12,9 @@ public final class Sounds {
     public static SoundInstance click(float pitch, float volume) {
         return SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), pitch, volume);
     }
+
+    /** The chime of a notification. */
+    public static SoundInstance notice() {
+        return SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_PLING.value(), 1.5F, 0.5F);
+    }
 }
