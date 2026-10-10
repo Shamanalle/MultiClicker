@@ -167,17 +167,26 @@ jobs:
       - name: Install virtual display
         run: sudo apt-get update -q && sudo apt-get install -y -q xvfb libgl1-mesa-dri mesa-vulkan-drivers libvulkan1
 
-      - name: Start the game
+      # Setting up Minecraft, building the mod and downloading the game files happen before the timed start,
+      # so a slow setup cannot use up the time the game gets. A failed download (network) is retried after a pause.
+      - name: Prepare the game
         run: |
           chmod +x gradlew
           gradle_cmd=${{ startsWith(matrix.mc, '26.') && 'gradle' || './gradlew' }}
-          # The game is stopped by the timeout, so the exit code means nothing; the log check decides.
-          # A failed download of the game files (network) is the one thing worth a second try.
-          for attempt in 1 2; do
-            xvfb-run -a -s "-screen 0 1280x720x24" timeout 300 $gradle_cmd :${{ matrix.loader == 'forge' && 'neoforge' || matrix.loader }}:runClient --no-daemon -Pminecraft_version=${{ matrix.mc }} | tee smoke.log || true
-            grep -q "DownloadException" smoke.log || break
+          for attempt in 1 2 3; do
+            $gradle_cmd :${{ matrix.loader == 'forge' && 'neoforge' || matrix.loader }}:configureClientLaunch --no-daemon -Pminecraft_version=${{ matrix.mc }} | tee prepare.log
+            [ "${PIPESTATUS[0]}" -eq 0 ] && exit 0
+            grep -q "DownloadException" prepare.log || exit 1
             echo "::warning::Download failed on attempt $attempt"
+            sleep 60
           done
+          exit 1
+
+      - name: Start the game
+        run: |
+          gradle_cmd=${{ startsWith(matrix.mc, '26.') && 'gradle' || './gradlew' }}
+          # The game is stopped by the timeout, so the exit code means nothing; the log check decides.
+          xvfb-run -a -s "-screen 0 1280x720x24" timeout 300 $gradle_cmd :${{ matrix.loader == 'forge' && 'neoforge' || matrix.loader }}:runClient --no-daemon -Pminecraft_version=${{ matrix.mc }} | tee smoke.log || true
 
       - name: Check the log
         run: |
