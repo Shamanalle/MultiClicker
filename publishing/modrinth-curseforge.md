@@ -201,10 +201,10 @@ jar: Fabric for `MultiClicker-fabric-*`, NeoForge for `MultiClicker-neoforge-*`,
 changelog). A jar named for a range, such as `MultiClicker-fabric-2.5.0+1.21.6-1.21.8.jar`, is for every
 version of that range (1.21.6, 1.21.7 and 1.21.8); see `versions/shared-jars.txt`.
 
-**Version name:** `MultiClicker 2.4.0 for Minecraft <versions> (<loader>)`, for example `MultiClicker 2.4.0 for Minecraft 1.21.4 (Fabric)`
+**Version name:** `MultiClicker <mod version> for Minecraft <versions> (<loader>)`, for example `MultiClicker 2.5.0 for Minecraft 1.21.5 (Fabric)`
 or `MultiClicker 2.5.0 for Minecraft 1.21.6–1.21.8 (Fabric)`.
 
-**Version number:** `2.4.0+<Minecraft versions>-<loader>`, for example `2.4.0+1.21.4-fabric` or `2.5.0+1.21.6-1.21.8-fabric`.
+**Version number:** `<mod version>+<Minecraft versions>-<loader>`, for example `2.5.0+1.21.5-fabric` or `2.5.0+1.21.6-1.21.8-fabric`.
 
 **Release channel:** Release.
 

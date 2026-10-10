@@ -2,7 +2,7 @@
 
 All notable changes to **MultiClicker** will be documented in this file. In Russian: [CHANGELOG.ru.md](CHANGELOG.ru.md).
 
-## [Unreleased]
+## [2.5.0] - 2026-10-10
 ### Changed
 - **Fewer files.** Minecraft versions the mod builds into the same code for share one jar: 1.19 – 1.19.2,
   1.20.2 – 1.20.4, 1.21.2 – 1.21.4, 1.21.6 – 1.21.8 and 26.1 – 26.1.2 (where the check confirmed it for the
