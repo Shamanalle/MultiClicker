@@ -72,7 +72,16 @@ jobs:
           gradle_cmd=${{ startsWith(matrix.mc, '26.') && 'gradle' || './gradlew' }}
           $gradle_cmd build --no-daemon -Pminecraft_version=${{ matrix.mc }}
 
-      # The Fabric jar and the NeoForge (1.20.1 and newer) or Forge (1.19 to 1.20) jar.
+      # NeoForge for 1.20.1 is a Forge 47 fork, so its jar runs on Forge 1.20.1 too. It is also published
+      # under the Forge name, so Forge players find a file named for their loader.
+      - name: Copy the 1.20.1 jar for Forge
+        if: matrix.mc == '1.20.1'
+        run: |
+          for jar in neoforge/build/libs/MultiClicker-neoforge-*+1.20.1.jar; do
+            cp "$jar" "${jar/MultiClicker-neoforge-/MultiClicker-forge-}"
+          done
+
+      # The Fabric jar and the NeoForge (1.20.1 and newer) and/or Forge (1.19 to 1.20.1) jar.
       - name: Upload jars
         uses: actions/upload-artifact@v4
         with:
@@ -110,7 +119,7 @@ jobs:
           ls -1 jars
           test "$(ls -1 jars/MultiClicker-fabric-*.jar | wc -l)" -eq 29
           test "$(ls -1 jars/MultiClicker-neoforge-*.jar | wc -l)" -eq 23
-          test "$(ls -1 jars/MultiClicker-forge-*.jar | wc -l)" -eq 6
+          test "$(ls -1 jars/MultiClicker-forge-*.jar | wc -l)" -eq 7
           # Release notes: the CHANGELOG section of this version.
           awk -v v="$version" '
             /^## \[/ { if (found) exit; if (index($0, "[" v "]")) { found = 1; next } }
@@ -182,8 +191,7 @@ jobs:
             fabric-api(required)
             modmenu(optional)
 
-      # NeoForge exists from Minecraft 1.20.1 on; its 1.20.1 build is a Forge 47 fork, so that jar runs on
-      # Forge 1.20.1 as well.
+      # NeoForge exists from Minecraft 1.20.1 on.
       - name: Upload the NeoForge jar
         if: hashFiles('jars/MultiClicker-neoforge-*.jar') != ''
         uses: Kir-Antipov/mc-publish@v3.3
@@ -197,10 +205,10 @@ jobs:
           version: ${{ steps.prep.outputs.version }}+${{ matrix.mc }}-neoforge
           version-type: release
           changelog-file: release-notes.md
-          loaders: ${{ matrix.mc == '1.20.1' && 'neoforge forge' || 'neoforge' }}
+          loaders: neoforge
           game-versions: ${{ matrix.mc }}
 
-      # Forge builds for Minecraft 1.19 to 1.20, where NeoForge does not exist.
+      # Forge jars for Minecraft 1.19 to 1.20.1 (for 1.20.1 the copy of the NeoForge jar).
       - name: Upload the Forge jar
         if: hashFiles('jars/MultiClicker-forge-*.jar') != ''
         uses: Kir-Antipov/mc-publish@v3.3

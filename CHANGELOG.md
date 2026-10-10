@@ -9,8 +9,8 @@ All notable changes to **MultiClicker** will be documented in this file.
   NeoForged Forge 47.1. All highlight styles work on NeoForge, including 1.21.9.
 - **Minecraft 1.20 to 1.20.6** on Fabric.
 - **Minecraft 1.19 to 1.19.4** on Fabric and Forge.
-- **Forge.** A Forge jar for Minecraft 1.19 to 1.20, where NeoForge does not exist. On Forge 1.20.1 the
-  NeoForge jar runs as is. On 1.19 to 1.19.3 the filled highlight is drawn additive (brighter where it
+- **Forge.** A Forge jar for Minecraft 1.19 to 1.20.1 (for 1.20.1 it is the same file as the NeoForge
+  jar, which runs on Forge 1.20.1 as is). On 1.19 to 1.19.3 the filled highlight is drawn additive (brighter where it
   overlaps), and search fields have no hint text before 1.19.3.
 - **Notifications.** A message above the hotbar or in the chat, with a chime, when something needs your
   attention while the mod works: the inventory is full, the tool in hand is about to break, the last item in

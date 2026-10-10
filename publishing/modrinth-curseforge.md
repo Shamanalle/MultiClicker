@@ -155,8 +155,8 @@ servers forbid auto clickers and AFK tools, so check the rules before using it t
 ## Supported versions
 
 One jar per loader and Minecraft version: Fabric for 1.19 to 1.19.4, 1.20 to 1.20.6, 1.21 to 1.21.11 and
-26.1 to 26.3; NeoForge for 1.20.1 to 26.3 (NeoForge starts at 1.20.1); Forge for 1.19 to 1.20 (on Forge
-1.20.1 use the NeoForge jar). Download the file for your loader and version. Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer.
+26.1 to 26.3; NeoForge for 1.20.1 to 26.3 (NeoForge starts at 1.20.1); Forge for 1.19 to
+1.20.1. Download the file for your loader and version. Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer.
 
 - On Fabric 1.21.9 the outline and filled highlight styles are not drawn (Fabric API for that version
   has no world rendering events); the glow style works.
@@ -304,8 +304,8 @@ description of a Russian translation if the site offers one.
 ## Поддерживаемые версии
 
 Один jar на каждый загрузчик и версию Minecraft: Fabric для 1.19–1.19.4, 1.20–1.20.6, 1.21–1.21.11 и
-26.1–26.3; NeoForge для 1.20.1–26.3 (NeoForge начинается с 1.20.1); Forge для 1.19–1.20 (на Forge 1.20.1
-используйте jar для NeoForge). Скачайте файл для своего загрузчика и версии. Для Minecraft 1.21.9 и новее нужен Fabric Loader 0.17 или новее.
+26.1–26.3; NeoForge для 1.20.1–26.3 (NeoForge начинается с 1.20.1); Forge для
+1.19–1.20.1. Скачайте файл для своего загрузчика и версии. Для Minecraft 1.21.9 и новее нужен Fabric Loader 0.17 или новее.
 
 - На Fabric 1.21.9 стили подсветки «обводка» и «заливка» не рисуются (в Fabric API для этой версии нет событий
   отрисовки мира); стиль «свечение» работает.
@@ -337,8 +337,7 @@ Türkçe, 简体中文, 日本語, 한국어. Предметы, зачарова
 ## 4. Version fields
 
 Upload every jar as its own version/file and tick the matching Minecraft version and the loader of the
-jar: Fabric for `MultiClicker-fabric-*`, NeoForge for `MultiClicker-neoforge-*` (the 1.20.1 one also gets
-Forge), Forge for `MultiClicker-forge-*` (Fabric 1.21.9 and newer: Fabric Loader 0.17+, mention it in the
+jar: Fabric for `MultiClicker-fabric-*`, NeoForge for `MultiClicker-neoforge-*`, Forge for `MultiClicker-forge-*` (Fabric 1.21.9 and newer: Fabric Loader 0.17+, mention it in the
 changelog).
 
 **Version name:** `MultiClicker 2.3.0 for Minecraft <version> (<loader>)`, for example `MultiClicker 2.3.0 for Minecraft 1.21.4 (Fabric)`.
@@ -355,7 +354,7 @@ changelog).
 2.3.0
 
 - NeoForge support: a NeoForge jar for every version from 1.20.1 to 26.3.
-- Forge support for Minecraft 1.19 to 1.20 (on Forge 1.20.1 the NeoForge jar works).
+- Forge support for Minecraft 1.19 to 1.20.1.
 - Fabric support for Minecraft 1.19 to 1.19.4 and 1.20 to 1.20.6.
 - Notifications: a message above the hotbar or in the chat when the inventory is full, a tool is about
   to break, the last item in hand is used up, there is no food, a player comes near, a fish is caught or
