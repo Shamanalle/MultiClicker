@@ -3,11 +3,10 @@ package io.github.shamanalle.multiclicker.mixin;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import net.minecraft.world.entity.Entity;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import io.github.shamanalle.multiclicker.MultiClicker;
 
@@ -16,13 +15,12 @@ public abstract class MinecraftMixin {
     /**
      * Vanilla only keeps breaking a block while the mouse is grabbed, which is never the case
      * when the game window is in the background. Let a simulated held attack key mine anyway,
-     * so AFK mining works with the window unfocused. A wrap instead of a redirect: MixinExtras 0.5.4, which
-     * NeoForge 26.2 ships, fails on this redirect.
+     * so AFK mining works with the window unfocused. A redirect: Forge for 1.20.1 has no MixinExtras.
      */
-    @WrapOperation(method = "handleKeybinds",
+    @Redirect(method = "handleKeybinds",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MouseHandler;isMouseGrabbed()Z"))
-    private boolean multiclicker$allowBackgroundMining(MouseHandler mouseHandler, Operation<Boolean> original) {
-        if (original.call(mouseHandler)) {
+    private boolean multiclicker$allowBackgroundMining(MouseHandler mouseHandler) {
+        if (mouseHandler.isMouseGrabbed()) {
             return true;
         }
         MultiClicker mod = MultiClicker.get();
