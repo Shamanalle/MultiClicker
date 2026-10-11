@@ -488,6 +488,7 @@
   "multiclicker.notify.no_food": "饿了,但背包里没有食物",
   "multiclicker.notify.fish_caught": "钓到了东西(%s)",
   "multiclicker.notify.player_nearby": "玩家 %s 在附近(%s 格)",
+  "multiclicker.notify.players_skipped": "不会攻击玩家：请在目标过滤中开启“玩家”",
   "multiclicker.notify.session_summary": "会话 %s:",
   "modmenu.summaryTranslation.multiclicker": "带有挂机农场、挖掘和钓鱼辅助功能的连点器。",
   "modmenu.descriptionTranslation.multiclicker": "可配置的攻击、使用和跳跃自动点击器，附带挂机农场、挖矿、种田和钓鱼辅助：目标过滤、抢夺补刀、自动进食、智能副手、自动工具、快捷栏补充、自动农场、自动钓鱼、防挂机、安全停止、快捷键、可分享的配置、HUD 和目标高亮。"

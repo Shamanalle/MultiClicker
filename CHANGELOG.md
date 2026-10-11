@@ -3,6 +3,9 @@
 All notable changes to **MultiClicker** will be documented in this file. In Russian: [CHANGELOG.ru.md](CHANGELOG.ru.md).
 
 ## [Unreleased]
+### Added
+- A hint when the crosshair rests on a player for a second while players are off in the target filter (the
+  default): it says once per start where to turn them on, instead of the clicker silently doing nothing.
 ### Changed
 - **Pause while using items** turned off now lowers a raised shield for one tick to land the hit when the weapon
   is charged, and raises it again. While eating, drinking or drawing a bow the attack waits: the game drops

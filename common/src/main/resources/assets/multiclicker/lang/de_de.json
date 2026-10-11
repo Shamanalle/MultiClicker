@@ -488,6 +488,7 @@
   "multiclicker.notify.no_food": "hungrig, aber kein Essen im Inventar",
   "multiclicker.notify.fish_caught": "etwas gefangen (%s)",
   "multiclicker.notify.player_nearby": "Spieler %s ist in der Nähe (%s Blöcke)",
+  "multiclicker.notify.players_skipped": "Spieler werden nicht angegriffen: im Zielfilter „Spieler“ einschalten",
   "multiclicker.notify.session_summary": "Sitzung %s:",
   "modmenu.summaryTranslation.multiclicker": "Autoklicker mit Helfern für AFK-Farmen, Abbau und Angeln.",
   "modmenu.descriptionTranslation.multiclicker": "Einstellbarer Autoklicker für Angriff, Benutzen und Springen mit Helfern für AFK-Farmen, Abbau, Ackerbau und Angeln: Zielfilter, Plünderungs-Todesstoß, Auto-Essen, smarte Zweithand, Auto-Werkzeug, Schnellleiste auffüllen, Auto-Farm, Auto-Angeln, Anti-AFK, Sicherheitsstopp, Hotkeys, teilbare Profile, HUD und Zielmarkierung."

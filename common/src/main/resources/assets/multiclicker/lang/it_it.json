@@ -488,6 +488,7 @@
   "multiclicker.notify.no_food": "hai fame, ma non c'è cibo nell'inventario",
   "multiclicker.notify.fish_caught": "hai pescato qualcosa (%s)",
   "multiclicker.notify.player_nearby": "il giocatore %s è vicino (%s blocchi)",
+  "multiclicker.notify.players_skipped": "i giocatori non vengono attaccati: attiva «Giocatori» nel filtro bersagli",
   "multiclicker.notify.session_summary": "sessione %s:",
   "modmenu.summaryTranslation.multiclicker": "Autoclicker con aiuti per farm AFK, scavo e pesca.",
   "modmenu.descriptionTranslation.multiclicker": "Autoclicker configurabile per attaccare, usare e saltare, con aiuti per farm AFK, scavo, coltivazione e pesca: filtro bersagli, colpo finale con Saccheggio, mangiare automatico, mano secondaria intelligente, strumento automatico, ricarica barra rapida, fattoria automatica, pesca automatica, anti-AFK, arresto di sicurezza, scorciatoie, profili condivisibili, HUD ed evidenziazione del bersaglio."

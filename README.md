@@ -84,7 +84,8 @@ Every option has a tooltip in the menu. Right-click a setting to reset it.
 ### Target filter
 Players, hostile, neutral and passive mobs and other entities (boats, minecarts, armor stands, end
 crystals) are switched separately. On top of that: ignore babies, named mobs, pets and invisible
-mobs. Players in creative mode are never attacked: they take no damage.
+mobs. Players in creative mode are never attacked: they take no damage. Players are off by default; when
+the crosshair rests on one, a notification says once where to turn them on.
 
 ### Survival
 - **Safety.** Stops the mod, or leaves the server, when your health drops to a threshold, when you

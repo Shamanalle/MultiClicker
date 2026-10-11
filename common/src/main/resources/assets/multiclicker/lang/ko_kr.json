@@ -488,6 +488,7 @@
   "multiclicker.notify.no_food": "배고프지만 인벤토리에 음식이 없습니다",
   "multiclicker.notify.fish_caught": "무언가 낚았습니다 (%s)",
   "multiclicker.notify.player_nearby": "플레이어 %s 근처에 있음 (%s블록)",
+  "multiclicker.notify.players_skipped": "플레이어는 공격하지 않습니다: 대상 필터에서 '플레이어'를 켜세요",
   "multiclicker.notify.session_summary": "세션 %s:",
   "modmenu.summaryTranslation.multiclicker": "잠수 농장, 채굴, 낚시 보조 기능이 있는 오토 클리커.",
   "modmenu.descriptionTranslation.multiclicker": "공격, 사용, 점프용 설정 가능한 오토클리커. AFK 농장, 채굴, 농사, 낚시 도우미 포함: 대상 필터, 약탈 마무리 일격, 자동 먹기, 똑똑한 보조 손, 자동 도구, 핫바 채우기, 자동 농사, 자동 낚시, 잠수 방지, 안전 정지, 단축키, 공유 가능한 프로필, HUD, 대상 강조."

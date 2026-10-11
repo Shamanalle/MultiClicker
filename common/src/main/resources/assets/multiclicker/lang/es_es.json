@@ -488,6 +488,7 @@
   "multiclicker.notify.no_food": "tienes hambre, pero no hay comida en el inventario",
   "multiclicker.notify.fish_caught": "has pescado algo (%s)",
   "multiclicker.notify.player_nearby": "el jugador %s está cerca (%s bloques)",
+  "multiclicker.notify.players_skipped": "no se ataca a jugadores: activa «Jugadores» en el filtro de objetivos",
   "multiclicker.notify.session_summary": "sesión %s:",
   "modmenu.summaryTranslation.multiclicker": "Autoclicker con ayudas para granjas AFK, minería y pesca.",
   "modmenu.descriptionTranslation.multiclicker": "Autoclicker configurable para atacar, usar y saltar, con ayudantes para granjas AFK, minería, cultivos y pesca: filtro de objetivos, golpe final con Botín, comer automático, mano secundaria inteligente, herramienta automática, rellenar barra rápida, granja automática, pesca automática, anti-AFK, parada de seguridad, atajos, perfiles para compartir, HUD y resaltado del objetivo."

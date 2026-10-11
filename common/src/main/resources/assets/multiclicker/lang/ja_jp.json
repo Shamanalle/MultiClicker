@@ -488,6 +488,7 @@
   "multiclicker.notify.no_food": "空腹ですがインベントリに食べ物がありません",
   "multiclicker.notify.fish_caught": "何か釣れました(%s)",
   "multiclicker.notify.player_nearby": "プレイヤー %s が近くにいます(%sブロック)",
+  "multiclicker.notify.players_skipped": "プレイヤーは攻撃しません: ターゲットフィルターで「プレイヤー」をオンにしてください",
   "multiclicker.notify.session_summary": "セッション %s:",
   "modmenu.summaryTranslation.multiclicker": "放置トラップ、採掘、釣りを補助するオートクリッカー。",
   "modmenu.descriptionTranslation.multiclicker": "攻撃・使用・ジャンプの設定可能なオートクリッカー。AFKファーム、採掘、農業、釣りの補助付き: ターゲットフィルター、ドロップ増加でのとどめ、オート食事、スマートオフハンド、オートツール、ホットバー補充、オート農場、オート釣り、AFK対策、安全停止、ホットキー、共有できるプロファイル、HUD、ターゲット強調表示。"

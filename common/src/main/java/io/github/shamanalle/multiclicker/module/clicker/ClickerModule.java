@@ -28,6 +28,9 @@ import java.util.List;
 
 /** The auto clicker itself: attack, use and jump channels plus session limits. */
 public class ClickerModule extends Module {
+    /** A second on a player the filter skips before the hint explains it. */
+    private static final int SKIPPED_PLAYER_HINT_TICKS = 20;
+
     public enum AttackTarget {
         ENTITIES, ENTITIES_AND_BLOCKS, ANYTHING
     }
@@ -49,6 +52,8 @@ public class ClickerModule extends Module {
 
     private int startDelayLeft;
     private int attackCount;
+    /** Ticks the crosshair has stayed on a player the target filter leaves alone. */
+    private int skippedPlayerTicks;
     /** The player's own "pause on lost focus" option, restored when the clicker stops. */
     private Boolean savedPauseOnLostFocus;
     private final LootingSwap swap = new LootingSwap();
@@ -112,6 +117,7 @@ public class ClickerModule extends Module {
     @Override
     public void start(Minecraft mc) {
         startDelayLeft = startDelay.get();
+        skippedPlayerTicks = 0;
         attackCount = 0;
         resetChannels(mc);
         applyBackground(mc);
@@ -218,6 +224,7 @@ public class ClickerModule extends Module {
         // The ender dragon is aimed at through its body parts.
         Entity target = hit instanceof EntityHitResult entityHit ? Entities.whole(entityHit.getEntity()) : null;
         boolean validEntity = target != null && mod.targetFilter().isValidTarget(mc, target);
+        hintSkippedPlayer(mc, mod, target);
         boolean charged = player.getAttackStrengthScale(0.5F) >= 1.0F;
         boolean onBlock = target == null && hit instanceof BlockHitResult && hit.getType() == HitResult.Type.BLOCK;
         // With cooldown sync the delay starts counting once the weapon is charged, so it is added on
@@ -301,6 +308,20 @@ public class ClickerModule extends Module {
                     : Entities.whole(((EntityHitResult) mc.hitResult).getEntity()));
         }
         return result != LootingSwap.Result.IDLE;
+    }
+
+    /**
+     * Players are off in the target filter by default, so aiming at one does nothing. Once the
+     * crosshair has rested on a player for a second, says why (once per start of the mod).
+     */
+    private void hintSkippedPlayer(Minecraft mc, MultiClicker mod, Entity target) {
+        if (target instanceof Player other && !other.isCreative() && mod.targetFilter().skipsPlayers()) {
+            if (++skippedPlayerTicks == SKIPPED_PLAYER_HINT_TICKS) {
+                mod.notifications().playersSkipped(mc);
+            }
+        } else {
+            skippedPlayerTicks = 0;
+        }
     }
 
     /** Gives the use key back after it was let go for a hit past the shield. */

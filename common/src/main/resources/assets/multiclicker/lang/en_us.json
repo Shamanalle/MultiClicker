@@ -488,6 +488,7 @@
   "multiclicker.notify.no_food": "hungry, but there is no food in the inventory",
   "multiclicker.notify.fish_caught": "caught something (%s)",
   "multiclicker.notify.player_nearby": "player %s is nearby (%s blocks)",
+  "multiclicker.notify.players_skipped": "players are not attacked: turn on \"Players\" in the target filter",
   "multiclicker.notify.session_summary": "session %s:",
   "modmenu.summaryTranslation.multiclicker": "Auto clicker with helpers for AFK farms, mining and fishing.",
   "modmenu.descriptionTranslation.multiclicker": "Configurable auto clicker for attack, use and jump, with helpers for AFK farms, mining, farming and fishing: target filter, Looting finishing blow, auto eat, smart offhand, auto tool, hotbar refill, auto farm, auto fish, anti-AFK, safety stop, hotkeys, shareable profiles, HUD and target highlight."

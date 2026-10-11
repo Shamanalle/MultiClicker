@@ -488,6 +488,7 @@
   "multiclicker.notify.no_food": "faim, mais aucune nourriture dans l'inventaire",
   "multiclicker.notify.fish_caught": "quelque chose a mordu (%s)",
   "multiclicker.notify.player_nearby": "le joueur %s est proche (%s blocs)",
+  "multiclicker.notify.players_skipped": "les joueurs ne sont pas attaqués : activez « Joueurs » dans le filtre de cibles",
   "multiclicker.notify.session_summary": "session %s :",
   "modmenu.summaryTranslation.multiclicker": "Auto-clicker avec des aides pour les fermes AFK, le minage et la pêche.",
   "modmenu.descriptionTranslation.multiclicker": "Autoclicker réglable pour attaquer, utiliser et sauter, avec des aides pour les fermes AFK, le minage, l'agriculture et la pêche : filtre de cibles, coup de grâce avec Butin, repas auto, main secondaire intelligente, outil auto, recharge de la barre, ferme auto, pêche auto, anti-AFK, arrêt de sécurité, raccourcis, profils à partager, HUD et surbrillance de la cible."

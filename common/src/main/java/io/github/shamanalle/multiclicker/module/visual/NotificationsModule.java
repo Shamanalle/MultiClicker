@@ -175,6 +175,11 @@ public class NotificationsModule extends Module {
         }
     }
 
+    /** The crosshair rests on a player, but players are off in the target filter; once per start. */
+    public void playersSkipped(Minecraft mc) {
+        send(mc, "players_skipped", Integer.MAX_VALUE, Component.translatable("multiclicker.notify.players_skipped"));
+    }
+
     /** Auto fish reeled something in. */
     public void fishCaught(Minecraft mc, int catches) {
         if (fishCaught.get()) {

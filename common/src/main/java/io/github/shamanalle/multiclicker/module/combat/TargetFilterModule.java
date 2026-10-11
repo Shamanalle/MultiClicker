@@ -52,6 +52,11 @@ public class TargetFilterModule extends Module {
         return Kind.PASSIVE;
     }
 
+    /** Whether players are left alone because they are switched off here. */
+    public boolean skipsPlayers() {
+        return isEnabled() && !players.get();
+    }
+
     /** Whether the entity is something the player is allowed to auto-attack. */
     public boolean isValidTarget(Minecraft mc, Entity entity) {
         // The crosshair finds a body part of the ender dragon, not the dragon itself.

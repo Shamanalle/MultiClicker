@@ -488,6 +488,7 @@
   "multiclicker.notify.no_food": "голод, а їжі в інвентарі немає",
   "multiclicker.notify.fish_caught": "улов (%s)",
   "multiclicker.notify.player_nearby": "поруч гравець %s (%s бл.)",
+  "multiclicker.notify.players_skipped": "гравці не атакуються: увімкніть «Гравці» у фільтрі цілей",
   "multiclicker.notify.session_summary": "сесія %s:",
   "modmenu.summaryTranslation.multiclicker": "Автоклікер з помічниками для AFK-ферм, копання й рибалки.",
   "modmenu.descriptionTranslation.multiclicker": "Налаштовуваний автоклікер для атаки, використання й стрибка з помічниками для АФК-ферм, копання, ферми й риболовлі: фільтр цілей, добивання з «Здобиччю», автоїжа, розумна друга рука, автоінструмент, поповнення хотбара, автоферма, авториболовля, анти-АФК, аварійна зупинка, гарячі клавіші, профілі, якими можна ділитися, HUD і підсвічування цілі."

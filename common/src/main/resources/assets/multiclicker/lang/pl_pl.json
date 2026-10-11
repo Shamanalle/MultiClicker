@@ -488,6 +488,7 @@
   "multiclicker.notify.no_food": "głód, a w ekwipunku nie ma jedzenia",
   "multiclicker.notify.fish_caught": "coś złowiono (%s)",
   "multiclicker.notify.player_nearby": "gracz %s jest w pobliżu (%s bloków)",
+  "multiclicker.notify.players_skipped": "gracze nie są atakowani: włącz „Gracze” w filtrze celów",
   "multiclicker.notify.session_summary": "sesja %s:",
   "modmenu.summaryTranslation.multiclicker": "Autokliker z pomocnikami do farm AFK, kopania i wędkowania.",
   "modmenu.descriptionTranslation.multiclicker": "Konfigurowalny autoklikacz do ataku, użycia i skoku z pomocnikami do farm AFK, kopania, upraw i łowienia: filtr celów, cios kończący z Grabieżą, autojedzenie, inteligentna druga ręka, autonarzędzie, uzupełnianie paska, autofarma, autołowienie, anty-AFK, zatrzymanie awaryjne, skróty, profile do udostępniania, HUD i podświetlenie celu."

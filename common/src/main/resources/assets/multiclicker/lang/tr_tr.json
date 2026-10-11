@@ -488,6 +488,7 @@
   "multiclicker.notify.no_food": "açsın ama envanterde yemek yok",
   "multiclicker.notify.fish_caught": "bir şey tutuldu (%s)",
   "multiclicker.notify.player_nearby": "oyuncu %s yakında (%s blok)",
+  "multiclicker.notify.players_skipped": "oyunculara saldırılmıyor: hedef filtresinde \"Oyuncular\" seçeneğini açın",
   "multiclicker.notify.session_summary": "oturum %s:",
   "modmenu.summaryTranslation.multiclicker": "AFK çiftlikleri, kazı ve balıkçılık için yardımcılarla otomatik tıklayıcı.",
   "modmenu.descriptionTranslation.multiclicker": "Saldırı, kullanma ve zıplama için ayarlanabilir otomatik tıklayıcı; AFK çiftlikleri, kazı, tarım ve balıkçılık için yardımcılarla: hedef filtresi, Ganimet ile son vuruş, otomatik yemek, akıllı yan el, otomatik alet, çubuğu doldurma, otomatik çiftlik, otomatik balıkçılık, AFK önleme, güvenlik durdurma, kısayollar, paylaşılabilir profiller, HUD ve hedef vurgusu."
