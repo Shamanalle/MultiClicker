@@ -39,7 +39,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       entries: ${{ steps.list.outputs.entries }}
-      latest: ${{ steps.list.outputs.latest }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -57,27 +56,25 @@ jobs:
           entries = [e for e in json.load(sys.stdin) if not only or e["loader"] + ":" + e["label"] in only]
           if not entries:
               sys.exit("no jar matches: " + " ".join(only))
-          # The jars for the newest Minecraft version go in a job of their own that runs last, so the newest
-          # file in each store (the one CurseForge shows on the project page) is for that version, Fabric last.
-          key = lambda e: [int(p) for p in e["versions"].split()[-1].split(".")]
-          top = max(key(e) for e in entries)
-          print("entries=" + json.dumps([e for e in entries if key(e) != top]))
-          print("latest=" + json.dumps([e for e in entries if key(e) == top][::-1]))
+          # One at a time from the oldest Minecraft version to the newest (Fabric last for each), so a store lists
+          # its files newest version first and its newest file (the one CurseForge shows) is for the newest version.
+          loaders = ["forge", "neoforge", "fabric"]
+          entries.sort(key=lambda e: ([int(p) for p in e["versions"].split()[-1].split(".")], loaders.index(e["loader"])))
+          print("entries=" + json.dumps(entries))
           ' >> "$GITHUB_OUTPUT"
 
   upload:
     name: Upload ${{ matrix.loader }} ${{ matrix.label }} to Modrinth and CurseForge
     needs: entries
-    if: (vars.MODRINTH_ID != '' || vars.CURSEFORGE_ID != '') && needs.entries.outputs.entries != '[]'
+    if: vars.MODRINTH_ID != '' || vars.CURSEFORGE_ID != ''
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      max-parallel: 2
-      # One entry per release jar: its loader and the Minecraft versions it is for. The jars for the newest
-      # Minecraft version are left to upload-latest.
+      max-parallel: 1
+      # One entry per release jar: its loader and the Minecraft versions it is for.
       matrix:
         include: ${{ fromJSON(needs.entries.outputs.entries) }}
-    steps: &upload-steps
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -175,17 +172,3 @@ jobs:
         with:
           path: curseforge-uploaded
           key: curseforge-${{ steps.prep.outputs.number }}
-
-  # Runs after every other upload, even a failed one, so the newest file in each store is for the newest
-  # Minecraft version.
-  upload-latest:
-    name: Upload ${{ matrix.loader }} ${{ matrix.label }} to Modrinth and CurseForge
-    needs: [entries, upload]
-    if: always() && needs.entries.result == 'success' && (vars.MODRINTH_ID != '' || vars.CURSEFORGE_ID != '') && needs.entries.outputs.latest != '[]'
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      max-parallel: 1
-      matrix:
-        include: ${{ fromJSON(needs.entries.outputs.latest) }}
-    steps: *upload-steps
