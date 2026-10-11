@@ -2,7 +2,7 @@
 
 All notable changes to **MultiClicker** will be documented in this file. In Russian: [CHANGELOG.ru.md](CHANGELOG.ru.md).
 
-## [Unreleased]
+## [2.6.0] - 2026-10-11
 ### Added
 - A hint when the crosshair rests on a player for a second while players are off in the target filter (the
   default): it says once per start where to turn them on, instead of the clicker silently doing nothing.
