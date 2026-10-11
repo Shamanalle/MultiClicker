@@ -76,6 +76,7 @@ public class OffhandModule extends Module {
         ItemStack offhand = player.getOffhandItem();
         float health = player.getHealth() / player.getMaxHealth() * 100.0F;
         int hunger = player.getFoodData().getFoodLevel();
+        boolean keepRod = mod.autoFish().fishesWithOffhand(player);
 
         for (Want want : Want.values()) {
             if (!wants(want, player, offhand, health, hunger)) {
@@ -84,9 +85,9 @@ public class OffhandModule extends Module {
             if (want.matcher.test(offhand)) {
                 return; // The best item we want is already there.
             }
-            // Only an emergency totem may interrupt eating, blocking or drawing a bow, or happen
-            // while the player has the inventory open.
-            if (want != Want.TOTEM && (player.isUsingItem() || Screens.current(mc) != null)) {
+            // Only an emergency totem may interrupt eating, blocking or drawing a bow, take the place
+            // of the rod auto fish casts from the offhand, or happen while the player has the inventory open.
+            if (want != Want.TOTEM && (keepRod || player.isUsingItem() || Screens.current(mc) != null)) {
                 return;
             }
             // Auto eat eats from the hotbar: leave the food there for it.

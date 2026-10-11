@@ -8,6 +8,7 @@ import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
+import io.github.shamanalle.multiclicker.compat.Entities;
 import io.github.shamanalle.multiclicker.compat.Lookups;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
@@ -51,12 +52,23 @@ public class TargetFilterModule extends Module {
         return Kind.PASSIVE;
     }
 
+    /** Whether players are left alone because they are switched off here. */
+    public boolean skipsPlayers() {
+        return isEnabled() && !players.get();
+    }
+
     /** Whether the entity is something the player is allowed to auto-attack. */
     public boolean isValidTarget(Minecraft mc, Entity entity) {
+        // The crosshair finds a body part of the ender dragon, not the dragon itself.
+        entity = entity == null ? null : Entities.whole(entity);
         if (entity == null || entity == mc.player || !entity.isAlive() || !entity.isAttackable()) {
             return false;
         }
         if (entity instanceof LivingEntity living && living.isDeadOrDying()) {
+            return false;
+        }
+        // A player in creative mode takes no damage, but the hit still uses up the charge.
+        if (entity instanceof Player other && other.isCreative()) {
             return false;
         }
         if (!isEnabled()) {

@@ -72,8 +72,9 @@ Every option has a tooltip in the menu. Right-click a setting to reset it.
 - **Wait for full charge.** Attacks only when the weapon is charged, for full damage. Turn it off for
   1.8-style PvP.
 - **Targets.** Only allowed creatures, creatures and blocks (mining), or anything, even into the air.
-- **Pause while using items.** No attacks while you eat, drink, block or draw a bow.
-- **Looting finishing blow.** Predicts whether the next hit kills. If so, it switches to the hotbar
+- **Pause while using items.** No attacks while you eat, drink, block or draw a bow. Turned off, a raised shield is
+  lowered for a moment to land the hit.
+- **Looting finishing blow.** Predicts whether the next hit kills a mob. If so, it switches to the hotbar
   weapon with the best Looting, waits for it to charge, hits and switches back.
 - **Start delay**, **attack limit** and **time limit**: the mod turns itself off when they run out.
 - **Work in background.** The game keeps running when its window loses focus.
@@ -83,7 +84,8 @@ Every option has a tooltip in the menu. Right-click a setting to reset it.
 ### Target filter
 Players, hostile, neutral and passive mobs and other entities (boats, minecarts, armor stands, end
 crystals) are switched separately. On top of that: ignore babies, named mobs, pets and invisible
-mobs.
+mobs. Players in creative mode are never attacked: they take no damage. Players are off by default; when
+the crosshair rests on one, a notification says once where to turn them on.
 
 ### Survival
 - **Safety.** Stops the mod, or leaves the server, when your health drops to a threshold, when you
@@ -103,7 +105,8 @@ mobs.
   switch keep you on the spot; the slot switch also counts on servers that ignore swings and head turns.
 - **Auto walk.** Walks forward, optionally sprinting and jumping over obstacles.
 - **Auto farm.** Harvests ripe wheat, carrots, potatoes, beetroots, nether wart, cocoa and sweet berries
-  around you (or only under the crosshair) and plants them again from the offhand or the hotbar.
+  around you (or only under the crosshair) and plants them again from the offhand, the hotbar or the
+  inventory.
 - **Hotbar refill.** When the last item of a hotbar stack is used up, or a tool breaks, the same item
   comes in from the inventory; a stack can also be topped up before it runs out. The tool or weapon in
   your hand is swapped for a spare before it breaks, so a tool with Mending is kept.

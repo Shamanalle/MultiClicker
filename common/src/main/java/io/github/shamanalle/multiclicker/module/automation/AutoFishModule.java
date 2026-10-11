@@ -61,6 +61,11 @@ public class AutoFishModule extends Module {
         return isRunning() && mc.player != null && isHoldingRod(mc.player);
     }
 
+    /** Whether the rod in the offhand is the one fishing, so it has to stay there. */
+    public boolean fishesWithOffhand(LocalPlayer player) {
+        return isRunning() && !isRod(player.getMainHandItem()) && isRod(player.getOffhandItem());
+    }
+
     @Override
     public void start(Minecraft mc) {
         state = State.WAITING;
@@ -68,6 +73,13 @@ public class AutoFishModule extends Module {
         waitTicks = 0;
         castGrace = 0;
         catches = 0;
+    }
+
+    @Override
+    public void resume(Minecraft mc) {
+        int count = catches;
+        start(mc);
+        catches = count;
     }
 
     @Override

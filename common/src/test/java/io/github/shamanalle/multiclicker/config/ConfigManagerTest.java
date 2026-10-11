@@ -82,6 +82,19 @@ class ConfigManagerTest {
     }
 
     @Test
+    void settingsAProfileDoesNotKnowGoBackToTheirDefaults() throws IOException {
+        // Saved before the list existed: loading it must not keep the list of the previous setup.
+        Path profile = dir.resolve("multiclicker").resolve("profiles").resolve("Old.json");
+        Files.createDirectories(profile.getParent());
+        Files.writeString(profile, "{\"version\":3,\"modules\":{\"clicker\":{\"flag\":true}}}");
+
+        module.items.add("cobblestone");
+        assertTrue(config.loadProfile("Old"));
+        assertTrue(module.flag.get());
+        assertEquals(List.of(), module.items.get());
+    }
+
+    @Test
     void theActiveProfileIsRemembered() {
         config.saveProfile("Farm");
         config.save();

@@ -5,11 +5,15 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Entities;
 import io.github.shamanalle.multiclicker.compat.Screens;
+import io.github.shamanalle.multiclicker.mixin.MinecraftAccessor;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -17,12 +21,16 @@ import io.github.shamanalle.multiclicker.setting.EnumSetting;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
 import io.github.shamanalle.multiclicker.setting.Setting;
 import io.github.shamanalle.multiclicker.setting.Unit;
+import io.github.shamanalle.multiclicker.util.Input;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /** The auto clicker itself: attack, use and jump channels plus session limits. */
 public class ClickerModule extends Module {
+    /** A second on a player the filter skips before the hint explains it. */
+    private static final int SKIPPED_PLAYER_HINT_TICKS = 20;
+
     public enum AttackTarget {
         ENTITIES, ENTITIES_AND_BLOCKS, ANYTHING
     }
@@ -44,9 +52,15 @@ public class ClickerModule extends Module {
 
     private int startDelayLeft;
     private int attackCount;
+    /** Ticks the crosshair has stayed on a player the target filter leaves alone. */
+    private int skippedPlayerTicks;
     /** The player's own "pause on lost focus" option, restored when the clicker stops. */
     private Boolean savedPauseOnLostFocus;
     private final LootingSwap swap = new LootingSwap();
+    /** The use key was let go for one tick so the hit lands past the shield; it goes back next tick. */
+    private boolean shieldLowered;
+    /** Set by the attack channel this tick: the use key must stay up. */
+    private boolean lowerShieldNow;
 
     public ClickerModule() {
         super("clicker", Category.CLICKER, false, true);
@@ -95,12 +109,34 @@ public class ClickerModule extends Module {
         return isRunning() && attack.isHolding();
     }
 
+    /** True while the use key is held in hold mode (e.g. a shield raised for good). */
+    public boolean isHoldingUse() {
+        return isRunning() && use.isHolding();
+    }
+
     @Override
     public void start(Minecraft mc) {
         startDelayLeft = startDelay.get();
+        skippedPlayerTicks = 0;
         attackCount = 0;
         resetChannels(mc);
-        if (background.get() && savedPauseOnLostFocus == null) {
+        applyBackground(mc);
+    }
+
+    @Override
+    public void resume(Minecraft mc) {
+        int delayLeft = startDelayLeft;
+        int count = attackCount;
+        start(mc);
+        startDelayLeft = delayLeft;
+        attackCount = count;
+    }
+
+    /** Follows the "work in background" switch, also when it is flipped while the mod runs. */
+    private void applyBackground(Minecraft mc) {
+        if (!background.get()) {
+            restorePauseOnLostFocus(mc);
+        } else if (savedPauseOnLostFocus == null) {
             // Vanilla opens the pause menu when the window loses focus, which would stop every AFK task.
             savedPauseOnLostFocus = mc.options.pauseOnLostFocus;
             mc.options.pauseOnLostFocus = false;
@@ -122,6 +158,7 @@ public class ClickerModule extends Module {
     }
 
     private void resetChannels(Minecraft mc) {
+        raiseShield(mc);
         attack.reset(mc.options.keyAttack);
         use.reset(mc.options.keyUse);
         jump.reset(mc.options.keyJump);
@@ -131,6 +168,7 @@ public class ClickerModule extends Module {
     public void tick(Minecraft mc) {
         LocalPlayer player = mc.player;
         MultiClicker mod = MultiClicker.get();
+        applyBackground(mc);
         if (Screens.current(mc) != null || player.isDeadOrDying() || player.isSpectator()) {
             resetChannels(mc);
             if (swap.isActive()) {
@@ -147,44 +185,87 @@ public class ClickerModule extends Module {
         }
 
         boolean eating = mod.autoEat().isBusy();
+        raiseShield(mc);
+        lowerShieldNow = false;
 
+        // A channel switched off by its hotkey while running gives its key back, or it would stay held.
         if (attack.enabled.get()) {
             tickAttack(mc, player, mod, eating);
+        } else {
+            attack.reset(mc.options.keyAttack);
+            if (swap.isActive()) {
+                swap.restore(mc, player);
+            }
         }
-        if (use.enabled.get()) {
+        if (lowerShieldNow) {
+            // The shield stays down for this tick; the use channel picks the key up again next tick.
+            Input.forceUp(mc.options.keyUse);
+            shieldLowered = true;
+        } else if (mod.autoEat().holdsUseKey()) {
+            // Releasing the key now would stop the meal; auto eat gives it back when done.
+            use.handOver();
+        } else if (use.enabled.get()) {
             boolean allowed = !eating && !mod.autoFish().controlsUseKey();
             if (use.tick(mc.options.keyUse, allowed, true)) {
                 mod.stats().recordClick();
             }
+        } else {
+            use.reset(mc.options.keyUse);
         }
         if (jump.enabled.get()) {
             jump.tick(mc.options.keyJump, true, true);
+        } else {
+            jump.reset(mc.options.keyJump);
         }
     }
 
     private void tickAttack(Minecraft mc, LocalPlayer player, MultiClicker mod, boolean eating) {
         HitResult hit = mc.hitResult;
-        Entity target = hit instanceof EntityHitResult entityHit ? entityHit.getEntity() : null;
+        // The ender dragon is aimed at through its body parts.
+        Entity target = hit instanceof EntityHitResult entityHit ? Entities.whole(entityHit.getEntity()) : null;
         boolean validEntity = target != null && mod.targetFilter().isValidTarget(mc, target);
+        hintSkippedPlayer(mc, mod, target);
         boolean charged = player.getAttackStrengthScale(0.5F) >= 1.0F;
+        boolean onBlock = target == null && hit instanceof BlockHitResult && hit.getType() == HitResult.Type.BLOCK;
+        // With cooldown sync the delay starts counting once the weapon is charged, so it is added on
+        // top of the cooldown. Mining does not depend on the charge.
+        boolean countDown = !attackCooldown.get() || onBlock || charged;
+        // Vanilla drops attack clicks while an item is in use and for half a second after a click
+        // into the air. Of the items in use, only a shield may be lowered for the hit.
+        boolean inUse = player.isUsingItem();
+        boolean shieldInTheWay = inUse && !pauseWhileUsing.get() && player.getUseItem().is(Items.SHIELD);
+        boolean blocked = inUse || ((MinecraftAccessor) mc).multiclicker$getMissTime() > 0;
+        boolean paused = eating || inUse && !shieldInTheWay;
 
-        if (tickLootingSwap(mc, player, mod, eating, validEntity ? target : null)) {
+        if (tickLootingSwap(mc, player, mod, eating, paused, blocked, shieldInTheWay, countDown,
+                validEntity ? target : null)) {
             return;
         }
 
-        boolean allowed = !eating && !(pauseWhileUsing.get() && player.isUsingItem());
+        boolean allowed = !paused;
         if (allowed) {
             if (target != null) {
                 allowed = validEntity && (!attackCooldown.get() || charged);
-            } else if (hit instanceof BlockHitResult blockHit && hit.getType() == HitResult.Type.BLOCK) {
+                if (validEntity && mod.autoTool().giveWeaponBack(player)) {
+                    // A mining tool is in hand: the weapon comes back first and its charge starts over.
+                    allowed = false;
+                }
+            } else if (onBlock) {
                 allowed = attackTarget.get() != AttackTarget.ENTITIES
-                        && mod.mining().allowsBreaking(mc, blockHit.getBlockPos());
+                        && mod.mining().allowsBreaking(mc, ((BlockHitResult) hit).getBlockPos());
             } else {
-                allowed = attackTarget.get() == AttackTarget.ANYTHING;
+                // A swing into the air also uses up the charge, so it waits for it like a hit.
+                allowed = attackTarget.get() == AttackTarget.ANYTHING && (!attackCooldown.get() || charged);
             }
         }
-        // With cooldown sync, the random delay starts counting once the weapon is charged.
-        boolean countDown = !attackCooldown.get() || target == null || charged;
+        if (allowed && blocked) {
+            // The click would be dropped: let the delay run and, past a shield, lower it so the
+            // hit lands on the next tick.
+            if (attack.waitTick(mc.options.keyAttack, countDown) && shieldInTheWay && validEntity) {
+                lowerShieldNow = true;
+            }
+            return;
+        }
 
         if (attack.tick(mc.options.keyAttack, allowed, countDown)) {
             attackCount++;
@@ -196,29 +277,59 @@ public class ClickerModule extends Module {
     }
 
     /**
-     * Runs the Looting finishing-blow logic.
+     * Runs the Looting finishing-blow logic. The blow keeps the rhythm of the attack channel: it
+     * waits for the same delay, and the next click waits for it again.
      *
      * @return {@code true} if it handled the attack key this tick
      */
     private boolean tickLootingSwap(Minecraft mc, LocalPlayer player, MultiClicker mod, boolean eating,
+                                    boolean paused, boolean blocked, boolean shieldInTheWay, boolean countDown,
                                     Entity validTarget) {
         if (!swap.isActive()) {
-            boolean canStart = lootingSwap.get() && !eating && validTarget instanceof LivingEntity living
-                    && !(pauseWhileUsing.get() && player.isUsingItem())
-                    && swap.tryStart(mc, player, living);
+            // Players drop their inventory whatever the weapon, so Looting does nothing on them.
+            boolean canStart = lootingSwap.get() && !paused && validTarget instanceof LivingEntity living
+                    && !(living instanceof Player) && swap.tryStart(mc, player, living);
             if (!canStart) {
                 return false;
             }
-            attack.reset(mc.options.keyAttack);
+            attack.release(mc.options.keyAttack);
             return true;
         }
-        LootingSwap.Result result = swap.tick(mc, player, eating);
+        boolean due = attack.waitTick(mc.options.keyAttack, countDown);
+        if (due && blocked && shieldInTheWay && !paused && swap.readyToHit(mc, player)) {
+            lowerShieldNow = true;
+        }
+        LootingSwap.Result result = swap.tick(mc, player, eating, due, blocked);
         if (result == LootingSwap.Result.ATTACKED) {
+            attack.clicked();
             attackCount++;
             mod.stats().recordClick();
-            mod.stats().recordAttack(validTarget != null ? validTarget : ((EntityHitResult) mc.hitResult).getEntity());
+            mod.stats().recordAttack(validTarget != null ? validTarget
+                    : Entities.whole(((EntityHitResult) mc.hitResult).getEntity()));
         }
         return result != LootingSwap.Result.IDLE;
+    }
+
+    /**
+     * Players are off in the target filter by default, so aiming at one does nothing. Once the
+     * crosshair has rested on a player for a second, says why (once per start of the mod).
+     */
+    private void hintSkippedPlayer(Minecraft mc, MultiClicker mod, Entity target) {
+        if (target instanceof Player other && !other.isCreative() && mod.targetFilter().skipsPlayers()) {
+            if (++skippedPlayerTicks == SKIPPED_PLAYER_HINT_TICKS) {
+                mod.notifications().playersSkipped(mc);
+            }
+        } else {
+            skippedPlayerTicks = 0;
+        }
+    }
+
+    /** Gives the use key back after it was let go for a hit past the shield. */
+    private void raiseShield(Minecraft mc) {
+        if (shieldLowered) {
+            shieldLowered = false;
+            Input.release(mc.options.keyUse);
+        }
     }
 
     /** Stops the mod once a configured limit is reached. */

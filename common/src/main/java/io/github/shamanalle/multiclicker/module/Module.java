@@ -94,6 +94,14 @@ public abstract class Module {
     public void start(Minecraft mc) {
     }
 
+    /**
+     * Started again after a profile or preset changed the settings while the mod runs. Keeps what
+     * the session counted so far (limits, HUD counters); by default the same as {@link #start}.
+     */
+    public void resume(Minecraft mc) {
+        start(mc);
+    }
+
     public void tick(Minecraft mc) {
     }
 

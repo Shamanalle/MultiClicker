@@ -344,23 +344,31 @@ public final class MultiClicker {
             change.run();
             return;
         }
+        List<Module> wereRunning = modules.stream().filter(Module::isEnabled).toList();
         forEachEnabled(mc, false);
         active = false;
         try {
             change.run();
         } finally {
             active = true;
-            forEachEnabled(mc, true);
+            forEachEnabled(mc, true, wereRunning);
         }
     }
 
     private void forEachEnabled(Minecraft mc, boolean start) {
+        forEachEnabled(mc, start, List.of());
+    }
+
+    /** @param resumed modules that ran before a restart: they keep the counts of the session */
+    private void forEachEnabled(Minecraft mc, boolean start, List<Module> resumed) {
         for (Module module : modules) {
             if (!module.isEnabled()) {
                 continue;
             }
             try {
-                if (start) {
+                if (start && resumed.contains(module)) {
+                    module.resume(mc);
+                } else if (start) {
                     module.start(mc);
                 } else {
                     module.stop(mc);

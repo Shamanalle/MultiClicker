@@ -186,13 +186,33 @@ public final class ConfigManager {
         String clean = sanitizeName(name);
         Path path = profilePath(clean);
         JsonObject root = Files.exists(path) ? read(path) : null;
-        if (root == null) {
+        if (root == null || !root.has("modules") || !root.get("modules").isJsonObject()) {
             return false;
         }
         ConfigMigrations.migrate(root);
+        resetProfileSettings();
         apply(root, true);
         activeProfile = clean;
         return true;
+    }
+
+    /**
+     * Puts what a profile stores back to the defaults before one is loaded, so a setting the
+     * profile does not know (one added after it was saved) does not keep the previous setup's value.
+     */
+    private void resetProfileSettings() {
+        applying = true;
+        try {
+            for (Module module : modules) {
+                for (Setting<?> setting : module.settings()) {
+                    if (!setting.isGlobal()) {
+                        setting.reset();
+                    }
+                }
+            }
+        } finally {
+            applying = false;
+        }
     }
 
     public void deleteProfile(String name) {

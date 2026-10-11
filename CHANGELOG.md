@@ -2,6 +2,48 @@
 
 All notable changes to **MultiClicker** will be documented in this file. In Russian: [CHANGELOG.ru.md](CHANGELOG.ru.md).
 
+## [Unreleased]
+### Added
+- A hint when the crosshair rests on a player for a second while players are off in the target filter (the
+  default): it says once per start where to turn them on, instead of the clicker silently doing nothing.
+### Changed
+- **Pause while using items** turned off now lowers a raised shield for one tick to land the hit when the weapon
+  is charged, and raises it again. While eating, drinking or drawing a bow the attack waits: the game drops
+  attacks then anyway.
+- Auto farm also replants from seeds in the main inventory: they are swapped into the hand for the planting and
+  back again.
+### Fixed
+- A clicker channel (attack, use or jump) switched off by its hotkey while the mod was on kept its key held,
+  and a Looting weapon swap in progress stayed stuck, which also held up auto eat, hotbar refill, auto farm and
+  auto tool.
+- Auto eat could not finish a meal while the use clicker was on: the clicker let go of the use key on the
+  tick the meal started. With the use clicker clicking every tick (and with the default 4 ticks) it never ate.
+- Auto eat now eats while the use clicker holds a shield up in hold mode instead of waiting forever.
+- The offhand module no longer swaps out the fishing rod auto fish uses from the offhand (only an emergency
+  totem still does).
+- Mining stopped at a worn tool even with auto tool on and another good tool in the hotbar; auto tool now
+  takes the other tool.
+- Loading a profile saved by an older version reset nothing it did not mention: settings added since kept
+  the values of the previous setup. They now go back to their defaults.
+- Clicks the game drops were counted as attacks and used up the click delay: attacks while an item is in use
+  (with "Pause while using items" off) and in the half second the game ignores attacks after a swing into the
+  air. They inflated the statistics and brought the attack limit closer.
+- With "Wait for full charge", a swing into the air ("Targets: anything") no longer comes before the weapon is
+  charged (it also uses up the charge), and the click delay counts from the charge as it does for creatures.
+- The Looting finishing blow ignored the click interval and the random delay, and the next click came right
+  after it. It now keeps the rhythm of the attack channel, and a long interval no longer makes it give up.
+- With auto tool, a creature in the crosshair was hit with the pickaxe until the tool switched back after half a
+  second; the weapon now comes back first.
+- The ender dragon could not be attacked or highlighted: the crosshair finds its body parts, which the target
+  filter treated as "other". The dragon now counts as hostile.
+- Players in creative mode are no longer attacked: they take no damage, and every hit used up the charge.
+- The Looting finishing blow no longer switches weapons against players: Looting does not change what a player
+  drops, and the swap took the weapon chosen for the fight out of the hand.
+- Hotbar refill no longer brings back items the inventory cleaner throws out of the hotbar.
+- Switching "Work in background" while the mod runs takes effect at once instead of at the next start.
+- Loading a profile with its hotkey or for a server while the mod runs reset the attack and catch limits, the
+  start delay and the counters in the HUD; they now go on.
+
 ## [2.5.0] - 2026-10-10
 ### Changed
 - **Fewer files.** Minecraft versions the mod builds into the same code for share one jar: 1.19 – 1.19.2,

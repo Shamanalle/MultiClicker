@@ -29,6 +29,11 @@ public class InventoryCleanerModule extends Module {
         super("inventory_cleaner", Category.AUTOMATION, true, false);
     }
 
+    /** Whether this stack would be thrown away from the hotbar, so it is not worth refilling. */
+    public boolean throwsAwayFromHotbar(ItemStack stack) {
+        return isRunning() && !keepHotbar.get() && !stack.isEmpty() && items.contains(stack.getItem());
+    }
+
     @Override
     public void tick(Minecraft mc) {
         if (cooldown > 0) {

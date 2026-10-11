@@ -8,6 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
+import io.github.shamanalle.multiclicker.compat.Entities;
 import io.github.shamanalle.multiclicker.compat.Enchants;
 import io.github.shamanalle.multiclicker.compat.Lookups;
 import io.github.shamanalle.multiclicker.compat.Slots;
@@ -40,7 +41,10 @@ final class LootingSwap {
         IDLE, CHARGING, RESTORE
     }
 
-    /** Give up if the weapon is not charged or the target is not in the crosshair by then. */
+    /**
+     * Give up if the weapon is not charged or the target is not in the crosshair by then. Counted
+     * once the delay of the attack channel is up, so a long click interval does not run it out.
+     */
     private static final int TIMEOUT = 40;
     /** After a swap that did not land a hit, skip this many attempts so slots do not flicker. */
     private static final int RETRY_DELAY = 20;
@@ -103,7 +107,19 @@ final class LootingSwap {
         return true;
     }
 
-    Result tick(Minecraft mc, LocalPlayer player, boolean suppressed) {
+    /** True when the next tick would hit: the target is in the crosshair and the weapon is charged. */
+    boolean readyToHit(Minecraft mc, LocalPlayer player) {
+        return state == State.CHARGING && Slots.selected(player.getInventory()) == lootingSlot
+                && mc.hitResult instanceof EntityHitResult hit && Entities.whole(hit.getEntity()).getId() == targetId
+                && player.getAttackStrengthScale(0.5F) >= 1.0F;
+    }
+
+    /**
+     * @param suppressed give up (auto eat needs the hotbar)
+     * @param due        the delay of the attack channel is up
+     * @param blocked    a click would not land now (an item in use, vanilla's pause after a miss)
+     */
+    Result tick(Minecraft mc, LocalPlayer player, boolean suppressed, boolean due, boolean blocked) {
         switch (state) {
             case CHARGING -> {
                 // The player scrolled to another slot: respect that and stop without switching back.
@@ -113,13 +129,13 @@ final class LootingSwap {
                 }
                 Entity target = mc.level.getEntity(targetId);
                 boolean targetGone = !(target instanceof LivingEntity living) || !living.isAlive() || living.isDeadOrDying();
-                if (targetGone || suppressed || ++timer > TIMEOUT) {
+                if (targetGone || suppressed || due && ++timer > TIMEOUT) {
                     retryDelay = targetGone ? 0 : RETRY_DELAY;
                     state = State.RESTORE;
                     return Result.BUSY;
                 }
-                boolean inCrosshair = mc.hitResult instanceof EntityHitResult hit && hit.getEntity() == target;
-                if (inCrosshair && player.getAttackStrengthScale(0.5F) >= 1.0F) {
+                boolean inCrosshair = mc.hitResult instanceof EntityHitResult hit && Entities.whole(hit.getEntity()) == target;
+                if (due && !blocked && inCrosshair && player.getAttackStrengthScale(0.5F) >= 1.0F) {
                     Input.click(mc.options.keyAttack);
                     pressed = true;
                     state = State.RESTORE;

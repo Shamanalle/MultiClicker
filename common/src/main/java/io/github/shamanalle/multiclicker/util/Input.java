@@ -57,6 +57,11 @@ public final class Input {
         }
     }
 
+    /** Lets go of a key for now even if the player holds it; {@link #release} gives it back. */
+    public static void forceUp(KeyMapping mapping) {
+        ((KeyMappingAccessor) mapping).multiclicker$setDown(false);
+    }
+
     private static boolean isToggleMode(KeyMapping mapping) {
         return mapping instanceof ToggleKeyMapping
                 && ((ToggleKeyMappingAccessor) mapping).multiclicker$getNeedsToggle().getAsBoolean();

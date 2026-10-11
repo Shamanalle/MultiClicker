@@ -61,6 +61,13 @@ public class HotbarRefillModule extends Module {
     }
 
     @Override
+    public void resume(Minecraft mc) {
+        int count = refills;
+        start(mc);
+        refills = count;
+    }
+
+    @Override
     public void tick(Minecraft mc) {
         LocalPlayer player = mc.player;
         MultiClicker mod = MultiClicker.get();
@@ -110,7 +117,8 @@ public class HotbarRefillModule extends Module {
         for (int slot = 0; slot < Inventories.HOTBAR_SIZE; slot++) {
             ItemStack before = last[slot];
             ItemStack now = inventory.getItem(slot);
-            if (before.isEmpty()) {
+            if (before.isEmpty() || MultiClicker.get().inventoryCleaner().throwsAwayFromHotbar(before)) {
+                // The inventory cleaner would throw the refill away again.
                 continue;
             }
             if (now.isEmpty()) {
