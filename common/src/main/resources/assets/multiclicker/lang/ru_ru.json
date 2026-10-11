@@ -96,7 +96,7 @@
   "multiclicker.module.target_filter": "Фильтр целей",
   "multiclicker.module.target_filter.desc": "Каких существ разрешено атаковать кликеру",
   "multiclicker.module.target_filter.players": "Игроки",
-  "multiclicker.module.target_filter.players.desc": "Атаковать других игроков.",
+  "multiclicker.module.target_filter.players.desc": "Атаковать других игроков (кроме тех, кто в творческом режиме).",
   "multiclicker.module.target_filter.hostile": "Враждебные мобы",
   "multiclicker.module.target_filter.hostile.desc": "Зомби, скелеты, криперы, слизни, ифриты…",
   "multiclicker.module.target_filter.neutral": "Нейтральные мобы",

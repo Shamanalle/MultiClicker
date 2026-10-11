@@ -96,7 +96,7 @@
   "multiclicker.module.target_filter": "Фільтр цілей",
   "multiclicker.module.target_filter.desc": "Яких істот дозволено атакувати клікеру",
   "multiclicker.module.target_filter.players": "Гравці",
-  "multiclicker.module.target_filter.players.desc": "Атакувати інших гравців.",
+  "multiclicker.module.target_filter.players.desc": "Атакувати інших гравців (крім тих, хто у творчому режимі).",
   "multiclicker.module.target_filter.hostile": "Ворожі моби",
   "multiclicker.module.target_filter.hostile.desc": "Зомбі, скелети, кріпери, слимаки, пломені…",
   "multiclicker.module.target_filter.neutral": "Нейтральні моби",

@@ -96,7 +96,7 @@
   "multiclicker.module.target_filter": "Filtro bersagli",
   "multiclicker.module.target_filter.desc": "Quali creature il clicker può attaccare",
   "multiclicker.module.target_filter.players": "Giocatori",
-  "multiclicker.module.target_filter.players.desc": "Attacca gli altri giocatori.",
+  "multiclicker.module.target_filter.players.desc": "Attacca gli altri giocatori (non quelli in modalità creativa).",
   "multiclicker.module.target_filter.hostile": "Creature ostili",
   "multiclicker.module.target_filter.hostile.desc": "Zombi, scheletri, creeper, gelatine, blaze…",
   "multiclicker.module.target_filter.neutral": "Creature neutrali",

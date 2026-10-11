@@ -33,6 +33,9 @@ All notable changes to **MultiClicker** will be documented in this file. In Russ
   second; the weapon now comes back first.
 - The ender dragon could not be attacked or highlighted: the crosshair finds its body parts, which the target
   filter treated as "other". The dragon now counts as hostile.
+- Players in creative mode are no longer attacked: they take no damage, and every hit used up the charge.
+- The Looting finishing blow no longer switches weapons against players: Looting does not change what a player
+  drops, and the swap took the weapon chosen for the fight out of the hand.
 - Hotbar refill no longer brings back items the inventory cleaner throws out of the hotbar.
 - Switching "Work in background" while the mod runs takes effect at once instead of at the next start.
 - Loading a profile with its hotkey or for a server while the mod runs reset the attack and catch limits, the

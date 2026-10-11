@@ -96,7 +96,7 @@
   "multiclicker.module.target_filter": "대상 필터",
   "multiclicker.module.target_filter.desc": "클리커가 공격해도 되는 몹",
   "multiclicker.module.target_filter.players": "플레이어",
-  "multiclicker.module.target_filter.players.desc": "다른 플레이어를 공격합니다.",
+  "multiclicker.module.target_filter.players.desc": "다른 플레이어를 공격합니다(크리에이티브 모드 플레이어 제외).",
   "multiclicker.module.target_filter.hostile": "적대적 몹",
   "multiclicker.module.target_filter.hostile.desc": "좀비, 스켈레톤, 크리퍼, 슬라임, 블레이즈…",
   "multiclicker.module.target_filter.neutral": "중립적 몹",

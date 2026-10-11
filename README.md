@@ -74,7 +74,7 @@ Every option has a tooltip in the menu. Right-click a setting to reset it.
 - **Targets.** Only allowed creatures, creatures and blocks (mining), or anything, even into the air.
 - **Pause while using items.** No attacks while you eat, drink, block or draw a bow. Turned off, a raised shield is
   lowered for a moment to land the hit.
-- **Looting finishing blow.** Predicts whether the next hit kills. If so, it switches to the hotbar
+- **Looting finishing blow.** Predicts whether the next hit kills a mob. If so, it switches to the hotbar
   weapon with the best Looting, waits for it to charge, hits and switches back.
 - **Start delay**, **attack limit** and **time limit**: the mod turns itself off when they run out.
 - **Work in background.** The game keeps running when its window loses focus.
@@ -84,7 +84,7 @@ Every option has a tooltip in the menu. Right-click a setting to reset it.
 ### Target filter
 Players, hostile, neutral and passive mobs and other entities (boats, minecarts, armor stands, end
 crystals) are switched separately. On top of that: ignore babies, named mobs, pets and invisible
-mobs.
+mobs. Players in creative mode are never attacked: they take no damage.
 
 ### Survival
 - **Safety.** Stops the mod, or leaves the server, when your health drops to a threshold, when you

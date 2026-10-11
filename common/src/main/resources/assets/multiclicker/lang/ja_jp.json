@@ -96,7 +96,7 @@
   "multiclicker.module.target_filter": "ターゲットフィルター",
   "multiclicker.module.target_filter.desc": "クリッカーが攻撃してよいMob",
   "multiclicker.module.target_filter.players": "プレイヤー",
-  "multiclicker.module.target_filter.players.desc": "他のプレイヤーを攻撃します。",
+  "multiclicker.module.target_filter.players.desc": "他のプレイヤーを攻撃します（クリエイティブモードのプレイヤーを除く）。",
   "multiclicker.module.target_filter.hostile": "敵対的Mob",
   "multiclicker.module.target_filter.hostile.desc": "ゾンビ、スケルトン、クリーパー、スライム、ブレイズ…",
   "multiclicker.module.target_filter.neutral": "中立的Mob",

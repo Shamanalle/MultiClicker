@@ -5,6 +5,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -278,8 +279,9 @@ public class ClickerModule extends Module {
                                     boolean paused, boolean blocked, boolean shieldInTheWay, boolean countDown,
                                     Entity validTarget) {
         if (!swap.isActive()) {
+            // Players drop their inventory whatever the weapon, so Looting does nothing on them.
             boolean canStart = lootingSwap.get() && !paused && validTarget instanceof LivingEntity living
-                    && swap.tryStart(mc, player, living);
+                    && !(living instanceof Player) && swap.tryStart(mc, player, living);
             if (!canStart) {
                 return false;
             }

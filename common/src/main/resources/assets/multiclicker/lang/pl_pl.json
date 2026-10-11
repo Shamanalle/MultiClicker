@@ -96,7 +96,7 @@
   "multiclicker.module.target_filter": "Filtr celów",
   "multiclicker.module.target_filter.desc": "Które stworzenia kliker może atakować",
   "multiclicker.module.target_filter.players": "Gracze",
-  "multiclicker.module.target_filter.players.desc": "Atakuj innych graczy.",
+  "multiclicker.module.target_filter.players.desc": "Atakuj innych graczy (poza tymi w trybie kreatywnym).",
   "multiclicker.module.target_filter.hostile": "Wrogie stworzenia",
   "multiclicker.module.target_filter.hostile.desc": "Zombie, szkielety, creepery, szlamy, płomyki…",
   "multiclicker.module.target_filter.neutral": "Neutralne stworzenia",

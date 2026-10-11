@@ -96,7 +96,7 @@
   "multiclicker.module.target_filter": "Target Filter",
   "multiclicker.module.target_filter.desc": "Which creatures the clicker is allowed to attack",
   "multiclicker.module.target_filter.players": "Players",
-  "multiclicker.module.target_filter.players.desc": "Attack other players.",
+  "multiclicker.module.target_filter.players.desc": "Attack other players (not those in creative mode).",
   "multiclicker.module.target_filter.hostile": "Hostile mobs",
   "multiclicker.module.target_filter.hostile.desc": "Zombies, skeletons, creepers, slimes, blazes…",
   "multiclicker.module.target_filter.neutral": "Neutral mobs",

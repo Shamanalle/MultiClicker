@@ -62,6 +62,10 @@ public class TargetFilterModule extends Module {
         if (entity instanceof LivingEntity living && living.isDeadOrDying()) {
             return false;
         }
+        // A player in creative mode takes no damage, but the hit still uses up the charge.
+        if (entity instanceof Player other && other.isCreative()) {
+            return false;
+        }
         if (!isEnabled()) {
             // Without the filter, attack every living creature but never decorations.
             return entity instanceof Mob || entity instanceof Player;

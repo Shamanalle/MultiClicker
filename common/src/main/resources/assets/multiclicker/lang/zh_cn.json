@@ -96,7 +96,7 @@
   "multiclicker.module.target_filter": "目标过滤",
   "multiclicker.module.target_filter.desc": "连点器允许攻击哪些生物",
   "multiclicker.module.target_filter.players": "玩家",
-  "multiclicker.module.target_filter.players.desc": "攻击其他玩家。",
+  "multiclicker.module.target_filter.players.desc": "攻击其他玩家（创造模式的玩家除外）。",
   "multiclicker.module.target_filter.hostile": "敌对生物",
   "multiclicker.module.target_filter.hostile.desc": "僵尸、骷髅、苦力怕、史莱姆、烈焰人……",
   "multiclicker.module.target_filter.neutral": "中立生物",

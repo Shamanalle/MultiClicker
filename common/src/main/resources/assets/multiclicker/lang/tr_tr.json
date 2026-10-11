@@ -96,7 +96,7 @@
   "multiclicker.module.target_filter": "Hedef filtresi",
   "multiclicker.module.target_filter.desc": "Tıklayıcının hangi canlılara saldırabileceği",
   "multiclicker.module.target_filter.players": "Oyuncular",
-  "multiclicker.module.target_filter.players.desc": "Diğer oyunculara saldır.",
+  "multiclicker.module.target_filter.players.desc": "Diğer oyunculara saldır (yaratıcı moddakiler hariç).",
   "multiclicker.module.target_filter.hostile": "Düşman canlılar",
   "multiclicker.module.target_filter.hostile.desc": "Zombiler, iskeletler, creeper'lar, balçıklar, blaze'ler…",
   "multiclicker.module.target_filter.neutral": "Nötr canlılar",
