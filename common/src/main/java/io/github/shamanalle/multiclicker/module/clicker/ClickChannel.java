@@ -136,6 +136,39 @@ public final class ClickChannel {
         return false;
     }
 
+    /**
+     * Lets the delay run without clicking, while another part of the clicker makes the hit (the
+     * Looting finishing blow, a hit that first lowers the shield).
+     *
+     * @return {@code true} once the next click is due
+     */
+    boolean waitTick(KeyMapping key, boolean countDown) {
+        if (down) {
+            Input.release(key);
+            down = false;
+        }
+        if (countDown) {
+            timer.tick();
+        }
+        return timer.ready();
+    }
+
+    /** Another part of the clicker clicked: the next click waits the usual delay. */
+    void clicked() {
+        if (mode.get() == Mode.CLICK) {
+            timer.restart(clickInterval() + randomDelay());
+        }
+    }
+
+    /** Lets go of the key but keeps the delay running (the hit is handed to another part). */
+    void release(KeyMapping key) {
+        if (down) {
+            Input.release(key);
+        }
+        down = false;
+        holdLeft = 0;
+    }
+
     /** Ticks between two clicks without the random delay; fractional in CPS mode. */
     public double clickInterval() {
         return rate.get() == Rate.CPS ? 20.0 / cps.get() : interval.get();

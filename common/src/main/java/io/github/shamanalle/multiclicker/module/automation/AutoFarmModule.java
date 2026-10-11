@@ -67,6 +67,13 @@ public class AutoFarmModule extends Module {
     }
 
     @Override
+    public void resume(Minecraft mc) {
+        int count = harvested;
+        start(mc);
+        harvested = count;
+    }
+
+    @Override
     public void stop(Minecraft mc) {
         replantPos = null;
     }
@@ -179,8 +186,8 @@ public class AutoFarmModule extends Module {
     }
 
     /**
-     * Plants the seed where the crop was: from the offhand, or from the hotbar, switching back to
-     * the slot in use right after.
+     * Plants the seed where the crop was: from the offhand, from the hotbar (switching back to the
+     * slot in use right after) or from the main inventory (swapped into the hand and back again).
      *
      * @return whether it acted this tick
      */
@@ -195,25 +202,35 @@ public class AutoFarmModule extends Module {
         }
         InteractionHand hand;
         int previous = -1;
+        int borrowed = -1;
+        int selected = Slots.selected(player.getInventory());
         if (player.getOffhandItem().is(replantSeed)) {
             hand = InteractionHand.OFF_HAND;
         } else {
-            int slot = findHotbar(player, replantSeed);
-            if (slot == -1) {
-                replantPos = null;
-                return false;
-            }
             hand = InteractionHand.MAIN_HAND;
-            int selected = Slots.selected(player.getInventory());
-            if (slot != selected) {
-                previous = selected;
-                Inventories.selectSlot(player, slot);
+            int slot = findHotbar(player, replantSeed);
+            if (slot != -1) {
+                if (slot != selected) {
+                    previous = selected;
+                    Inventories.selectSlot(player, slot);
+                }
+            } else {
+                borrowed = findMain(player, replantSeed);
+                if (borrowed == -1 || !Inventories.canClickInventory(mc)) {
+                    replantPos = null;
+                    return false;
+                }
+                // The held item goes back in the same tick, so its attack charge is kept.
+                Inventories.swapWithHotbar(mc, borrowed, selected);
             }
         }
         BlockPos soil = pos.below();
         mc.gameMode.useItemOn(player, hand, new BlockHitResult(Vec3.atCenterOf(soil).add(0, 0.5, 0), Direction.UP, soil, false));
         if (previous != -1) {
             Inventories.selectSlot(player, previous);
+        }
+        if (borrowed != -1) {
+            Inventories.swapWithHotbar(mc, borrowed, selected);
         }
         replantPos = null;
         return true;
@@ -223,6 +240,15 @@ public class AutoFarmModule extends Module {
         for (int slot = 0; slot < Inventories.HOTBAR_SIZE; slot++) {
             ItemStack stack = player.getInventory().getItem(slot);
             if (stack.is(item)) {
+                return slot;
+            }
+        }
+        return -1;
+    }
+
+    private static int findMain(LocalPlayer player, Item item) {
+        for (int slot = Inventories.HOTBAR_SIZE; slot < Inventories.MAIN_SIZE; slot++) {
+            if (player.getInventory().getItem(slot).is(item)) {
                 return slot;
             }
         }

@@ -5,6 +5,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.EntityHitResult;
 import org.jetbrains.annotations.Nullable;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Entities;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -35,7 +36,7 @@ public class HighlightModule extends Module {
             return null;
         }
         if (mc.hitResult instanceof EntityHitResult hit && mod.targetFilter().isValidTarget(mc, hit.getEntity())) {
-            return hit.getEntity();
+            return Entities.whole(hit.getEntity());
         }
         return null;
     }
@@ -46,7 +47,7 @@ public class HighlightModule extends Module {
             return false;
         }
         Minecraft mc = Minecraft.getInstance();
-        if (!(mc.hitResult instanceof EntityHitResult hit) || hit.getEntity() != entity) {
+        if (!(mc.hitResult instanceof EntityHitResult hit) || Entities.whole(hit.getEntity()) != entity) {
             return false;
         }
         return target(mc) == entity;

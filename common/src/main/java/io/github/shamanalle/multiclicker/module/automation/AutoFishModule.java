@@ -76,6 +76,13 @@ public class AutoFishModule extends Module {
     }
 
     @Override
+    public void resume(Minecraft mc) {
+        int count = catches;
+        start(mc);
+        catches = count;
+    }
+
+    @Override
     public void stop(Minecraft mc) {
         state = State.WAITING;
     }

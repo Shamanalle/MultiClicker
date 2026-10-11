@@ -77,6 +77,16 @@ public class AutoToolModule extends Module {
         }
     }
 
+    /**
+     * The clicker is about to hit a creature while a mining tool is in hand: the weapon comes back
+     * now instead of after the usual delay.
+     *
+     * @return {@code true} if the slot changed
+     */
+    public boolean giveWeaponBack(LocalPlayer player) {
+        return isToolSelected() && previousSlot != -1 && restore(player);
+    }
+
     /** Whether the held tool, too worn for mining, is swapped for another one for this block. */
     public boolean replacesWornTool(Minecraft mc, BlockState state) {
         return isRunning() && findBestTool(mc, state) != -1;
@@ -91,13 +101,15 @@ public class AutoToolModule extends Module {
         toolSlot = -1;
     }
 
-    private void restore(LocalPlayer player) {
-        if (previousSlot != -1 && Slots.selected(player.getInventory()) == toolSlot) {
+    private boolean restore(LocalPlayer player) {
+        boolean switched = previousSlot != -1 && Slots.selected(player.getInventory()) == toolSlot;
+        if (switched) {
             Inventories.selectSlot(player, previousSlot);
         }
         previousSlot = -1;
         toolSlot = -1;
         idleTicks = 0;
+        return switched;
     }
 
     private int findBestTool(Minecraft mc, BlockState state) {
