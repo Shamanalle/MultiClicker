@@ -1,0 +1,61 @@
+// Forge for Minecraft 26.1 and newer, built with ForgeGradle. The game is not obfuscated, so the classes of the
+// common module (compiled by Fabric Loom against the same Minecraft names) go into the jar as they are.
+evaluationDependsOn(':common')
+
+def commonOutput = project(':common').sourceSets.main.output
+
+repositories {
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+    mavenCentral()
+}
+
+minecraft {
+    runs {
+        register('client') {
+            workingDir = layout.projectDirectory.dir('run')
+        }
+    }
+}
+
+dependencies {
+    implementation minecraft.dependency("net.minecraftforge:forge:$rootProject.forge_version")
+    implementation files(commonOutput)
+}
+
+// The Minecraft versions this jar is released for (versions/shared-jars.txt).
+def releasedFor = rootProject.releasedFor('forge')
+
+processResources {
+    def minecraftRange = releasedFor.versions.size() == 1 ? "[${releasedFor.versions[0]}]"
+            : "[${releasedFor.versions.first()},${releasedFor.versions.last()}]"
+    // A jar released for several versions accepts the Forge of the oldest of them.
+    def oldest = new Properties()
+    rootProject.file("versions/${releasedFor.versions[0]}.properties").withInputStream { oldest.load(it) }
+    def loaderRange = "[${oldest.getProperty('forge_version').split('-')[1].split('\\.')[0]},)"
+    inputs.property 'version', project.version
+    inputs.property 'minecraft_range', minecraftRange
+    inputs.property 'loader_range', loaderRange
+
+    // See packMetadata in the root build file.
+    def packMetadata = rootProject.packMetadata(releasedFor.versions)
+    inputs.property 'pack_metadata', packMetadata
+    doLast { new File(destinationDir, 'pack.mcmeta').text = packMetadata }
+
+    filesMatching('META-INF/mods.toml') {
+        expand version: project.version, minecraft_range: minecraftRange,
+                loader_range: loaderRange,
+                loader: 'forge',
+                display_test: 'displayTest = "IGNORE_ALL_VERSION"',
+                mixins: ''
+    }
+}
+
+jar {
+    // The common module is part of the mod jar; Forge finds its mixins through the manifest.
+    from commonOutput
+    manifest.attributes('MixinConfigs': 'multiclicker.mixins.json')
+    // MultiClicker-forge-<mod version>+<minecraft version>.jar, or +<oldest>-<newest> for a shared jar
+    archiveVersion = "${rootProject.mod_version}+${releasedFor.label}"
+}

@@ -3,10 +3,8 @@ plugins {
 }
 
 // NeoForge for Minecraft 1.20.2 and newer. For 1.20.1 NeoForge is a fork of Forge 47 (net.neoforged:forge)
-// with the Forge API, so the jar is built as a Forge mod. Versions that name a forge_version (1.19 to 1.20)
-// get a Forge jar built against Forge itself.
+// with the Forge API, so the jar is built as a Forge mod. The Forge jars are built by the forge module.
 def legacyForge = rootProject.legacyForge
-def forgeVersion = rootProject.findProperty('forge_version')
 
 architectury {
     platformSetupLoomIde()
@@ -51,9 +49,7 @@ repositories {
 }
 
 dependencies {
-    if (forgeVersion) {
-        forge "net.minecraftforge:forge:$forgeVersion"
-    } else if (legacyForge) {
+    if (legacyForge) {
         forge "net.neoforged:forge:$rootProject.neoforge_version"
     } else {
         neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
@@ -67,20 +63,21 @@ dependencies {
 def modsToml = rootProject.java_version == '17' ? 'mods.toml' : 'neoforge.mods.toml'
 
 // The Minecraft versions this jar is released for (versions/shared-jars.txt).
-def releasedFor = rootProject.releasedFor(forgeVersion ? 'forge' : 'neoforge')
+def releasedFor = rootProject.releasedFor('neoforge')
 
 processResources {
     def minecraftRange = releasedFor.versions.size() == 1 ? "[${releasedFor.versions[0]}]"
             : "[${releasedFor.versions.first()},${releasedFor.versions.last()}]"
-    // A Forge jar released for several versions accepts the Forge of the oldest of them.
-    def oldest = new Properties()
-    rootProject.file("versions/${releasedFor.versions[0]}.properties").withInputStream { oldest.load(it) }
-    def loaderRange = forgeVersion ? "[${oldest.getProperty('forge_version').split('-')[1].split('\\.')[0]},)"
-            : legacyForge ? '[47,)' : '[1,)'
+    def loaderRange = legacyForge ? '[47,)' : '[1,)'
     inputs.property 'version', project.version
     inputs.property 'minecraft_range', minecraftRange
     inputs.property 'mods_toml', modsToml
     inputs.property 'loader_range', loaderRange
+
+    // See packMetadata in the root build file.
+    def packMetadata = rootProject.packMetadata(releasedFor.versions)
+    inputs.property 'pack_metadata', packMetadata
+    doLast { new File(destinationDir, 'pack.mcmeta').text = packMetadata }
 
     filesMatching('META-INF/mods.toml') {
         expand version: project.version, minecraft_range: minecraftRange,
@@ -101,14 +98,4 @@ remapJar {
     input.set shadowJar.archiveFile
     // MultiClicker-neoforge-<mod version>+<minecraft version>.jar, or +<oldest>-<newest> for a shared jar
     archiveVersion = "${rootProject.mod_version}+${releasedFor.label}"
-}
-
-// Forge 41, 42 and 44 (Minecraft 1.19, 1.19.1 and 1.19.3) ship ASM 9.3, which cannot read the classes of
-// Java 21, so the game only starts on Java 17 there, as it does for players. Gradle finds that JDK through
-// the JAVA_HOME_17_X64 variable (see gradle.properties).
-def forgeMajor = forgeVersion ? forgeVersion.split('-')[1].split('\\.')[0].toInteger() : 0
-if (forgeMajor in [41, 42, 44]) {
-    tasks.withType(JavaExec).configureEach {
-        javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(17) }
-    }
 }

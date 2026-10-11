@@ -81,7 +81,7 @@ jobs:
             cp "$jar" "${jar/MultiClicker-neoforge-/MultiClicker-forge-}"
           done
 
-      # The Fabric jar and the NeoForge (1.20.1 and newer) and/or Forge (1.19 to 1.20.1) jar. A jar shared by a
+      # The Fabric jar and the NeoForge (1.20.1 and newer) and Forge jars. A jar shared by a
       # group of versions (versions/shared-jars.txt) is named for the group: +<oldest>-<newest>.jar.
       - name: Upload jars
         uses: actions/upload-artifact@v4
@@ -91,6 +91,7 @@ jobs:
             fabric/build/libs/MultiClicker-fabric-*+*.jar
             neoforge/build/libs/MultiClicker-neoforge-*+*.jar
             neoforge/build/libs/MultiClicker-forge-*+*.jar
+            forge/build/libs/MultiClicker-forge-*+*.jar
           if-no-files-found: error
 
   publish:

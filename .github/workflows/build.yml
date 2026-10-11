@@ -73,7 +73,7 @@ jobs:
           gradle_cmd=${{ startsWith(matrix.mc, '26.') && 'gradle' || './gradlew' }}
           $gradle_cmd build --no-daemon -Pminecraft_version=${{ matrix.mc }}
 
-      # The Fabric jar and the NeoForge (1.20.1 and newer) or Forge (1.19 to 1.20) jar. A jar shared by a group
+      # The Fabric jar and the NeoForge (1.20.1 and newer) and Forge jars. A jar shared by a group
       # of versions (versions/shared-jars.txt) is named for the group: +<oldest>-<newest>.jar.
       - name: Upload jars
         uses: actions/upload-artifact@v4
@@ -83,6 +83,7 @@ jobs:
             fabric/build/libs/MultiClicker-fabric-*+*.jar
             neoforge/build/libs/MultiClicker-neoforge-*+*.jar
             neoforge/build/libs/MultiClicker-forge-*+*.jar
+            forge/build/libs/MultiClicker-forge-*+*.jar
           if-no-files-found: error
 
   # The release publishes one jar for each group of versions/shared-jars.txt; this finds out before a release

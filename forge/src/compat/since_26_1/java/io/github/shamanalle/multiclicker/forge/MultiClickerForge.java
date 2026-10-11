@@ -1,0 +1,40 @@
+package io.github.shamanalle.multiclicker.forge;
+
+import net.minecraft.client.Minecraft;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.ConfigScreenHandler;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.event.GameShuttingDownEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.loading.FMLPaths;
+import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.gui.ConfigScreen;
+
+/** Forge entrypoint: wires the platform independent core into Forge events (Forge's second event bus). */
+@Mod(MultiClicker.MOD_ID)
+public class MultiClickerForge {
+    public MultiClickerForge(FMLJavaModLoadingContext context) {
+        if (FMLEnvironment.dist != Dist.CLIENT) {
+            return;
+        }
+        MultiClicker mod = MultiClicker.init(FMLPaths.CONFIGDIR.get(), context.getContainer().getModInfo().getVersion().toString());
+
+        RegisterKeyMappingsEvent.BUS.addListener(event -> {
+            event.register(mod.toggleKey);
+            event.register(mod.menuKey);
+        });
+        HudHook.register(mod);
+        context.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
+                () -> new ConfigScreenHandler.ConfigScreenFactory((minecraft, parent) -> new ConfigScreen(parent)));
+
+        // Pre runs before vanilla handles key presses, so simulated clicks are processed the same tick.
+        TickEvent.ClientTickEvent.Pre.BUS.addListener(event -> mod.onClientTick(Minecraft.getInstance()));
+        ClientPlayerNetworkEvent.LoggingOut.BUS.addListener(event -> Minecraft.getInstance().execute(mod::onDisconnect));
+        GameShuttingDownEvent.BUS.addListener(event -> mod.onClientStopping(Minecraft.getInstance()));
+        WorldHook.register();
+    }
+}

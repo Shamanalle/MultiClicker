@@ -1,4 +1,4 @@
-package io.github.shamanalle.multiclicker.neoforge;
+package io.github.shamanalle.multiclicker.forge;
 
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
@@ -13,12 +13,10 @@ final class WorldHook {
 
     static void register() {
         MinecraftForge.EVENT_BUS.addListener((RenderLevelStageEvent event) -> {
-            // Forge for 1.19.2 and older has no stage right after the entities.
-            if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
+            if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_ENTITIES) {
                 Minecraft mc = Minecraft.getInstance();
                 HighlightRenderer.render(new Shapes.Sink(event.getPoseStack(), mc.renderBuffers().bufferSource()), Shapes.cameraPosition(event.getCamera()),
                         event.getPartialTick());
-                mc.renderBuffers().bufferSource().endBatch();
             }
         });
     }

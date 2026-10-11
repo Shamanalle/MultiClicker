@@ -24,10 +24,34 @@ ext.releasedFor = { String loader ->
     [versions: versions, label: versions.size() == 1 ? versions[0] : "${versions.first()}-${versions.last()}"]
 }
 
-// Loaders the common code is built for: NeoForge or Forge where the version file names one (for 1.20.1 the
-// NeoForged Forge, built as a Forge mod).
-ext.legacyForge = ext.has('forge_version') || project.minecraft_version == '1.20.1'
-ext.platforms = ext.legacyForge ? 'fabric,forge' : ext.has('neoforge_version') ? 'fabric,neoforge' : 'fabric'
+// pack.mcmeta for the Forge and NeoForge jars: Forge, and NeoForge for 1.20.2, skip the resources of a mod (its
+// translations) that has none. It names the resource pack formats of the versions the jar is released for.
+ext.packMetadata = { List<String> versions ->
+    def formats = versions.collect { v ->
+        def props = new Properties()
+        file("versions/${v}.properties").withInputStream { props.load(it) }
+        props.getProperty('resource_pack_format').toInteger()
+    }
+    def oldest = formats.min()
+    def newest = formats.max()
+    def fields = ['"description": "MultiClicker resources"']
+    // Minecraft before 1.21.9 (format 65) reads pack_format and, from 1.20.2, supported_formats; newer ones read
+    // min_format and max_format.
+    if (oldest < 65) {
+        fields << "\"pack_format\": $oldest".toString()
+        if (newest != oldest) fields << "\"supported_formats\": [$oldest, $newest]".toString()
+    }
+    if (newest >= 65) fields << "\"min_format\": $oldest".toString() << "\"max_format\": $newest".toString()
+    "{\n  \"pack\": {\n    ${fields.join(',\n    ')}\n  }\n}\n".toString()
+}
+
+// Loaders the common code is built for: Forge where the version file names a forge_version (the forge module),
+// NeoForge where it names a neoforge_version (the neoforge module; for 1.20.1 the NeoForged Forge, built as a
+// Forge mod).
+ext.legacyForge = project.minecraft_version == '1.20.1'
+ext.platforms = (['fabric']
+        + (ext.has('forge_version') || ext.legacyForge ? ['forge'] : [])
+        + (ext.has('neoforge_version') && !ext.legacyForge ? ['neoforge'] : [])).join(',')
 
 architectury {
     minecraft = project.minecraft_version
@@ -45,14 +69,14 @@ subprojects {
     // Architectury Loom reads the loader of a module from this property when it is applied.
     if (project.name == 'neoforge') {
         ext.set('loom.platform', rootProject.legacyForge ? 'forge' : 'neoforge')
+    } else if (project.name == 'forge') {
+        ext.set('loom.platform', 'forge')
     }
     apply plugin: 'dev.architectury.loom'
     apply plugin: 'architectury-plugin'
 
     base {
-        // The NeoForge module builds a Forge jar for the versions that name a Forge version.
-        def loader = project.name == 'neoforge' && rootProject.hasProperty('forge_version') ? 'forge' : project.name
-        archivesName = "$rootProject.archives_name-$loader"
+        archivesName = "$rootProject.archives_name-$project.name"
     }
 
     repositories {
