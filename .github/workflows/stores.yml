@@ -56,6 +56,10 @@ jobs:
           entries = [e for e in json.load(sys.stdin) if not only or e["loader"] + ":" + e["label"] in only]
           if not entries:
               sys.exit("no jar matches: " + " ".join(only))
+          # One at a time from the oldest Minecraft version to the newest (Fabric last for each), so a store lists
+          # its files newest version first and its newest file (the one CurseForge shows) is for the newest version.
+          loaders = ["forge", "neoforge", "fabric"]
+          entries.sort(key=lambda e: ([int(p) for p in e["versions"].split()[-1].split(".")], loaders.index(e["loader"])))
           print("entries=" + json.dumps(entries))
           ' >> "$GITHUB_OUTPUT"
 
@@ -66,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      max-parallel: 2
+      max-parallel: 1
       # One entry per release jar: its loader and the Minecraft versions it is for.
       matrix:
         include: ${{ fromJSON(needs.entries.outputs.entries) }}
