@@ -1,0 +1,170 @@
+name: Upload to stores
+
+# Uploads the jars of a GitHub release to Modrinth and CurseForge. The release workflow runs it after
+# publishing; run it by hand to finish a release whose uploads failed (for example on Modrinth's daily limit).
+# Files a store already has are skipped, so running it again never uploads a jar twice: Modrinth is asked for
+# the version number, and a CurseForge upload leaves a marker in the Actions cache (CurseForge's upload API
+# cannot list files).
+#
+# Needs the project ids as repository variables (MODRINTH_ID, CURSEFORGE_ID) and the tokens as secrets
+# (MODRINTH_TOKEN, CURSEFORGE_TOKEN); a store without a token is skipped.
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag, for example v2.5.0'
+        required: true
+      only:
+        description: 'Only these jars, as loader:versions separated by spaces (for example "forge:1.20 forge:1.19-1.19.2"); empty for all'
+        required: false
+        default: ''
+      stores:
+        description: 'Stores to upload to'
+        type: choice
+        options: [both, modrinth, curseforge]
+        default: both
+
+permissions:
+  contents: read
+
+jobs:
+  entries:
+    name: List the jars
+    runs-on: ubuntu-latest
+    outputs:
+      entries: ${{ steps.list.outputs.entries }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+
+      - name: List the jars
+        id: list
+        env:
+          ONLY: ${{ inputs.only }}
+        run: |
+          python3 .github/scripts/release_groups.py entries | python3 -c '
+          import json, os, sys
+          only = os.environ.get("ONLY", "").split()
+          entries = [e for e in json.load(sys.stdin) if not only or e["loader"] + ":" + e["label"] in only]
+          if not entries:
+              sys.exit("no jar matches: " + " ".join(only))
+          print("entries=" + json.dumps(entries))
+          ' >> "$GITHUB_OUTPUT"
+
+  upload:
+    name: Upload ${{ matrix.loader }} ${{ matrix.label }} to Modrinth and CurseForge
+    needs: entries
+    if: vars.MODRINTH_ID != '' || vars.CURSEFORGE_ID != ''
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      # One entry per release jar: its loader and the Minecraft versions it is for.
+      matrix:
+        include: ${{ fromJSON(needs.entries.outputs.entries) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+
+      - name: Download jar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "${{ inputs.tag }}" -p "MultiClicker-${{ matrix.loader }}-*+${{ matrix.label }}.jar" -D jars
+
+      # The stores show one changelog to everyone, so the Russian one follows the English one.
+      - name: Prepare upload
+        id: prep
+        run: |
+          version="$(sed -n 's/^mod_version *= *//p' gradle.properties | tr -d '[:space:]')"
+          python3 .github/scripts/release_notes.py "$version" --russian > release-notes.md
+          loader="${{ matrix.loader }}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "number=$version+${{ matrix.label }}-$loader" >> "$GITHUB_OUTPUT"
+          echo "file=$(ls jars/MultiClicker-$loader-*+${{ matrix.label }}.jar)" >> "$GITHUB_OUTPUT"
+          echo "name=${loader^}" | sed 's/Neoforge/NeoForge/' >> "$GITHUB_OUTPUT"
+          echo "range=${{ matrix.label }}" | sed 's/-/–/' >> "$GITHUB_OUTPUT"
+          {
+            echo 'game_versions<<EOF'
+            tr ' ' '\n' <<< "${{ matrix.versions }}"
+            echo 'EOF'
+            echo 'dependencies<<EOF'
+            if [ "$loader" = fabric ]; then printf 'fabric-api(required)\nmodmenu(optional)\n'; fi
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Look for the CurseForge upload
+        id: curseforge-done
+        uses: actions/cache/restore@v4
+        with:
+          path: curseforge-uploaded
+          key: curseforge-${{ steps.prep.outputs.number }}
+          lookup-only: true
+
+      - name: Pick the stores
+        id: stores
+        env:
+          STORES: ${{ inputs.stores || 'both' }}
+          MODRINTH_ID: ${{ vars.MODRINTH_ID }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+          CURSEFORGE_DONE: ${{ steps.curseforge-done.outputs.cache-hit }}
+        run: |
+          number="${{ steps.prep.outputs.number }}"
+          modrinth=false
+          if [ "$STORES" != curseforge ] && [ -n "$MODRINTH_TOKEN" ]; then
+            status="$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: $MODRINTH_TOKEN" \
+              "https://api.modrinth.com/v2/project/$MODRINTH_ID/version/$number")"
+            if [ "$status" = 200 ]; then
+              echo "Modrinth already has $number"
+            else
+              modrinth=true
+            fi
+          fi
+          curseforge=false
+          if [ "$STORES" != modrinth ] && [ -n "$CURSEFORGE_TOKEN" ]; then
+            if [ "$CURSEFORGE_DONE" = true ]; then
+              echo "CurseForge already has $number"
+            else
+              curseforge=true
+            fi
+          fi
+          echo "modrinth=$modrinth" >> "$GITHUB_OUTPUT"
+          echo "curseforge=$curseforge" >> "$GITHUB_OUTPUT"
+
+      - name: Upload the jar
+        if: steps.stores.outputs.modrinth == 'true' || steps.stores.outputs.curseforge == 'true'
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: ${{ vars.MODRINTH_ID }}
+          modrinth-token: ${{ steps.stores.outputs.modrinth == 'true' && secrets.MODRINTH_TOKEN || '' }}
+          curseforge-id: ${{ vars.CURSEFORGE_ID }}
+          curseforge-token: ${{ steps.stores.outputs.curseforge == 'true' && secrets.CURSEFORGE_TOKEN || '' }}
+          files: ${{ steps.prep.outputs.file }}
+          name: MultiClicker ${{ steps.prep.outputs.version }} for Minecraft ${{ steps.prep.outputs.range }} (${{ steps.prep.outputs.name }})
+          version: ${{ steps.prep.outputs.number }}
+          version-type: release
+          changelog-file: release-notes.md
+          loaders: ${{ matrix.loader }}
+          game-versions: ${{ steps.prep.outputs.game_versions }}
+          dependencies: ${{ steps.prep.outputs.dependencies }}
+
+      - name: Remember the CurseForge upload
+        if: steps.stores.outputs.curseforge == 'true'
+        run: mkdir -p curseforge-uploaded && echo "${{ steps.prep.outputs.number }}" > curseforge-uploaded/number
+
+      - name: Save the CurseForge marker
+        if: steps.stores.outputs.curseforge == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: curseforge-uploaded
+          key: curseforge-${{ steps.prep.outputs.number }}

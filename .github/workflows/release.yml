@@ -98,7 +98,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     outputs:
-      entries: ${{ steps.groups.outputs.entries }}
+      tag: ${{ steps.prep.outputs.tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -117,10 +117,7 @@ jobs:
       # One jar per loader and group of versions (versions/shared-jars.txt). The jars built for the other
       # versions of a group must hold the same code as the shared one, or the release stops here.
       - name: Pick the release jars
-        id: groups
-        run: |
-          python3 .github/scripts/release_groups.py check jars release
-          echo "entries=$(python3 .github/scripts/release_groups.py entries)" >> "$GITHUB_OUTPUT"
+        run: python3 .github/scripts/release_groups.py check jars release
 
       - name: Prepare release
         id: prep
@@ -146,66 +143,11 @@ jobs:
           files: release/*.jar
           fail_on_unmatched_files: true
 
-  # Uploads every release jar to Modrinth and CurseForge as well. Runs once the project ids are set as repository
-  # variables (MODRINTH_ID, CURSEFORGE_ID) and the tokens as secrets (MODRINTH_TOKEN, CURSEFORGE_TOKEN);
-  # a site without a token is skipped.
+  # Uploads every release jar to Modrinth and CurseForge as well (stores.yml).
   stores:
-    name: Upload ${{ matrix.loader }} ${{ matrix.label }} to Modrinth and CurseForge
+    name: Stores
     needs: publish
-    if: vars.MODRINTH_ID != '' || vars.CURSEFORGE_ID != ''
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      # One entry per release jar: its loader, the Minecraft versions it is for and the build that made it.
-      matrix:
-        include: ${{ fromJSON(needs.publish.outputs.entries) }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download jar
-        uses: actions/download-artifact@v4
-        with:
-          name: jar-${{ matrix.build }}
-          path: jars
-
-      # The jars keep the build folders (fabric/build/libs, neoforge/build/libs) when a version has both; put them side by side.
-      - name: Gather jars
-        run: find jars -mindepth 2 -name '*.jar' -exec mv -t jars {} +
-
-      # The stores show one changelog to everyone, so the Russian one follows the English one.
-      - name: Prepare upload
-        id: prep
-        run: |
-          version="$(sed -n 's/^mod_version *= *//p' gradle.properties | tr -d '[:space:]')"
-          python3 .github/scripts/release_notes.py "$version" --russian > release-notes.md
-          loader="${{ matrix.loader }}"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "file=$(ls jars/MultiClicker-$loader-*+${{ matrix.label }}.jar)" >> "$GITHUB_OUTPUT"
-          echo "name=${loader^}" | sed 's/Neoforge/NeoForge/' >> "$GITHUB_OUTPUT"
-          echo "range=${{ matrix.label }}" | sed 's/-/–/' >> "$GITHUB_OUTPUT"
-          {
-            echo 'game_versions<<EOF'
-            tr ' ' '\n' <<< "${{ matrix.versions }}"
-            echo 'EOF'
-            echo 'dependencies<<EOF'
-            if [ "$loader" = fabric ]; then printf 'fabric-api(required)\nmodmenu(optional)\n'; fi
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Upload the jar
-        uses: Kir-Antipov/mc-publish@v3.3
-        with:
-          modrinth-id: ${{ vars.MODRINTH_ID }}
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          curseforge-id: ${{ vars.CURSEFORGE_ID }}
-          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-          files: ${{ steps.prep.outputs.file }}
-          name: MultiClicker ${{ steps.prep.outputs.version }} for Minecraft ${{ steps.prep.outputs.range }} (${{ steps.prep.outputs.name }})
-          version: ${{ steps.prep.outputs.version }}+${{ matrix.label }}-${{ matrix.loader }}
-          version-type: release
-          changelog-file: release-notes.md
-          loaders: ${{ matrix.loader }}
-          game-versions: ${{ steps.prep.outputs.game_versions }}
-          dependencies: ${{ steps.prep.outputs.dependencies }}
+    uses: ./.github/workflows/stores.yml
+    with:
+      tag: ${{ needs.publish.outputs.tag }}
+    secrets: inherit

@@ -266,5 +266,8 @@ Full history: https://github.com/Shamanalle/MultiClicker/blob/main/CHANGELOG.md
    (the project ids shown on each site) and the secrets `MODRINTH_TOKEN` (Modrinth → Settings → PATs,
    with the *Create versions* scope) and `CURSEFORGE_TOKEN` (CurseForge → API tokens). From then on every
    release also uploads its jars to both sites, with the changelog of that version in English and
-   Russian. A site whose
-   token is missing is skipped.
+   Russian. A site whose token is missing is skipped.
+6. If uploads fail (Modrinth allows only so many versions a day), run *Actions → Upload to stores → Run
+   workflow* with the tag. It skips the files a site already has, so nothing is uploaded twice; *only*
+   limits it to some jars (`forge:1.20 forge:1.19-1.19.2`) and *stores* to one site. CurseForge uploads
+   made before this workflow existed are not known to it: pick *modrinth* for those.
