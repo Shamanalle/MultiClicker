@@ -77,6 +77,11 @@ public class AutoToolModule extends Module {
         }
     }
 
+    /** Whether the held tool, too worn for mining, is swapped for another one for this block. */
+    public boolean replacesWornTool(Minecraft mc, BlockState state) {
+        return isRunning() && findBestTool(mc, state) != -1;
+    }
+
     @Override
     public void stop(Minecraft mc) {
         if (mc.player != null) {
@@ -99,10 +104,12 @@ public class AutoToolModule extends Module {
         Enchants enchantments = Enchants.of(mc);
         int current = Slots.selected(mc.player.getInventory());
         int bestSlot = -1;
-        float bestScore = score(mc.player.getInventory().getItem(current), state, enchantments);
+        ItemStack held = mc.player.getInventory().getItem(current);
+        // A worn tool gives way to any tool that beats the bare hand.
+        float bestScore = isWorn(held) ? 1.0F : score(held, state, enchantments);
         for (int slot = 0; slot < Inventories.HOTBAR_SIZE; slot++) {
             ItemStack stack = mc.player.getInventory().getItem(slot);
-            if (stack.isEmpty() || Inventories.isNearlyBroken(stack, protectTool.get())) {
+            if (stack.isEmpty() || isWorn(stack)) {
                 continue;
             }
             float score = score(stack, state, enchantments);
@@ -112,6 +119,13 @@ public class AutoToolModule extends Module {
             }
         }
         return bestSlot;
+    }
+
+    /** About to break: by this module's limit, or by the one at which mining refuses the tool. */
+    private boolean isWorn(ItemStack stack) {
+        MiningModule mining = MultiClicker.get().mining();
+        int limit = Math.max(protectTool.get(), mining.isEnabled() ? mining.protectTool.get() : 0);
+        return Inventories.isNearlyBroken(stack, limit);
     }
 
     /** Mining speed, with a bonus for tools that actually make the block drop. */

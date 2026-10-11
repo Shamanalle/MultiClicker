@@ -3,6 +3,7 @@ package io.github.shamanalle.multiclicker.module.mining;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
+import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -51,6 +52,10 @@ public class MiningModule extends Module {
         if (stopWhenFull.get() && mc.player.getInventory().getFreeSlot() == -1) {
             return false;
         }
-        return !Inventories.isNearlyBroken(mc.player.getMainHandItem(), protectTool.get());
+        if (Inventories.isNearlyBroken(mc.player.getMainHandItem(), protectTool.get())) {
+            // Auto tool ticks after the clicker and takes another tool before the click is processed.
+            return MultiClicker.get().autoTool().replacesWornTool(mc, state);
+        }
+        return true;
     }
 }

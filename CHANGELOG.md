@@ -2,6 +2,21 @@
 
 All notable changes to **MultiClicker** will be documented in this file. In Russian: [CHANGELOG.ru.md](CHANGELOG.ru.md).
 
+## [Unreleased]
+### Fixed
+- A clicker channel (attack, use or jump) switched off by its hotkey while the mod was on kept its key held,
+  and a Looting weapon swap in progress stayed stuck, which also held up auto eat, hotbar refill, auto farm and
+  auto tool.
+- Auto eat could not finish a meal while the use clicker was on: the clicker let go of the use key on the
+  tick the meal started. With the use clicker clicking every tick (and with the default 4 ticks) it never ate.
+- Auto eat now eats while the use clicker holds a shield up in hold mode instead of waiting forever.
+- The offhand module no longer swaps out the fishing rod auto fish uses from the offhand (only an emergency
+  totem still does).
+- Mining stopped at a worn tool even with auto tool on and another good tool in the hotbar; auto tool now
+  takes the other tool.
+- Loading a profile saved by an older version reset nothing it did not mention: settings added since kept
+  the values of the previous setup. They now go back to their defaults.
+
 ## [2.5.0] - 2026-10-10
 ### Changed
 - **Fewer files.** Minecraft versions the mod builds into the same code for share one jar: 1.19 – 1.19.2,

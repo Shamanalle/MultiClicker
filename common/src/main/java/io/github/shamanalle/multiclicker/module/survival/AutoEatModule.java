@@ -62,6 +62,11 @@ public class AutoEatModule extends Module {
         return state == State.EATING && isRunning();
     }
 
+    /** True while the use key is held down for the meal; the use clicker must not release it then. */
+    public boolean holdsUseKey() {
+        return holdingUse && isBusy();
+    }
+
     @Override
     public void stop(Minecraft mc) {
         if (state == State.EATING) {
@@ -81,8 +86,11 @@ public class AutoEatModule extends Module {
             cooldown--;
             return;
         }
+        // An item the player is using is not interrupted, but one the use clicker holds up for good
+        // (a shield) is: the clicker lets go once the meal starts.
+        boolean usingItem = player.isUsingItem() && !MultiClicker.get().clicker().isHoldingUse();
         if (Screens.current(mc) != null || player.isCreative() || player.isSpectator()
-                || player.getFoodData().getFoodLevel() > hunger.get() || player.isUsingItem()
+                || player.getFoodData().getFoodLevel() > hunger.get() || usingItem
                 || MultiClicker.get().clicker().isSwappingWeapon()) {
             return;
         }

@@ -95,6 +95,11 @@ public class ClickerModule extends Module {
         return isRunning() && attack.isHolding();
     }
 
+    /** True while the use key is held in hold mode (e.g. a shield raised for good). */
+    public boolean isHoldingUse() {
+        return isRunning() && use.isHolding();
+    }
+
     @Override
     public void start(Minecraft mc) {
         startDelayLeft = startDelay.get();
@@ -148,17 +153,30 @@ public class ClickerModule extends Module {
 
         boolean eating = mod.autoEat().isBusy();
 
+        // A channel switched off by its hotkey while running gives its key back, or it would stay held.
         if (attack.enabled.get()) {
             tickAttack(mc, player, mod, eating);
+        } else {
+            attack.reset(mc.options.keyAttack);
+            if (swap.isActive()) {
+                swap.restore(mc, player);
+            }
         }
-        if (use.enabled.get()) {
+        if (mod.autoEat().holdsUseKey()) {
+            // Releasing the key now would stop the meal; auto eat gives it back when done.
+            use.handOver();
+        } else if (use.enabled.get()) {
             boolean allowed = !eating && !mod.autoFish().controlsUseKey();
             if (use.tick(mc.options.keyUse, allowed, true)) {
                 mod.stats().recordClick();
             }
+        } else {
+            use.reset(mc.options.keyUse);
         }
         if (jump.enabled.get()) {
             jump.tick(mc.options.keyJump, true, true);
+        } else {
+            jump.reset(mc.options.keyJump);
         }
     }
 

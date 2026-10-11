@@ -165,6 +165,12 @@ public final class ClickChannel {
         return down && mode.get() == Mode.HOLD;
     }
 
+    /** Another module holds the key now (auto eat, to eat): forget the press without releasing it. */
+    void handOver() {
+        down = false;
+        holdLeft = 0;
+    }
+
     void reset(KeyMapping key) {
         if (down) {
             Input.release(key);
