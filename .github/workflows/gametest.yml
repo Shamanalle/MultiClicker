@@ -249,6 +249,8 @@ jobs:
             cat forge-game/logs/latest.log >> smoke.log || true
             exit 0
           fi
+          # The same early window problem on NeoForge; Loom and ModDevGradle both run the game in <module>/run.
+          mkdir -p ${{ matrix.loader }}/run/config && echo "earlyWindowControl = false" > ${{ matrix.loader }}/run/config/fml.toml
           # The game is stopped by the timeout, so the exit code means nothing; the log check decides.
           xvfb-run -a -s "-screen 0 1280x720x24" timeout 300 $gradle_cmd :${{ matrix.loader }}:runClient --no-daemon -Pminecraft_version=${{ matrix.mc }} | tee smoke.log || true
 
