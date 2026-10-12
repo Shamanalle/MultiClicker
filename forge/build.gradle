@@ -35,6 +35,16 @@ configurations {
 
 repositories {
     maven { url 'https://maven.minecraftforge.net/' }
+    // Forge 49 (Minecraft 1.20.3) asks for bootstrap-dev 2.0.0, which was never published; only a game started
+    // from the build uses it, so the oldest published one stands in.
+    if (forgeVersion.startsWith('1.20.3-')) {
+        ivy {
+            url 'https://maven.minecraftforge.net/'
+            patternLayout { artifact 'net/minecraftforge/bootstrap-dev/2.1.0/bootstrap-dev-2.1.0.[ext]' }
+            metadataSources { artifact() }
+            content { includeVersion 'net.minecraftforge', 'bootstrap-dev', '2.0.0' }
+        }
+    }
 }
 
 dependencies {
@@ -91,6 +101,18 @@ remapJar {
     }
     // MultiClicker-forge-<mod version>+<minecraft version>.jar, or +<oldest>-<newest> for a shared jar
     archiveVersion = "${rootProject.mod_version}+${releasedFor.label}"
+    // Forge 50 (Minecraft 1.20.6) ships Mixin 0.8.5, which knows no level above JAVA_18 and stops the game on
+    // JAVA_21; it applies the mixins built for Java 21 at JAVA_17 all the same.
+    if (forgeMajor == 50) {
+        doLast {
+            java.nio.file.FileSystems.newFileSystem(archiveFile.get().asFile.toPath(), (ClassLoader) null).withCloseable { fs ->
+                def config = fs.getPath('multiclicker.mixins.json')
+                def time = java.nio.file.Files.getLastModifiedTime(config)
+                config.text = config.text.replace('"JAVA_21"', '"JAVA_17"')
+                java.nio.file.Files.setLastModifiedTime(config, time)
+            }
+        }
+    }
 }
 
 // Forge 41, 42 and 44 (Minecraft 1.19, 1.19.1 and 1.19.3) ship ASM 9.3, which cannot read the classes of

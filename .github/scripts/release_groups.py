@@ -14,6 +14,7 @@ Usage:
       Prints the files to publish as JSON, one entry per loader and group, for the store upload matrix.
 """
 import hashlib
+import io
 import json
 import shutil
 import sys
@@ -29,6 +30,7 @@ METADATA = {
     'fabric.mod.json',
     'META-INF/mods.toml',
     'META-INF/neoforge.mods.toml',
+    'pack.mcmeta',
 }
 # Architectury puts a helper class into every jar under a package name that is random per build.
 GENERATED = 'architectury_inject_'
@@ -102,10 +104,19 @@ def jar(folder, loader, version_label):
     return found[0]
 
 
+def digest(name, data):
+    # A nested jar (jar-in-jar) is packed anew by every build, so it is compared by what it holds.
+    if name.startswith('META-INF/jars/') and name.endswith('.jar'):
+        with zipfile.ZipFile(io.BytesIO(data)) as nested:
+            data = json.dumps(sorted((entry, hashlib.sha256(nested.read(entry)).hexdigest())
+                                     for entry in nested.namelist() if not entry.endswith('/'))).encode()
+    return hashlib.sha256(data).hexdigest()
+
+
 def contents(path):
     with zipfile.ZipFile(path) as archive:
         return {
-            name: hashlib.sha256(archive.read(name)).hexdigest()
+            name: digest(name, archive.read(name))
             for name in archive.namelist()
             if not name.endswith('/') and name not in METADATA and not name.startswith(GENERATED)
         }

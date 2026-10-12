@@ -20,6 +20,11 @@ import io.github.shamanalle.multiclicker.gui.ConfigScreen;
 /** Forge entrypoint: wires the platform independent core into Forge events (Forge's first event bus). */
 @Mod(MultiClicker.MOD_ID)
 public class MultiClickerForge {
+    /** Forge 51 (Minecraft 1.21) only calls a constructor without parameters; the others prefer the one below. */
+    public MultiClickerForge() {
+        this(FMLJavaModLoadingContext.get());
+    }
+
     public MultiClickerForge(FMLJavaModLoadingContext context) {
         if (FMLEnvironment.dist != Dist.CLIENT) {
             return;

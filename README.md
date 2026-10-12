@@ -39,8 +39,7 @@ profile can have its own hotkey.
      adds a settings button to the mod list.
    - NeoForge: `MultiClicker-neoforge-<mod version>+<Minecraft version>.jar`, nothing else is needed. The
      settings button is in the mod list.
-   - Forge (1.19 – 1.20.1): `MultiClicker-forge-<mod version>+<Minecraft version>.jar`, nothing else is
-     needed.
+   - Forge: `MultiClicker-forge-<mod version>+<Minecraft version>.jar`, nothing else is needed.
 3. Join a world and press <kbd>O</kbd> to open the menu, <kbd>I</kbd> to turn the mod on or off.
 
 Pick a ready-made setup under **Profiles → Presets**, then press <kbd>I</kbd>:
@@ -166,20 +165,25 @@ for each of them (such as `MultiClicker-fabric-<mod version>+1.21.6-1.21.8.jar` 
 | 1.19 – 1.19.4 | ✓ | — | ✓ |
 | 1.20 | ✓ | — (NeoForge starts at 1.20.1) | ✓ |
 | 1.20.1 | ✓ | ✓ (NeoForged Forge 47.1) | ✓ |
-| 1.20.2 – 1.20.6 | ✓ | ✓ | — |
-| 1.21 – 1.21.11 | ✓ | ✓ | — |
-| 26.1 – 26.3 | ✓ | ✓ | — |
+| 1.20.2 – 1.20.4 | ✓ | ✓ | ✓ |
+| 1.20.5 | ✓ | ✓ | — (no Forge for 1.20.5) |
+| 1.20.6 | ✓ | ✓ | ✓ |
+| 1.21 – 1.21.1 | ✓ | ✓ | ✓ |
+| 1.21.2 | ✓ | ✓ | — (no Forge for 1.21.2) |
+| 1.21.3 – 1.21.11 | ✓ | ✓ | ✓ |
+| 26.1 – 26.3 | ✓ | ✓ | ✓ |
 
 Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer. NeoForge for 1.20.1 is the NeoForged fork of
 Forge 47 (still with the Forge API); the 1.20.1 NeoForge jar is built for it and also runs on Forge 1.20.1,
 so the 1.20.1 Forge jar is the same file.
-From 1.20.2 on there are NeoForge jars only.
 
 - Fabric 1.21.4 and newer: every build plays the in-game tests.
-- Fabric 1.19 – 1.21.3 and every NeoForge and Forge version: CI checks that the game starts with the mod and that
-  every mixin applies.
+- Fabric 1.19 – 1.21.3 and every NeoForge version: CI checks that the game starts with the mod and that every
+  mixin applies.
+- Forge: CI starts the release jar in the real game and checks the same.
 - Fabric 1.21.9: the outline and filled highlight styles are not drawn (Fabric API for this version has
-  no world rendering events); the glow style works. On NeoForge and Forge all styles work.
+  no world rendering events); the glow style works. The same goes for Forge 1.21.3 and newer, which has no
+  world rendering event either. On NeoForge and older Forge all styles work.
 - Before 1.19.3 search fields have no grey hint text.
 
 ## Controls
@@ -216,14 +220,14 @@ You need JDK 21 (JDK 25 and Gradle 9 for Minecraft 26.1 and newer). The version 
 `-Pminecraft_version=<version>`; each one is described in `versions/<version>.properties`.
 
 ```bash
-./gradlew build                       # → fabric/build/libs and neoforge/build/libs, runs the unit tests
+./gradlew build                       # → fabric/, neoforge/ and forge/build/libs, runs the unit tests
 ./gradlew :common:test                # unit tests only: click timing, profiles, config files
 ./gradlew :fabric:runClientGameTest   # starts the game and plays every scenario
 ```
 
 - `common/` holds the mod itself: modules, settings, the menu and the config.
-- `fabric/` and `neoforge/` hold the entry points of the loaders; `neoforge/` also builds the Forge jar
-  for the versions that name a `forge_version`.
+- `fabric/`, `neoforge/` and `forge/` hold the entry points of the loaders; each is built for the versions
+  whose properties name its loader (`neoforge_version`, `forge_version`).
 - `common/src/test/` holds the unit tests, which need no running game.
 - `fabric/src/gametest/` holds the in-game tests, which are not part of the release jar.
 
