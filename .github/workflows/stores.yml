@@ -166,7 +166,7 @@ jobs:
           curseforge-id: ${{ vars.CURSEFORGE_ID }}
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           files: ${{ steps.prep.outputs.file }}
-          name: MultiClicker ${{ steps.prep.outputs.version }} for Minecraft ${{ steps.prep.outputs.range }} (${{ steps.prep.outputs.name }})
+          name: MultiClicker ${{ steps.prep.outputs.version }} for ${{ steps.prep.outputs.range }} (${{ steps.prep.outputs.name }})
           version: ${{ steps.prep.outputs.number }}
           version-type: release
           changelog-file: release-notes.md
@@ -192,7 +192,7 @@ jobs:
           modrinth-id: ${{ vars.MODRINTH_ID }}
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: ${{ steps.prep.outputs.file }}
-          name: MultiClicker ${{ steps.prep.outputs.version }} for Minecraft ${{ steps.prep.outputs.range }} (${{ steps.prep.outputs.name }})
+          name: MultiClicker ${{ steps.prep.outputs.version }} for ${{ steps.prep.outputs.range }} (${{ steps.prep.outputs.name }})
           version: ${{ steps.prep.outputs.number }}
           version-type: release
           changelog-file: release-notes.md
