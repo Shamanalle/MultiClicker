@@ -73,7 +73,7 @@ jobs:
           gradle_cmd=${{ startsWith(matrix.mc, '26.') && 'gradle' || './gradlew' }}
           $gradle_cmd build --no-daemon -Pminecraft_version=${{ matrix.mc }}
 
-      # The Fabric jar and the NeoForge (1.20.1 and newer) or Forge (1.19 to 1.20) jar. A jar shared by a group
+      # The Fabric jar and the NeoForge (1.20.1 and newer) and Forge jars. A jar shared by a group
       # of versions (versions/shared-jars.txt) is named for the group: +<oldest>-<newest>.jar.
       - name: Upload jars
         uses: actions/upload-artifact@v4
@@ -83,14 +83,18 @@ jobs:
             fabric/build/libs/MultiClicker-fabric-*+*.jar
             neoforge/build/libs/MultiClicker-neoforge-*+*.jar
             neoforge/build/libs/MultiClicker-forge-*+*.jar
+            forge/build/libs/MultiClicker-forge-*+*.jar
           if-no-files-found: error
 
-  # The release publishes one jar for each group of versions/shared-jars.txt; this finds out before a release
-  # when a version of a group stops building into the same code.
+  # The release bundles one jar for each group of versions/shared-jars.txt into the jars of versions/bundles.txt;
+  # this finds out before a release when a version of a group stops building into the same code, and builds the
+  # bundled jars so packaging breaks show up on the pull request.
   shared-jars:
     name: Shared jars
     needs: build
     runs-on: ubuntu-latest
+    outputs:
+      games: ${{ steps.games.outputs.games }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -109,4 +113,120 @@ jobs:
       - name: Compare the jars of each group
         run: |
           for jar in jars/MultiClicker-neoforge-*+1.20.1.jar; do cp "$jar" "${jar/MultiClicker-neoforge-/MultiClicker-forge-}"; done
-          python3 .github/scripts/release_groups.py check jars
+          python3 .github/scripts/release_groups.py check jars release
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+
+      # The release puts the jars together into the multi-version jars of versions/bundles.txt (bundle.py).
+      - name: Bundle the release jars
+        run: python3 .github/scripts/bundle.py release bundle
+
+      - name: Upload the bundled jars
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundled-jars
+          path: bundle/*.jar
+          if-no-files-found: error
+
+      - name: List the game starts
+        id: games
+        run: echo "games=$(python3 .github/scripts/bundle.py games)" >> "$GITHUB_OUTPUT"
+
+  # Starts every bundled jar in the real game (portablemc) on every loader and Minecraft version it is published
+  # for, with nothing else but Fabric API, and checks the log as the start-up check of gametest.yml does: the
+  # bootstrap must pick the right variant and its mixins must apply.
+  bundled-games:
+    name: Bundled jar ${{ matrix.loader }} ${{ matrix.mc }}
+    needs: shared-jars
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.shared-jars.outputs.games) }}
+    steps:
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java }}
+
+      - name: Install virtual display
+        run: sudo apt-get update -q && sudo apt-get install -y -q xvfb libgl1-mesa-dri mesa-vulkan-drivers libvulkan1
+
+      # portablemc 4.4.1 does not set the ROOT variable the installers of NeoForge for 1.21 and newer use.
+      - name: Install portablemc
+        run: |
+          pipx install portablemc==4.4.1
+          forge_py=$(ls "$(pipx environment --value PIPX_LOCAL_VENVS)"/portablemc/lib/python3*/site-packages/portablemc/forge.py)
+          sed -i 's|^\( *\)info.variables\["SIDE"\] = "client"|&\n\1info.variables.setdefault("ROOT", str(self.context.libraries_dir.parent.absolute()))|' "$forge_py"
+          grep -q '"ROOT"' "$forge_py"
+
+      - name: Download the bundled jar
+        uses: actions/download-artifact@v4
+        with:
+          name: bundled-jars
+          path: jars
+
+      # The jar and, on Fabric, the newest Fabric API for the version from Modrinth; then the game and its loader,
+      # installed without starting. A failed download (network) is retried after a pause.
+      - name: Prepare the game
+        run: |
+          mkdir -p game/mods
+          cp "jars/${{ matrix.file }}" game/mods/
+          if [ "${{ matrix.loader }}" = fabric ]; then
+            url=$(curl -sSf --retry 3 -G https://api.modrinth.com/v2/project/fabric-api/version \
+              --data-urlencode 'game_versions=["${{ matrix.mc }}"]' --data-urlencode 'loaders=["fabric"]' \
+              | python3 -c 'import json, sys; print(json.load(sys.stdin)[0]["files"][0]["url"])')
+            curl -sSfL --retry 3 -o game/mods/fabric-api.jar "$url"
+          fi
+          for attempt in 1 2 3; do
+            portablemc --work-dir game start --dry "${{ matrix.launch }}" && exit 0
+            echo "::warning::Installing the game failed on attempt $attempt"
+            sleep 60
+          done
+          exit 1
+
+      # The game is stopped 20 seconds after the mod and the resources loaded, or after 5 minutes. Forge 49.0
+      # (Minecraft 1.20.3) looks for the libraries in the game folder unless told where they are.
+      - name: Start the game
+        run: |
+          # The early loading window of Forge and NeoForge sometimes times out waiting for the virtual display's GL
+          # context and hangs the start; the game window alone is enough.
+          mkdir -p game/config && echo "earlyWindowControl = false" > game/config/fml.toml
+          xvfb-run -a -s "-screen 0 1280x720x24" timeout 300 portablemc --work-dir game start "${{ matrix.launch }}" \
+            --jvm "$JAVA_HOME/bin/java" --jvm-args "-Xmx2G -DlibraryDirectory=$HOME/.minecraft/libraries" > console.log 2>&1 &
+          game=$!
+          # The console leaves out some loggers on Forge and NeoForge; the game's log file has them all.
+          logs() { cat console.log game/logs/latest.log 2>/dev/null; }
+          while kill -0 $game 2>/dev/null; do
+            if logs | grep -q "MultiClicker .* initialized" && logs | grep -q "Reloading ResourceManager"; then
+              sleep 20
+              pkill -f -- "--gameDir $PWD/game " || pkill -f -- "--gameDir game " || true
+              break
+            fi
+            sleep 5
+          done
+          wait $game || true
+          logs > smoke.log
+          tail -50 console.log
+
+      - name: Check the log
+        run: |
+          grep -q "MultiClicker .* initialized" smoke.log
+          grep -q "Reloading ResourceManager" smoke.log
+          ! grep -E "InjectionError|Mixin apply for mod|Mixin apply failed|Critical injection failure|Mixin transformation of .* failed|MixinTransformerError|InvalidMixinException" smoke.log
+          # Without its pack metadata the loader skips the mod's resources, and so its translations.
+          ! grep -E "Missing metadata in pack mod:multiclicker" smoke.log
+
+      - name: Upload the log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundled-game-log-${{ matrix.loader }}-${{ matrix.mc }}
+          path: smoke.log
+          if-no-files-found: ignore

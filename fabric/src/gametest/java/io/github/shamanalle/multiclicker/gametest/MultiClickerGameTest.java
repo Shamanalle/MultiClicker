@@ -781,6 +781,10 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         context.setScreen(() -> new ListEditScreen(new ConfigScreen(null), MultiClicker.get().mining().blocks));
         parkCursor(context);
         context.takeScreenshot("readme_" + lang + "_list_editor");
+        // The session is still running: its kills, damage and clicks fill the statistics.
+        context.setScreen(() -> new StatsScreen(new ConfigScreen(null)));
+        parkCursor(context);
+        context.takeScreenshot("readme_" + lang + "_stats");
         context.setScreen(() -> null);
         deactivate(context);
     }

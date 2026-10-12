@@ -1,6 +1,7 @@
 plugins {
     id 'fabric-loom' version '1.18.2' apply false
     id 'net.neoforged.moddev' version '2.0.148' apply false
+    id 'net.minecraftforge.gradle' version '7.0.40' apply false
 }
 
 // Per-version settings (Fabric API, Mod Menu, source overlays, Java) come from versions/<minecraft_version>.properties.
@@ -23,6 +24,27 @@ ext.releasedFor = { String loader ->
     [versions: versions, label: versions.size() == 1 ? versions[0] : "${versions.first()}-${versions.last()}"]
 }
 
+// pack.mcmeta for the Forge and NeoForge jars: Forge, and NeoForge for 1.20.2, skip the resources of a mod (its
+// translations) that has none. It names the resource pack formats of the versions the jar is released for.
+ext.packMetadata = { List<String> versions ->
+    def formats = versions.collect { v ->
+        def props = new Properties()
+        file("versions/${v}.properties").withInputStream { props.load(it) }
+        props.getProperty('resource_pack_format').toInteger()
+    }
+    def oldest = formats.min()
+    def newest = formats.max()
+    def fields = ['"description": "MultiClicker resources"']
+    // Minecraft before 1.21.9 (format 65) reads pack_format and, from 1.20.2, supported_formats; newer ones read
+    // min_format and max_format.
+    if (oldest < 65) {
+        fields << "\"pack_format\": $oldest".toString()
+        if (newest != oldest) fields << "\"supported_formats\": [$oldest, $newest]".toString()
+    }
+    if (newest >= 65) fields << "\"min_format\": $oldest".toString() << "\"max_format\": $newest".toString()
+    "{\n  \"pack\": {\n    ${fields.join(',\n    ')}\n  }\n}\n".toString()
+}
+
 allprojects {
     group = rootProject.maven_group
     version = rootProject.mod_version
@@ -32,9 +54,13 @@ subprojects {
     version = project.mod_version
     group = project.maven_group
 
-    // The NeoForge module is built with ModDevGradle (see neoforge/build26.gradle), the others with Fabric Loom.
+    // The NeoForge module is built with ModDevGradle (see neoforge/build26.gradle), the Forge module with
+    // ForgeGradle (see forge/build26.gradle), the others with Fabric Loom.
     if (project.name == 'neoforge') {
         apply plugin: 'net.neoforged.moddev'
+    } else if (project.name == 'forge') {
+        apply plugin: 'java'
+        apply plugin: 'net.minecraftforge.gradle'
     } else {
         apply plugin: 'fabric-loom'
 

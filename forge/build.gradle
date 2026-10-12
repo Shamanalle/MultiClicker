@@ -1,0 +1,125 @@
+plugins {
+    id 'com.github.johnrengelman.shadow'
+}
+
+// Minecraft Forge, for the versions whose versions/<minecraft_version>.properties names a forge_version.
+def forgeVersion = rootProject.forge_version
+def forgeMajor = forgeVersion.split('-')[1].split('\\.')[0].toInteger()
+
+architectury {
+    platformSetupLoomIde()
+    forge()
+}
+
+loom {
+    forge {
+        mixinConfig 'multiclicker.mixins.json'
+    }
+}
+
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentForge.extendsFrom common
+
+    // Files in this configuration will be bundled into the mod using the Shadow plugin.
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+repositories {
+    maven { url 'https://maven.minecraftforge.net/' }
+    // Forge 49 (Minecraft 1.20.3) asks for bootstrap-dev 2.0.0, which was never published; only a game started
+    // from the build uses it, so the oldest published one stands in.
+    if (forgeVersion.startsWith('1.20.3-')) {
+        ivy {
+            url 'https://maven.minecraftforge.net/'
+            patternLayout { artifact 'net/minecraftforge/bootstrap-dev/2.1.0/bootstrap-dev-2.1.0.[ext]' }
+            metadataSources { artifact() }
+            content { includeVersion 'net.minecraftforge', 'bootstrap-dev', '2.0.0' }
+        }
+    }
+}
+
+dependencies {
+    forge "net.minecraftforge:forge:$forgeVersion"
+
+    common(project(path: ':common', configuration: 'namedElements')) { transitive false }
+    shadowBundle project(path: ':common', configuration: 'transformProductionForge')
+
+    // The common mixins need MixinExtras, which Forge only ships from 60 (Minecraft 1.21.10) on. Older Forge
+    // gets it inside the jar (jar-in-jar); 0.5.5, as 0.5.0 to 0.5.4 fail on a redirect other mods may carry.
+    if (forgeMajor >= 48 && forgeMajor < 60) {
+        implementation(include("io.github.llamalad7:mixinextras-forge:0.5.5"))
+    }
+}
+
+// The Minecraft versions this jar is released for (versions/shared-jars.txt).
+def releasedFor = rootProject.releasedFor('forge')
+
+processResources {
+    def minecraftRange = releasedFor.versions.size() == 1 ? "[${releasedFor.versions[0]}]"
+            : "[${releasedFor.versions.first()},${releasedFor.versions.last()}]"
+    // A jar released for several versions accepts the Forge of the oldest of them.
+    def oldest = new Properties()
+    rootProject.file("versions/${releasedFor.versions[0]}.properties").withInputStream { oldest.load(it) }
+    def loaderRange = "[${oldest.getProperty('forge_version').split('-')[1].split('\\.')[0]},)"
+    inputs.property 'version', project.version
+    inputs.property 'minecraft_range', minecraftRange
+    inputs.property 'loader_range', loaderRange
+
+    // See packMetadata in the root build file.
+    def packMetadata = rootProject.packMetadata(releasedFor.versions)
+    inputs.property 'pack_metadata', packMetadata
+    doLast { new File(destinationDir, 'pack.mcmeta').text = packMetadata }
+
+    filesMatching('META-INF/mods.toml') {
+        expand version: project.version, minecraft_range: minecraftRange,
+                loader_range: loaderRange,
+                loader: 'forge',
+                display_test: 'displayTest = "IGNORE_ALL_VERSION"',
+                mixins: ''
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowBundle]
+    archiveClassifier = 'dev-shadow'
+}
+
+remapJar {
+    input.set shadowJar.archiveFile
+    // Forge 50 (Minecraft 1.20.6) and newer run on Mojang's names, which Loom does not pick by itself.
+    if (forgeMajor >= 50) {
+        targetNamespace = 'mojang'
+    }
+    // MultiClicker-forge-<mod version>+<minecraft version>.jar, or +<oldest>-<newest> for a shared jar
+    archiveVersion = "${rootProject.mod_version}+${releasedFor.label}"
+    // Forge 50 (Minecraft 1.20.6) ships Mixin 0.8.5, which knows no level above JAVA_18 and stops the game on
+    // JAVA_21; it applies the mixins built for Java 21 at JAVA_17 all the same.
+    if (forgeMajor == 50) {
+        doLast {
+            java.nio.file.FileSystems.newFileSystem(archiveFile.get().asFile.toPath(), (ClassLoader) null).withCloseable { fs ->
+                def config = fs.getPath('multiclicker.mixins.json')
+                def time = java.nio.file.Files.getLastModifiedTime(config)
+                config.text = config.text.replace('"JAVA_21"', '"JAVA_17"')
+                java.nio.file.Files.setLastModifiedTime(config, time)
+            }
+        }
+    }
+}
+
+// Forge 41, 42 and 44 (Minecraft 1.19, 1.19.1 and 1.19.3) ship ASM 9.3, which cannot read the classes of
+// Java 21, so the game only starts on Java 17 there, as it does for players. Gradle finds that JDK through
+// the JAVA_HOME_17_X64 variable (see gradle.properties).
+if (forgeMajor in [41, 42, 44]) {
+    tasks.withType(JavaExec).configureEach {
+        javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(17) }
+    }
+}

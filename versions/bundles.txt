@@ -1,0 +1,17 @@
+# The jars a release publishes: one per line, "<loaders>: <oldest version> <newest version>".
+#
+# Each jar holds the jars of versions/shared-jars.txt for those loaders and versions, every one under a package
+# of its own, and a small bootstrap (boot/) starts the one made for the running loader and Minecraft version
+# (.github/scripts/bundle.py). Every release jar must be in exactly one line. A line with one loader gives
+# MultiClicker-<loader>-<mod version>+<oldest>-<newest>.jar, one with several MultiClicker-<mod version>+<oldest>-<newest>.jar.
+#
+# What can share a jar: Forge 1.19 - 1.20.1 reads classes with ASM 9.3, which stops at Java 17, so their jars stay
+# apart from the Java 21 versions; Mixin parses every config of a jar and rejects compatibility levels it does
+# not know (Forge 1.20.6 ships Mixin 0.8.5), so bundle.py gives all configs of a jar its lowest level.
+
+fabric: 1.19 1.20.4
+fabric: 1.20.5 1.21.11
+forge: 1.19 1.20.1
+forge: 1.20.2 1.21.11
+neoforge: 1.20.2 1.21.11
+fabric neoforge forge: 26.1 26.3

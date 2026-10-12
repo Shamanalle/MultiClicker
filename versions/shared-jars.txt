@@ -5,7 +5,7 @@
 # versions of a group hold the same code (.github/scripts/release_groups.py), so each reference in the shared
 # jar was resolved against every version it is released for.
 #
-# Loaders: fabric, neoforge, and forge for the Forge jars of Minecraft 1.19 to 1.20.
+# Loaders: fabric, neoforge and forge.
 
 fabric: 1.19 1.19.1 1.19.2
 fabric: 1.20 1.20.1
@@ -16,6 +16,10 @@ fabric: 1.21.6 1.21.7 1.21.8
 fabric: 26.1 26.1.1 26.1.2
 
 forge: 1.19 1.19.1 1.19.2
+forge: 1.20.2 1.20.3 1.20.4
+forge: 1.21.3 1.21.4
+forge: 1.21.6 1.21.7
+forge: 26.1 26.1.1 26.1.2
 
 neoforge: 1.20.2 1.20.3 1.20.4
 neoforge: 1.21 1.21.1

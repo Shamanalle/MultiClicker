@@ -85,9 +85,11 @@ jobs:
           path: fabric/build/run/clientGameTest/logs
           if-no-files-found: ignore
 
-  # Fabric API before Minecraft 1.21.4 has no client game test API, and NeoForge is not covered by the game
+  # Fabric API before Minecraft 1.21.4 has no client game test API, and NeoForge and Forge are not covered by the game
   # tests, so these get a smoke run: the game is started up to the resource reload and the log is checked
-  # for the mod loading and for mixin failures.
+  # for the mod loading and for mixin failures. Forge starts the released jar in a real game (portablemc), as
+  # ForgeGradle cannot start the mod from its build folders for 26.1 and newer; the others start the development
+  # game.
   smoke:
     name: Start-up check ${{ matrix.loader }} ${{ matrix.mc }}
     runs-on: ubuntu-latest
@@ -118,6 +120,26 @@ jobs:
           - { loader: forge, mc: "1.19.3", java: 21 }
           - { loader: forge, mc: "1.19.4", java: 21 }
           - { loader: forge, mc: "1.20", java: 21 }
+          - { loader: forge, mc: "1.20.2", java: 21 }
+          - { loader: forge, mc: "1.20.3", java: 21 }
+          - { loader: forge, mc: "1.20.4", java: 21 }
+          - { loader: forge, mc: "1.20.6", java: 21 }
+          - { loader: forge, mc: "1.21", java: 21 }
+          - { loader: forge, mc: "1.21.1", java: 21 }
+          - { loader: forge, mc: "1.21.3", java: 21 }
+          - { loader: forge, mc: "1.21.4", java: 21 }
+          - { loader: forge, mc: "1.21.5", java: 21 }
+          - { loader: forge, mc: "1.21.6", java: 21 }
+          - { loader: forge, mc: "1.21.7", java: 21 }
+          - { loader: forge, mc: "1.21.8", java: 21 }
+          - { loader: forge, mc: "1.21.9", java: 21 }
+          - { loader: forge, mc: "1.21.10", java: 21 }
+          - { loader: forge, mc: "1.21.11", java: 21 }
+          - { loader: forge, mc: "26.1", java: 25 }
+          - { loader: forge, mc: "26.1.1", java: 25 }
+          - { loader: forge, mc: "26.1.2", java: 25 }
+          - { loader: forge, mc: "26.2", java: 25 }
+          - { loader: forge, mc: "26.3", java: 25 }
           - { loader: neoforge, mc: "1.20.1", java: 21 }
           - { loader: neoforge, mc: "1.20.2", java: 21 }
           - { loader: neoforge, mc: "1.20.3", java: 21 }
@@ -170,17 +192,37 @@ jobs:
 
       # Setting up Minecraft, building the mod and downloading the game files happen before the timed start,
       # so a slow setup cannot use up the time the game gets. A failed download (network) is retried after a pause.
+      - name: Install portablemc
+        if: matrix.loader == 'forge'
+        run: pipx install portablemc==4.4.1
+
       - name: Prepare the game
         run: |
           chmod +x gradlew
           gradle_cmd=${{ startsWith(matrix.mc, '26.') && 'gradle' || './gradlew' }}
+          if [ "${{ matrix.loader }}" = forge ]; then
+            # The jar (ForgeGradle builds it with jar for 26.1 and newer, Loom with remapJar), then the game and
+            # the Forge of versions/<mc>.properties, installed without starting.
+            task=${{ startsWith(matrix.mc, '26.') && 'jar' || 'remapJar' }}
+            $gradle_cmd :forge:$task --no-daemon --stacktrace -Pminecraft_version=${{ matrix.mc }}
+            mkdir -p forge-game/mods
+            cp forge/build/libs/MultiClicker-forge-*+*.jar forge-game/mods/
+            forge=$(sed -n 's/^forge_version *= *//p' versions/${{ matrix.mc }}.properties)
+            echo "FORGE_ID=forge:$forge" >> "$GITHUB_ENV"
+            for attempt in 1 2 3; do
+              portablemc --work-dir forge-game start --dry "forge:$forge" && exit 0
+              echo "::warning::Installing Forge failed on attempt $attempt"
+              sleep 60
+            done
+            exit 1
+          fi
           # NeoForge for 26.1 and newer is built with ModDevGradle, which names the task differently.
           task=${{ (matrix.loader == 'neoforge' && startsWith(matrix.mc, '26.')) && 'prepareClientRun' || 'configureClientLaunch' }}
           # Loom gives up on a file Mojang's servers fail a few times in a row, so the assets are fetched beforehand
           # with more patience. ModDevGradle (NeoForge 26.1 and newer) keeps its assets elsewhere.
           if [ "$task" = configureClientLaunch ]; then python3 .github/scripts/fetch_assets.py ${{ matrix.mc }}; fi
           for attempt in 1 2 3; do
-            $gradle_cmd :${{ matrix.loader == 'forge' && 'neoforge' || matrix.loader }}:$task --no-daemon --stacktrace -Pminecraft_version=${{ matrix.mc }} 2>&1 | tee prepare.log
+            $gradle_cmd :${{ matrix.loader }}:$task --no-daemon --stacktrace -Pminecraft_version=${{ matrix.mc }} 2>&1 | tee prepare.log
             [ "${PIPESTATUS[0]}" -eq 0 ] && exit 0
             # Only network trouble (Mojang's or a Maven repository's servers) is worth another try.
             grep -qE "DownloadException|Could not (GET|HEAD|resolve)|status code 5[0-9][0-9]|Connection reset|timed out" prepare.log || exit 1
@@ -192,11 +234,30 @@ jobs:
       - name: Start the game
         run: |
           gradle_cmd=${{ startsWith(matrix.mc, '26.') && 'gradle' || './gradlew' }}
+          if [ "${{ matrix.loader }}" = forge ]; then
+            # Forge 41, 42 and 44 (Minecraft 1.19, 1.19.1 and 1.19.3) only start on Java 17.
+            java=$JAVA_HOME/bin/java
+            case "${{ matrix.mc }}" in 1.19|1.19.1|1.19.3) java=$JAVA_HOME_17_X64/bin/java ;; esac
+            # Forge's early loading window sometimes times out waiting for the virtual display's GL context and
+            # hangs the start; the game window alone is enough.
+            mkdir -p forge-game/config && echo "earlyWindowControl = false" > forge-game/config/fml.toml
+            # Forge 49.0 (Minecraft 1.20.3) looks for the libraries in the game folder unless told where they are.
+            xvfb-run -a -s "-screen 0 1280x720x24" timeout 300 portablemc --work-dir forge-game start "$FORGE_ID" --jvm "$java" \
+              --jvm-args "-Xmx2G -DlibraryDirectory=$HOME/.minecraft/libraries" | tee smoke.log || true
+            # The console leaves out some loggers on older Forge (the mod's own on Forge 46, Minecraft 1.20);
+            # the game's log file has them all.
+            cat forge-game/logs/latest.log >> smoke.log || true
+            exit 0
+          fi
+          # The same early window problem on NeoForge; Loom and ModDevGradle both run the game in <module>/run.
+          mkdir -p ${{ matrix.loader }}/run/config && echo "earlyWindowControl = false" > ${{ matrix.loader }}/run/config/fml.toml
           # The game is stopped by the timeout, so the exit code means nothing; the log check decides.
-          xvfb-run -a -s "-screen 0 1280x720x24" timeout 300 $gradle_cmd :${{ matrix.loader == 'forge' && 'neoforge' || matrix.loader }}:runClient --no-daemon -Pminecraft_version=${{ matrix.mc }} | tee smoke.log || true
+          xvfb-run -a -s "-screen 0 1280x720x24" timeout 300 $gradle_cmd :${{ matrix.loader }}:runClient --no-daemon -Pminecraft_version=${{ matrix.mc }} | tee smoke.log || true
 
       - name: Check the log
         run: |
           grep -q "MultiClicker .* initialized" smoke.log
           grep -q "Reloading ResourceManager" smoke.log
           ! grep -E "InjectionError|Mixin apply for mod|Mixin apply failed|Critical injection failure|Mixin transformation of .* failed" smoke.log
+          # Without its pack metadata the loader skips the mod's resources, and so its translations.
+          ! grep -E "Missing metadata in pack mod:multiclicker" smoke.log

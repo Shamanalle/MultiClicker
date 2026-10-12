@@ -10,18 +10,26 @@ pluginManagement {
     }
 }
 
+plugins {
+    // Java toolchains that ForgeGradle asks for (its launcher for Forge 26.1 and newer runs on Java 8).
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0' apply false
+}
+
 rootProject.name = 'MultiClicker'
 
 include 'common'
 include 'fabric'
 
-// The NeoForge (or Forge) jar is built for the versions whose versions/<minecraft_version>.properties names a
-// NeoForge version (for 1.20.1 a NeoForged Forge one) or a Forge version.
+// The NeoForge jar is built for the versions whose versions/<minecraft_version>.properties names a NeoForge
+// version (for 1.20.1 a NeoForged Forge one), the Forge jar for those that name a Forge version.
 def minecraftVersion = providers.gradleProperty('minecraft_version').get()
 def versionProps = new Properties()
 file("versions/${minecraftVersion}.properties").withInputStream { versionProps.load(it) }
-if (versionProps.neoforge_version || versionProps.forge_version) {
+if (versionProps.neoforge_version) {
     include 'neoforge'
+}
+if (versionProps.forge_version) {
+    include 'forge'
 }
 
 
@@ -33,5 +41,9 @@ if (minecraftVersion.startsWith('26')) {
     project(':fabric').buildFileName = 'build26.gradle'
     if (versionProps.neoforge_version) {
         project(':neoforge').buildFileName = 'build26.gradle'
+    }
+    if (versionProps.forge_version) {
+        project(':forge').buildFileName = 'build26.gradle'
+        apply plugin: 'org.gradle.toolchains.foojay-resolver-convention'
     }
 }
