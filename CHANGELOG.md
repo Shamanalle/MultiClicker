@@ -2,7 +2,7 @@
 
 All notable changes to **MultiClicker** will be documented in this file. In Russian: [CHANGELOG.ru.md](CHANGELOG.ru.md).
 
-## [2.7.0] - 2026-10-12
+## [2.6.1] - 2026-10-12
 ### Added
 - Forge for Minecraft 1.20.2 – 1.20.4, 1.20.6, 1.21 – 1.21.1, 1.21.3 – 1.21.11 and 26.1 – 26.3 (Forge has no
   builds for 1.20.5 and 1.21.2). On Forge 1.21.3 and newer the outline and filled highlight styles are not drawn,
