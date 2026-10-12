@@ -11,6 +11,9 @@ Usage:
       Builds the jars of versions/bundles.txt from the release jars (release_groups.py check <jars> <folder>).
   bundle.py entries
       Prints the store uploads as JSON, one per bundle and loader, for the upload matrix of stores.yml.
+  bundle.py games
+      Prints the game starts as JSON, one per loader and Minecraft version of every bundle, for the start-up
+      check of the bundled jars in build.yml.
 """
 import io
 import json
@@ -252,7 +255,6 @@ def build(folder, output, loaders, oldest, newest, boot):
         files['META-INF/mods.toml'] = toml_with(text, f'[{forge_versions[0]},{forge_versions[-1]}]', [],
                                                 f'[{min(majors)},)')
         manifest.append('MixinConfigs: ' + ','.join(configs['forge']))
-        files['pack.mcmeta'] = pack_metadata(forge_versions)
     if 'neoforge' in loaders:
         neo_versions = loaders_versions('neoforge', parts)
         neo_range = f'[{neo_versions[0]},{neo_versions[-1]}]'
@@ -262,6 +264,9 @@ def build(folder, output, loaders, oldest, newest, boot):
                 if name in files:
                     sys.exit(f'{name} is needed by both Forge and NeoForge')
                 files[name] = toml_with(found[0], neo_range, configs['neoforge'])
+    # Forge, and NeoForge for 1.20.2, skip the resources of a mod (its translations) without a pack.mcmeta.
+    if 'forge' in loaders or 'neoforge' in loaders:
+        files['pack.mcmeta'] = pack_metadata(loaders_versions('forge' if 'forge' in loaders else 'neoforge', parts))
 
     properties.sort()
     boot_classes = ['Variants', 'VariantMixinPlugin'] + [name for loader in loaders for name in BOOT_CLASSES[loader]]
@@ -358,7 +363,7 @@ def mod_version():
     sys.exit('gradle.properties has no mod_version')
 
 
-def entries():
+def entries_json():
     """One store upload per bundle and loader. Stores keep one loader per file for the dependencies (Fabric API
     for Fabric only), so a jar for several loaders is uploaded once per loader, each time with a marker entry
     that makes the file differ (Modrinth refuses a file it already has)."""
@@ -373,6 +378,23 @@ def entries():
         for (loader, version), other in ALSO_PUBLISHED.items():
             if loader in loaders and version in loaders_versions(loader, parts):
                 result.append({'loader': other, 'label': version, 'versions': version, 'file': file, 'marker': True})
+    return json.dumps(result)
+
+
+def games():
+    """One game start per loader and Minecraft version a bundle is published for: the jar, the portablemc version
+    to start (Forge pinned to versions/<mc>.properties, as the start-up check of gametest.yml) and its Java."""
+    result = []
+    for entry in json.loads(entries_json()):
+        for version in entry['versions'].split():
+            key = release_groups.version_key(version)
+            java = 17 if key < release_groups.version_key('1.20.5') else 21 if key[0] == 1 else 25
+            launch = f"{entry['loader']}:{version}"
+            forge = release_groups.properties(version).get('forge_version')
+            if entry['loader'] == 'forge' and forge:
+                launch = f'forge:{forge}'
+            result.append({'loader': entry['loader'], 'mc': version, 'file': entry['file'], 'launch': launch,
+                           'java': java})
     print(json.dumps(result))
 
 
@@ -387,7 +409,9 @@ def main(folder, output):
 
 if __name__ == '__main__':
     if len(sys.argv) == 2 and sys.argv[1] == 'entries':
-        entries()
+        print(entries_json())
+    elif len(sys.argv) == 2 and sys.argv[1] == 'games':
+        games()
     elif len(sys.argv) == 3:
         main(sys.argv[1], sys.argv[2])
     else:
