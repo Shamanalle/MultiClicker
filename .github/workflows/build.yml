@@ -162,7 +162,7 @@ jobs:
       - name: Install portablemc
         run: |
           pipx install portablemc==4.4.1
-          forge_py=$(ls ~/.local/share/pipx/venvs/portablemc/lib/python3*/site-packages/portablemc/forge.py)
+          forge_py=$(ls "$(pipx environment --value PIPX_LOCAL_VENVS)"/portablemc/lib/python3*/site-packages/portablemc/forge.py)
           sed -i 's|^\( *\)info.variables\["SIDE"\] = "client"|&\n\1info.variables.setdefault("ROOT", str(self.context.libraries_dir.parent.absolute()))|' "$forge_py"
           grep -q '"ROOT"' "$forge_py"
 
