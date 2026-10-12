@@ -383,16 +383,20 @@ def entries_json():
 
 def games():
     """One game start per loader and Minecraft version a bundle is published for: the jar, the portablemc version
-    to start (Forge pinned to versions/<mc>.properties, as the start-up check of gametest.yml) and its Java."""
+    to start (Forge, and NeoForge for 26.x, pinned to versions/<mc>.properties, as the start-up check of gametest.yml)
+    and its Java."""
     result = []
     for entry in json.loads(entries_json()):
         for version in entry['versions'].split():
             key = release_groups.version_key(version)
             java = 17 if key < release_groups.version_key('1.20.5') else 21 if key[0] == 1 else 25
             launch = f"{entry['loader']}:{version}"
-            forge = release_groups.properties(version).get('forge_version')
-            if entry['loader'] == 'forge' and forge:
-                launch = f'forge:{forge}'
+            props = release_groups.properties(version)
+            if entry['loader'] == 'forge' and props.get('forge_version'):
+                launch = f"forge:{props['forge_version']}"
+            # portablemc finds NeoForge by its Minecraft version only up to 1.21.x, so 26.x needs the full one.
+            if entry['loader'] == 'neoforge' and key[0] != 1:
+                launch = f"neoforge:{props['neoforge_version']}"
             result.append({'loader': entry['loader'], 'mc': version, 'file': entry['file'], 'launch': launch,
                            'java': java})
     print(json.dumps(result))
