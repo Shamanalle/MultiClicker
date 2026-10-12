@@ -157,14 +157,14 @@ jobs:
           echo "modrinth=$modrinth" >> "$GITHUB_OUTPUT"
           echo "curseforge=$curseforge" >> "$GITHUB_OUTPUT"
 
-      - name: Upload the jar
-        if: steps.stores.outputs.modrinth == 'true' || steps.stores.outputs.curseforge == 'true'
+      # CurseForge first, and its marker is saved before Modrinth is tried: a job re-run after a Modrinth
+      # error must not upload the same file to CurseForge again (which would also put it above the newer uploads).
+      - name: Upload the jar to CurseForge
+        if: steps.stores.outputs.curseforge == 'true'
         uses: Kir-Antipov/mc-publish@v3.3
         with:
-          modrinth-id: ${{ vars.MODRINTH_ID }}
-          modrinth-token: ${{ steps.stores.outputs.modrinth == 'true' && secrets.MODRINTH_TOKEN || '' }}
           curseforge-id: ${{ vars.CURSEFORGE_ID }}
-          curseforge-token: ${{ steps.stores.outputs.curseforge == 'true' && secrets.CURSEFORGE_TOKEN || '' }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           files: ${{ steps.prep.outputs.file }}
           name: MultiClicker ${{ steps.prep.outputs.version }} for Minecraft ${{ steps.prep.outputs.range }} (${{ steps.prep.outputs.name }})
           version: ${{ steps.prep.outputs.number }}
@@ -184,3 +184,18 @@ jobs:
         with:
           path: curseforge-uploaded
           key: curseforge-${{ steps.prep.outputs.number }}
+
+      - name: Upload the jar to Modrinth
+        if: steps.stores.outputs.modrinth == 'true'
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: ${{ vars.MODRINTH_ID }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          files: ${{ steps.prep.outputs.file }}
+          name: MultiClicker ${{ steps.prep.outputs.version }} for Minecraft ${{ steps.prep.outputs.range }} (${{ steps.prep.outputs.name }})
+          version: ${{ steps.prep.outputs.number }}
+          version-type: release
+          changelog-file: release-notes.md
+          loaders: ${{ matrix.loader }}
+          game-versions: ${{ steps.prep.outputs.game_versions }}
+          dependencies: ${{ steps.prep.outputs.dependencies }}
