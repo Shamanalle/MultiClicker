@@ -238,6 +238,9 @@ jobs:
             # Forge 41, 42 and 44 (Minecraft 1.19, 1.19.1 and 1.19.3) only start on Java 17.
             java=$JAVA_HOME/bin/java
             case "${{ matrix.mc }}" in 1.19|1.19.1|1.19.3) java=$JAVA_HOME_17_X64/bin/java ;; esac
+            # Forge's early loading window sometimes times out waiting for the virtual display's GL context and
+            # hangs the start; the game window alone is enough.
+            mkdir -p forge-game/config && echo "earlyWindowControl = false" > forge-game/config/fml.toml
             # Forge 49.0 (Minecraft 1.20.3) looks for the libraries in the game folder unless told where they are.
             xvfb-run -a -s "-screen 0 1280x720x24" timeout 300 portablemc --work-dir forge-game start "$FORGE_ID" --jvm "$java" \
               --jvm-args "-Xmx2G -DlibraryDirectory=$HOME/.minecraft/libraries" | tee smoke.log || true

@@ -195,6 +195,9 @@ jobs:
       # (Minecraft 1.20.3) looks for the libraries in the game folder unless told where they are.
       - name: Start the game
         run: |
+          # The early loading window of Forge and NeoForge sometimes times out waiting for the virtual display's GL
+          # context and hangs the start; the game window alone is enough.
+          mkdir -p game/config && echo "earlyWindowControl = false" > game/config/fml.toml
           xvfb-run -a -s "-screen 0 1280x720x24" timeout 300 portablemc --work-dir game start "${{ matrix.launch }}" \
             --jvm "$JAVA_HOME/bin/java" --jvm-args "-Xmx2G -DlibraryDirectory=$HOME/.minecraft/libraries" > console.log 2>&1 &
           game=$!
