@@ -21,7 +21,7 @@ on:
         description: 'Release tag, for example v2.5.0'
         required: true
       only:
-        description: 'Only these jars, as loader:versions separated by spaces (for example "forge:1.20 forge:1.19-1.19.2"); empty for all'
+        description: 'Only these uploads, as loader:versions separated by spaces (for example "forge:1.19-1.20.1 neoforge:26.1-26.3"); empty for all'
         required: false
         default: ''
       stores:
@@ -50,7 +50,7 @@ jobs:
         env:
           ONLY: ${{ inputs.only }}
         run: |
-          python3 .github/scripts/release_groups.py entries | python3 -c '
+          python3 .github/scripts/bundle.py entries | python3 -c '
           import json, os, sys
           only = os.environ.get("ONLY", "").split()
           entries = [e for e in json.load(sys.stdin) if not only or e["loader"] + ":" + e["label"] in only]
@@ -71,7 +71,8 @@ jobs:
     strategy:
       fail-fast: false
       max-parallel: 1
-      # One entry per release jar: its loader and the Minecraft versions it is for.
+      # One entry per release jar and loader (bundle.py entries): the jar, its loader and the Minecraft versions
+      # it is for.
       matrix:
         include: ${{ fromJSON(needs.entries.outputs.entries) }}
     steps:
@@ -83,7 +84,18 @@ jobs:
       - name: Download jar
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release download "${{ inputs.tag }}" -p "MultiClicker-${{ matrix.loader }}-*+${{ matrix.label }}.jar" -D jars
+        run: gh release download "${{ inputs.tag }}" -p "${{ matrix.file }}" -D jars
+
+      # A jar uploaded for several loaders gets a marker entry naming the loader, so each upload is a different
+      # file: Modrinth refuses a file it already has.
+      - name: Mark the jar for its loader
+        if: matrix.marker
+        run: |
+          python3 -c '
+          import sys, zipfile
+          with zipfile.ZipFile(sys.argv[1], "a") as jar:
+              jar.writestr("META-INF/multiclicker-store-upload.txt", sys.argv[2] + "\n")
+          ' "jars/${{ matrix.file }}" "${{ matrix.loader }}"
 
       # The stores show one changelog to everyone, so the Russian one follows the English one.
       - name: Prepare upload
@@ -94,7 +106,7 @@ jobs:
           loader="${{ matrix.loader }}"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "number=$version+${{ matrix.label }}-$loader" >> "$GITHUB_OUTPUT"
-          echo "file=$(ls jars/MultiClicker-$loader-*+${{ matrix.label }}.jar)" >> "$GITHUB_OUTPUT"
+          echo "file=jars/${{ matrix.file }}" >> "$GITHUB_OUTPUT"
           echo "name=${loader^}" | sed 's/Neoforge/NeoForge/' >> "$GITHUB_OUTPUT"
           echo "range=${{ matrix.label }}" | sed 's/-/–/' >> "$GITHUB_OUTPUT"
           {

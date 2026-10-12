@@ -86,8 +86,9 @@ jobs:
             forge/build/libs/MultiClicker-forge-*+*.jar
           if-no-files-found: error
 
-  # The release publishes one jar for each group of versions/shared-jars.txt; this finds out before a release
-  # when a version of a group stops building into the same code.
+  # The release bundles one jar for each group of versions/shared-jars.txt into the jars of versions/bundles.txt;
+  # this finds out before a release when a version of a group stops building into the same code, and builds the
+  # bundled jars so packaging breaks show up on the pull request.
   shared-jars:
     name: Shared jars
     needs: build
@@ -110,4 +111,21 @@ jobs:
       - name: Compare the jars of each group
         run: |
           for jar in jars/MultiClicker-neoforge-*+1.20.1.jar; do cp "$jar" "${jar/MultiClicker-neoforge-/MultiClicker-forge-}"; done
-          python3 .github/scripts/release_groups.py check jars
+          python3 .github/scripts/release_groups.py check jars release
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+
+      # The release puts the jars together into the multi-version jars of versions/bundles.txt (bundle.py).
+      - name: Bundle the release jars
+        run: python3 .github/scripts/bundle.py release bundle
+
+      - name: Upload the bundled jars
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundled-jars
+          path: bundle/*.jar
+          if-no-files-found: error

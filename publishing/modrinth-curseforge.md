@@ -196,10 +196,13 @@ Fabric 1.21.9 и новее требует Fabric Loader 0.17 или новее.
 
 ## 4. Version fields
 
-Upload every jar as its own version/file and tick the Minecraft versions in its name and the loader of the
+Upload every jar as its own version/file and tick the Minecraft versions of its range and the loader of the
 jar: Fabric for `MultiClicker-fabric-*`, NeoForge for `MultiClicker-neoforge-*`, Forge for `MultiClicker-forge-*` (Fabric 1.21.9 and newer: Fabric Loader 0.17+, mention it in the
-changelog). A jar named for a range, such as `MultiClicker-fabric-2.5.0+1.21.6-1.21.8.jar`, is for every
-version of that range (1.21.6, 1.21.7 and 1.21.8); see `versions/shared-jars.txt`.
+changelog). Each jar is for every supported version of its range (`MultiClicker-fabric-<mod version>+1.20.5-1.21.11.jar`
+covers 1.20.5 to 1.21.11); see `versions/bundles.txt`. Two jars go up more than once: `MultiClicker-<mod
+version>+26.1-26.3.jar` once per loader (Fabric, NeoForge, Forge), and the Forge jar for 1.19 – 1.20.1 also as
+NeoForge 1.20.1. Modrinth refuses a file it already has, so the workflow adds a one-line marker file to each
+of these copies.
 
 **Version name:** `MultiClicker <mod version> for Minecraft <versions> (<loader>)`, for example `MultiClicker 2.6.0 for Minecraft 1.21.5 (Fabric)`
 or `MultiClicker 2.6.0 for Minecraft 1.21.6–1.21.8 (Fabric)`.
@@ -257,8 +260,7 @@ Full history: https://github.com/Shamanalle/MultiClicker/blob/main/CHANGELOG.md
    `<details>` block at the end), add the icon `common/src/main/resources/assets/multiclicker/icon.png`
    and the screenshots to the gallery (set `hud.png` as the featured image).
 2. Upload the jars from the GitHub release as separate versions (section 4). A jar named for a range of
-   Minecraft versions gets all of them; CI checks before every release that building the mod for each of
-   them gives the same code.
+   Minecraft versions gets every supported version of the range.
 3. CurseForge: the same text, the same files (one file per loader and jar).
 4. Both sites review new projects; the review can take from a few hours to a few days.
 5. Later versions can be uploaded by the release workflow itself. In the repository settings
@@ -269,5 +271,5 @@ Full history: https://github.com/Shamanalle/MultiClicker/blob/main/CHANGELOG.md
    Russian. A site whose token is missing is skipped.
 6. If uploads fail (Modrinth allows only so many versions a day), run *Actions → Upload to stores → Run
    workflow* with the tag. It skips the files a site already has, so nothing is uploaded twice; *only*
-   limits it to some jars (`forge:1.20 forge:1.19-1.19.2`) and *stores* to one site. CurseForge uploads
+   limits it to some jars (`forge:1.19-1.20.1 neoforge:26.1-26.3`) and *stores* to one site. CurseForge uploads
    made before this workflow existed are not known to it: pick *modrinth* for those.

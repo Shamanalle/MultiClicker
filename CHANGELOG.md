@@ -7,6 +7,11 @@ All notable changes to **MultiClicker** will be documented in this file. In Russ
 - Forge for Minecraft 1.20.2 – 1.20.4, 1.20.6, 1.21 – 1.21.1, 1.21.3 – 1.21.11 and 26.1 – 26.3 (Forge has no
   builds for 1.20.5 and 1.21.2). On Forge 1.21.3 and newer the outline and filled highlight styles are not drawn,
   as Forge has no world rendering event there; the glow style works.
+### Changed
+- A release now has 6 jars instead of 36: Fabric 1.19 – 1.20.4 and 1.20.5 – 1.21.11, Forge 1.19 – 1.20.1 and
+  1.20.2 – 1.21.11, NeoForge 1.20.2 – 1.21.11, and one jar for 26.1 – 26.3 on Fabric, NeoForge and Forge.
+  NeoForge for 1.20.1 takes the Forge jar for 1.19 – 1.20.1. Each jar starts the build made for the running
+  Minecraft version.
 ### Fixed
 - On Forge 1.19 – 1.20 and on NeoForge for 1.20.1 and 1.20.2 the mod's translations were not loaded: the jar had
   no `pack.mcmeta`, and without it these loaders skip the resources of a mod.

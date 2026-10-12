@@ -120,6 +120,17 @@ jobs:
       - name: Pick the release jars
         run: python3 .github/scripts/release_groups.py check jars release
 
+      # The bootstrap of the bundled jars (boot/) is compiled there.
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+
+      # The release jars go together into the multi-version jars of versions/bundles.txt, which are published.
+      - name: Bundle the release jars
+        run: python3 .github/scripts/bundle.py release bundle
+
       - name: Prepare release
         id: prep
         run: |
@@ -141,10 +152,10 @@ jobs:
           target_commitish: ${{ github.sha }}
           name: MultiClicker ${{ steps.prep.outputs.version }}
           body_path: release-notes.md
-          files: release/*.jar
+          files: bundle/*.jar
           fail_on_unmatched_files: true
 
-  # Uploads every release jar to Modrinth and CurseForge as well (stores.yml).
+  # Uploads every bundled jar to Modrinth and CurseForge as well (stores.yml).
   stores:
     name: Stores
     needs: publish
