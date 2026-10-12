@@ -156,6 +156,8 @@ the crosshair rests on one, a notification says once where to turn them on.
 | Survival: safety, offhand and auto eat | Visuals: HUD and target highlight |
 | ![Presets and profiles](docs/images/en/profiles.png) | ![Block list editor](docs/images/en/list_editor.png) |
 | Presets and your own profiles, with a hotkey, a server and sharing | List editor: item icons, add the held item or the block you look at |
+| ![Statistics](docs/images/en/stats.png) | |
+| Statistics: the session, each server and all time, with graphs and rates per hour | |
 
 ## Supported versions
 
