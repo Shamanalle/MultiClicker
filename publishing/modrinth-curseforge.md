@@ -12,7 +12,7 @@ the version fields · 5. Upload checklist
 
 | Field | Value |
 |:--|:--|
-| Name | `MultiClicker` |
+| Name | `MultiClicker – Auto Clicker` |
 | Slug / URL | `multiclicker` (if it is taken: `multiclicker-fabric`) |
 | Summary (Modrinth, 256 characters max; CurseForge, 250 max) | see below |
 | Loaders | Fabric, NeoForge, Forge |
@@ -21,8 +21,9 @@ the version fields · 5. Upload checklist
 | Source code | https://github.com/Shamanalle/MultiClicker |
 | Issues | https://github.com/Shamanalle/MultiClicker/issues |
 | Dependencies | Fabric: Fabric API required, Mod Menu optional. NeoForge and Forge: none |
-| Modrinth categories (up to 3) | Utility, Game mechanics |
-| CurseForge category | Utility & QoL (if the list has no such entry: Miscellaneous) |
+| Modrinth categories (up to 3 featured) | Utility, Game Mechanics, Mobs |
+| Modrinth additional categories | Food, Equipment |
+| CurseForge categories | Utility & QoL (main; if the list has no such entry: Miscellaneous), plus Food and Armor, Tools, and Weapons |
 
 **Summary, English** (209 characters):
 
@@ -34,7 +35,11 @@ the version fields · 5. Upload checklist
 
 Why this wording: both sites search the name and the summary (Modrinth has no free-form tags, CurseForge has only fixed categories). The words people type
 (`auto clicker`, `autoclicker`, `auto eat`, `auto fish`, `auto farm`, `afk`) are in the summary and the first
-paragraph, so the name can stay `MultiClicker`.
+paragraph. The name weighs most, and the mods on top for `auto clicker` all carry it there, hence
+`MultiClicker – Auto Clicker` (a plain description, no loaders or versions, which both sites forbid in the
+name). Modrinth shows at most 3 featured categories but filters by the additional ones too; Mobs (mob
+farms), Food (auto eat) and Equipment (auto tool, offhand) put the mod in the lists of people browsing those
+filters.
 
 ---
 
