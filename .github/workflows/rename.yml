@@ -1,0 +1,43 @@
+name: Modrinth version names
+
+# Renames the Modrinth versions to the current scheme: "MultiClicker X for <versions> (<loader>)", without
+# the word Minecraft. Run it by hand; versions that already have the new name are left alone.
+# CurseForge has no API for file names.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rename:
+    name: Rename the Modrinth versions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rename the versions
+        env:
+          MODRINTH_ID: ${{ vars.MODRINTH_ID }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request
+
+          headers = {'Authorization': os.environ['MODRINTH_TOKEN'], 'User-Agent': 'Shamanalle/MultiClicker rename'}
+
+          def call(method, url, body=None):
+              h = dict(headers)
+              data = None
+              if body is not None:
+                  data = json.dumps(body).encode()
+                  h['Content-Type'] = 'application/json'
+              with urllib.request.urlopen(urllib.request.Request(url, data=data, method=method, headers=h)) as r:
+                  return r.read()
+
+          versions = json.loads(call('GET', f"https://api.modrinth.com/v2/project/{os.environ['MODRINTH_ID']}/version"))
+          for v in versions:
+              name = v['name'].replace(' for Minecraft ', ' for ')
+              if name != v['name']:
+                  call('PATCH', f"https://api.modrinth.com/v2/version/{v['id']}", {'name': name})
+                  print(v['name'], '->', name)
+          PY
