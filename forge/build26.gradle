@@ -53,9 +53,10 @@ processResources {
 }
 
 jar {
-    // The common module is part of the mod jar; Forge finds its mixins through the manifest.
+    // The common module is part of the mod jar; Forge finds its mixins, and those of this module (see
+    // multiclicker-forge.mixins.json), through the manifest.
     from commonOutput
-    manifest.attributes('MixinConfigs': 'multiclicker.mixins.json')
+    manifest.attributes('MixinConfigs': 'multiclicker.mixins.json,multiclicker-forge.mixins.json')
     // MultiClicker-forge-<mod version>+<minecraft version>.jar, or +<oldest>-<newest> for a shared jar
     archiveVersion = "${rootProject.mod_version}+${releasedFor.label}"
 }

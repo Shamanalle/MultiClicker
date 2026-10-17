@@ -11,9 +11,15 @@ architectury {
     forge()
 }
 
+// Forge for Minecraft 1.21.2 and newer has no world rendering event; a mixin of its own draws the target highlight.
+def forgeMixins = rootProject.compat.split(',').contains('since_1_21_2')
+
 loom {
     forge {
         mixinConfig 'multiclicker.mixins.json'
+        if (forgeMixins) {
+            mixinConfig 'multiclicker-forge.mixins.json'
+        }
     }
 }
 
@@ -64,6 +70,9 @@ dependencies {
 def releasedFor = rootProject.releasedFor('forge')
 
 processResources {
+    if (!forgeMixins) {
+        exclude 'multiclicker-forge.mixins.json'
+    }
     def minecraftRange = releasedFor.versions.size() == 1 ? "[${releasedFor.versions[0]}]"
             : "[${releasedFor.versions.first()},${releasedFor.versions.last()}]"
     // A jar released for several versions accepts the Forge of the oldest of them.

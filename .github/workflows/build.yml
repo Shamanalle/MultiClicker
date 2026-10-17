@@ -172,13 +172,14 @@ jobs:
           name: bundled-jars
           path: jars
 
-      # The jar and, on Fabric, the newest Fabric API for the version from Modrinth; then the game and its loader,
+      # The jar and, on Fabric and Quilt, the newest Fabric API for the version from Modrinth; then the game and its loader,
       # installed without starting. A failed download (network) is retried after a pause.
       - name: Prepare the game
         run: |
           mkdir -p game/mods
           cp "jars/${{ matrix.file }}" game/mods/
-          if [ "${{ matrix.loader }}" = fabric ]; then
+          # Quilt runs the Fabric jar with Fabric API too.
+          if [ "${{ matrix.loader }}" = fabric ] || [ "${{ matrix.loader }}" = quilt ]; then
             url=$(curl -sSf --retry 3 -G https://api.modrinth.com/v2/project/fabric-api/version \
               --data-urlencode 'game_versions=["${{ matrix.mc }}"]' --data-urlencode 'loaders=["fabric"]' \
               | python3 -c 'import json, sys; print(json.load(sys.stdin)[0]["files"][0]["url"])')

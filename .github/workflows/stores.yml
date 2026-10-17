@@ -107,6 +107,7 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "number=$version+${{ matrix.label }}-$loader" >> "$GITHUB_OUTPUT"
           echo "file=jars/${{ matrix.file }}" >> "$GITHUB_OUTPUT"
+          echo "loaders=${{ matrix.loaders }}" >> "$GITHUB_OUTPUT"
           echo "name=${loader^}" | sed 's/Neoforge/NeoForge/' >> "$GITHUB_OUTPUT"
           echo "range=${{ matrix.label }}" | sed 's/-/–/' >> "$GITHUB_OUTPUT"
           {
@@ -170,7 +171,7 @@ jobs:
           version: ${{ steps.prep.outputs.number }}
           version-type: release
           changelog-file: release-notes.md
-          loaders: ${{ matrix.loader }}
+          loaders: ${{ steps.prep.outputs.loaders }}
           game-versions: ${{ steps.prep.outputs.game_versions }}
           dependencies: ${{ steps.prep.outputs.dependencies }}
 
@@ -196,6 +197,58 @@ jobs:
           version: ${{ steps.prep.outputs.number }}
           version-type: release
           changelog-file: release-notes.md
-          loaders: ${{ matrix.loader }}
+          loaders: ${{ steps.prep.outputs.loaders }}
           game-versions: ${{ steps.prep.outputs.game_versions }}
           dependencies: ${{ steps.prep.outputs.dependencies }}
+
+      # Reads the version back from Modrinth: its file must be the one uploaded (same SHA-512) and it must list the
+      # loaders and game versions it was uploaded for, so a store page never offers a wrong or broken file.
+      - name: Check the Modrinth version
+        if: vars.MODRINTH_ID != ''
+        env:
+          MODRINTH_ID: ${{ vars.MODRINTH_ID }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          NUMBER: ${{ steps.prep.outputs.number }}
+          FILE: ${{ steps.prep.outputs.file }}
+          LOADERS: ${{ steps.prep.outputs.loaders }}
+          GAME_VERSIONS: ${{ matrix.versions }}
+          UPLOADED: ${{ steps.stores.outputs.modrinth }}
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, sys, time, urllib.request
+          number = os.environ['NUMBER']
+          url = f"https://api.modrinth.com/v2/project/{os.environ['MODRINTH_ID']}/version/{number}"
+          headers = {'User-Agent': 'MultiClicker release check'}
+          if os.environ.get('MODRINTH_TOKEN'):
+              headers['Authorization'] = os.environ['MODRINTH_TOKEN']
+          version = None
+          for attempt in range(6):
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(url, headers=headers)) as response:
+                      version = json.load(response)
+                  break
+              except Exception as error:
+                  print(f'{number}: {error}, trying again')
+                  time.sleep(10)
+          if version is None:
+              if os.environ.get('UPLOADED') == 'true' or os.environ.get('MODRINTH_TOKEN'):
+                  sys.exit(f'{number}: Modrinth has no such version')
+              print(f'{number}: not on Modrinth, nothing to check')
+              sys.exit()
+          problems = []
+          primary = next((f for f in version['files'] if f.get('primary')), version['files'][0])
+          local = hashlib.sha512(open(os.environ['FILE'], 'rb').read()).hexdigest()
+          # A version uploaded by an earlier run of this workflow may carry the marker of that run only.
+          if os.environ.get('UPLOADED') == 'true' and primary['hashes']['sha512'] != local:
+              problems.append(f"file {primary['filename']} differs from the uploaded jar")
+          with urllib.request.urlopen(urllib.request.Request(primary['url'], headers=headers)) as response:
+              if hashlib.sha512(response.read()).hexdigest() != primary['hashes']['sha512']:
+                  problems.append(f"the download of {primary['filename']} does not match its SHA-512")
+          if sorted(version['loaders']) != sorted(os.environ['LOADERS'].split()):
+              problems.append(f"loaders {version['loaders']} instead of {os.environ['LOADERS'].split()}")
+          if sorted(version['game_versions']) != sorted(os.environ['GAME_VERSIONS'].split()):
+              problems.append(f"game versions {version['game_versions']} instead of {os.environ['GAME_VERSIONS'].split()}")
+          if problems:
+              sys.exit(f'{number}: ' + '; '.join(problems))
+          print(f"{number}: {primary['filename']}, {', '.join(version['loaders'])}, {len(version['game_versions'])} game versions")
+          PY
