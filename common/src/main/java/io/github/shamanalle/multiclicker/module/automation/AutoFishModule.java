@@ -1,5 +1,6 @@
 package io.github.shamanalle.multiclicker.module.automation;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
@@ -7,7 +8,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Messages;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.mixin.FishingHookAccessor;
 import io.github.shamanalle.multiclicker.module.Category;
@@ -23,12 +26,15 @@ import java.util.Random;
 /**
  * Reels in when a fish bites and casts the rod again. The rod is used directly (not through the
  * use key), so it works from either hand, never clicks the block in front of the player and does
- * not fight with the use clicker.
+ * not fight with the use clicker. The HUD shows whether the hook is in open water, the only place
+ * treasure can be caught.
  */
 public class AutoFishModule extends Module {
     private static final Random RANDOM = new Random();
     /** How long to wait for the hook entity to appear after casting. */
     private static final int CAST_GRACE = 40;
+    /** Ticks the hook floats before open water is checked, so it has settled. */
+    private static final int OPEN_WATER_DELAY = 30;
 
     public final IntSetting reaction = add(new IntSetting("reaction", 6, 0, 40, Unit.TICKS));
     public final IntSetting jitter = add(new IntSetting("jitter", 4, 0, 20, Unit.TICKS).zeroMeans("options.off"));
@@ -38,6 +44,7 @@ public class AutoFishModule extends Module {
     public final IntSetting timeout = add(new IntSetting("timeout", 60, 0, 180, Unit.SECONDS).zeroMeans("options.off")
             .visibleWhen(autoCast::get));
     public final IntSetting protectRod = add(new IntSetting("protect_rod", 5, 0, 64, Unit.NONE).zeroMeans("options.off"));
+    public final BoolSetting openWater = add(new BoolSetting("open_water", true));
     public final IntSetting catchLimit = add(new IntSetting("catch_limit", 0, 0, 1000, Unit.NONE)
             .zeroMeans("multiclicker.value.unlimited"));
 
@@ -50,6 +57,10 @@ public class AutoFishModule extends Module {
     private int waitTicks;
     private int castGrace;
     private int catches;
+    /** Whether the floating hook is in open water; {@code null} while unknown. */
+    @Nullable
+    private Boolean inOpenWater;
+    private boolean openWaterWarned;
 
     public AutoFishModule() {
         super("auto_fish", Category.AUTOMATION, true, false);
@@ -73,6 +84,7 @@ public class AutoFishModule extends Module {
         waitTicks = 0;
         castGrace = 0;
         catches = 0;
+        inOpenWater = null;
     }
 
     @Override
@@ -112,6 +124,7 @@ public class AutoFishModule extends Module {
                 }
                 castGrace = 0;
                 waitTicks++;
+                checkOpenWater(player, hook);
                 if (((FishingHookAccessor) hook).multiclicker$isBiting()) {
                     state = State.REELING;
                     timer = reaction.get() + randomDelay();
@@ -149,10 +162,23 @@ public class AutoFishModule extends Module {
                 if (player.fishing == null && autoCast.get()) {
                     useRod(mc, player);
                     castGrace = CAST_GRACE;
+                    inOpenWater = null;
+                    openWaterWarned = false;
                 }
                 state = State.WAITING;
                 waitTicks = 0;
             }
+        }
+    }
+
+    private void checkOpenWater(LocalPlayer player, FishingHook hook) {
+        if (!openWater.get() || waitTicks < OPEN_WATER_DELAY || waitTicks % 10 != 0 || !hook.isInWater()) {
+            return;
+        }
+        inOpenWater = ((FishingHookAccessor) hook).multiclicker$calculateOpenWater(hook.blockPosition());
+        if (!inOpenWater && !openWaterWarned) {
+            openWaterWarned = true;
+            Messages.overlay(player, Component.translatable("multiclicker.fish.not_open_water").withStyle(ChatFormatting.YELLOW));
         }
     }
 
@@ -179,6 +205,9 @@ public class AutoFishModule extends Module {
 
     @Override
     public String hudInfo() {
-        return Integer.toString(catches);
+        if (!openWater.get() || inOpenWater == null) {
+            return Integer.toString(catches);
+        }
+        return catches + " · " + Component.translatable(inOpenWater ? "multiclicker.fish.open" : "multiclicker.fish.closed").getString();
     }
 }

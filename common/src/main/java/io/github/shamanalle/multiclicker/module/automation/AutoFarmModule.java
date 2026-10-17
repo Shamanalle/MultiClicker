@@ -31,10 +31,13 @@ import io.github.shamanalle.multiclicker.setting.IntSetting;
 import io.github.shamanalle.multiclicker.setting.Unit;
 import io.github.shamanalle.multiclicker.util.Inventories;
 
+import java.util.function.Predicate;
+
 /**
  * Harvests ripe crops around the player (or only the one under the crosshair) and plants the
  * seeds again. Wheat, carrots, potatoes, beetroots and nether wart are replanted; cocoa and sweet
- * berries are harvested; crops from other mods are harvested when they are ripe.
+ * berries are harvested; crops from other mods are harvested when they are ripe. With bone meal on,
+ * a growing crop in range is fertilized while nothing is ripe.
  */
 public class AutoFarmModule extends Module {
     /** Ticks to wait for the harvested block to clear before giving up the replanting. */
@@ -45,6 +48,7 @@ public class AutoFarmModule extends Module {
     public final IntSetting range = add(new IntSetting("range", 3, 0, 4, Unit.BLOCKS)
             .zeroMeans("multiclicker.value.crosshair"));
     public final BoolSetting replant = add(new BoolSetting("replant", true));
+    public final BoolSetting boneMeal = add(new BoolSetting("bone_meal", false));
     public final IntSetting delay = add(new IntSetting("delay", 2, 1, 20, Unit.TICKS));
 
     private int cooldown;
@@ -94,10 +98,19 @@ public class AutoFarmModule extends Module {
             cooldown = delay.get();
             return;
         }
-        BlockPos target = findRipe(mc, player);
+        BlockPos target = find(mc, player, AutoFarmModule::isRipe);
         if (target != null) {
             harvest(mc, player, target);
             cooldown = delay.get();
+            return;
+        }
+        if (boneMeal.get() && hasItem(player, Items.BONE_MEAL)) {
+            target = find(mc, player, AutoFarmModule::isGrowing);
+            if (target != null && useOn(mc, player, Items.BONE_MEAL, new BlockHitResult(Vec3.atCenterOf(target),
+                    Direction.UP, target, false))) {
+                Session.swing(player);
+                cooldown = delay.get();
+            }
         }
     }
 
@@ -115,6 +128,21 @@ public class AutoFarmModule extends Module {
         }
         if (block instanceof SweetBerryBushBlock) {
             return state.getValue(SweetBerryBushBlock.AGE) >= 2;
+        }
+        return false;
+    }
+
+    /** Whether the block is a vanilla crop that bone meal makes grow further. */
+    public static boolean isGrowing(BlockState state) {
+        Block block = state.getBlock();
+        if (block instanceof CropBlock crop) {
+            return !crop.isMaxAge(state);
+        }
+        if (block instanceof CocoaBlock) {
+            return state.getValue(CocoaBlock.AGE) < CocoaBlock.MAX_AGE;
+        }
+        if (block instanceof SweetBerryBushBlock) {
+            return state.getValue(SweetBerryBushBlock.AGE) < 2;
         }
         return false;
     }
@@ -141,11 +169,11 @@ public class AutoFarmModule extends Module {
     }
 
     @Nullable
-    private BlockPos findRipe(Minecraft mc, LocalPlayer player) {
+    private BlockPos find(Minecraft mc, LocalPlayer player, Predicate<BlockState> wanted) {
         int radius = range.get();
         if (radius == 0) {
             if (mc.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK
-                    && isRipe(mc.level.getBlockState(hit.getBlockPos()))) {
+                    && wanted.test(mc.level.getBlockState(hit.getBlockPos()))) {
                 return hit.getBlockPos();
             }
             return null;
@@ -157,7 +185,7 @@ public class AutoFarmModule extends Module {
         double bestDistance = Double.MAX_VALUE;
         for (BlockPos pos : BlockPos.betweenClosed(feet.offset(-radius, -1, -radius), feet.offset(radius, 1, radius))) {
             double distance = eyes.distanceToSqr(Vec3.atCenterOf(pos));
-            if (distance < bestDistance && distance <= reach * reach && isRipe(mc.level.getBlockState(pos))) {
+            if (distance < bestDistance && distance <= reach * reach && wanted.test(mc.level.getBlockState(pos))) {
                 bestDistance = distance;
                 best = pos.immutable();
             }
@@ -186,8 +214,7 @@ public class AutoFarmModule extends Module {
     }
 
     /**
-     * Plants the seed where the crop was: from the offhand, from the hotbar (switching back to the
-     * slot in use right after) or from the main inventory (swapped into the hand and back again).
+     * Plants the seed where the crop was, once the harvest is through.
      *
      * @return whether it acted this tick
      */
@@ -200,40 +227,55 @@ public class AutoFarmModule extends Module {
         if (!mc.level.getBlockState(pos).isAir()) {
             return false; // the harvest is not through yet
         }
+        BlockPos soil = pos.below();
+        boolean planted = useOn(mc, player, replantSeed,
+                new BlockHitResult(Vec3.atCenterOf(soil).add(0, 0.5, 0), Direction.UP, soil, false));
+        replantPos = null;
+        return planted;
+    }
+
+    /**
+     * Uses an item on a block: from the offhand, from the hotbar (switching back to the slot in use
+     * right after) or from the main inventory (swapped into the hand and back again).
+     *
+     * @return whether the item was found and used
+     */
+    private static boolean useOn(Minecraft mc, LocalPlayer player, Item item, BlockHitResult hit) {
         InteractionHand hand;
         int previous = -1;
         int borrowed = -1;
         int selected = Slots.selected(player.getInventory());
-        if (player.getOffhandItem().is(replantSeed)) {
+        if (player.getOffhandItem().is(item)) {
             hand = InteractionHand.OFF_HAND;
         } else {
             hand = InteractionHand.MAIN_HAND;
-            int slot = findHotbar(player, replantSeed);
+            int slot = findHotbar(player, item);
             if (slot != -1) {
                 if (slot != selected) {
                     previous = selected;
                     Inventories.selectSlot(player, slot);
                 }
             } else {
-                borrowed = findMain(player, replantSeed);
+                borrowed = findMain(player, item);
                 if (borrowed == -1 || !Inventories.canClickInventory(mc)) {
-                    replantPos = null;
                     return false;
                 }
                 // The held item goes back in the same tick, so its attack charge is kept.
                 Inventories.swapWithHotbar(mc, borrowed, selected);
             }
         }
-        BlockPos soil = pos.below();
-        mc.gameMode.useItemOn(player, hand, new BlockHitResult(Vec3.atCenterOf(soil).add(0, 0.5, 0), Direction.UP, soil, false));
+        mc.gameMode.useItemOn(player, hand, hit);
         if (previous != -1) {
             Inventories.selectSlot(player, previous);
         }
         if (borrowed != -1) {
             Inventories.swapWithHotbar(mc, borrowed, selected);
         }
-        replantPos = null;
         return true;
+    }
+
+    private static boolean hasItem(LocalPlayer player, Item item) {
+        return player.getOffhandItem().is(item) || findHotbar(player, item) != -1 || findMain(player, item) != -1;
     }
 
     private static int findHotbar(LocalPlayer player, Item item) {
