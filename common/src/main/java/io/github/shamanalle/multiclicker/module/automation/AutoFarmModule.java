@@ -87,7 +87,7 @@ public class AutoFarmModule extends Module {
         LocalPlayer player = mc.player;
         MultiClicker mod = MultiClicker.get();
         if (Screens.current(mc) != null || player.isSpectator() || player.isUsingItem() || mc.gameMode.isDestroying()
-                || mod.autoEat().isBusy() || mod.clicker().isSwappingWeapon()) {
+                || mod.isConsuming() || mod.clicker().isSwappingWeapon()) {
             return;
         }
         if (replantPos != null && tryReplant(mc, player)) {

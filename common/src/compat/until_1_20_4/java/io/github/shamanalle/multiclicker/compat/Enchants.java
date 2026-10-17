@@ -33,6 +33,10 @@ public final class Enchants {
         return EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MOB_LOOTING, stack);
     }
 
+    public int mending(ItemStack stack) {
+        return EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MENDING, stack);
+    }
+
     /** Extra melee damage of the weapon's enchantments against this target. */
     public float damageBonus(ItemStack weapon, LivingEntity target) {
         return EnchantmentHelper.getDamageBonus(weapon, target.getMobType());

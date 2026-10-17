@@ -41,6 +41,10 @@ public final class Enchants {
         return level(Enchantments.LOOTING, stack);
     }
 
+    public int mending(ItemStack stack) {
+        return level(Enchantments.MENDING, stack);
+    }
+
     /** Extra melee damage of the weapon's enchantments against this target. */
     public float damageBonus(ItemStack weapon, LivingEntity target) {
         float bonus = 0;

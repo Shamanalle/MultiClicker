@@ -162,7 +162,7 @@ public class AntiAfkModule extends Module {
         MultiClicker mod = MultiClicker.get();
         ClickerModule clicker = mod.clicker();
         boolean clicking = clicker.isRunning() && (clicker.attack.enabled.get() || clicker.use.enabled.get());
-        return !clicking && player.fishing == null && !player.isUsingItem() && !mod.autoEat().isBusy()
+        return !clicking && player.fishing == null && !player.isUsingItem() && !mod.isConsuming()
                 && !mod.autoTool().isToolSelected() && !mod.autoFarm().isRunning() && !clicker.isSwappingWeapon();
     }
 

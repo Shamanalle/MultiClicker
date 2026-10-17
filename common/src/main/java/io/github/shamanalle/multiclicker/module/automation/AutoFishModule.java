@@ -91,7 +91,7 @@ public class AutoFishModule extends Module {
     public void tick(Minecraft mc) {
         LocalPlayer player = mc.player;
         // Eating takes the main hand for a moment; the fishing state continues afterwards.
-        if (Screens.current(mc) != null || !isHoldingRod(player) || MultiClicker.get().autoEat().isBusy()) {
+        if (Screens.current(mc) != null || !isHoldingRod(player) || MultiClicker.get().isConsuming()) {
             return;
         }
         if (Inventories.isNearlyBroken(rod(player), protectRod.get())) {
