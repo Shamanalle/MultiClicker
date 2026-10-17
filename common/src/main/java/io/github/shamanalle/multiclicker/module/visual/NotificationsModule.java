@@ -8,6 +8,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import io.github.shamanalle.multiclicker.compat.Entities;
 import io.github.shamanalle.multiclicker.compat.Messages;
 import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.compat.Sounds;
@@ -16,6 +17,7 @@ import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.EnumSetting;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
+import io.github.shamanalle.multiclicker.setting.StringSetting;
 import io.github.shamanalle.multiclicker.setting.Unit;
 import io.github.shamanalle.multiclicker.stats.Counters;
 import io.github.shamanalle.multiclicker.stats.SessionRecord;
@@ -23,15 +25,20 @@ import io.github.shamanalle.multiclicker.stats.Stat;
 import io.github.shamanalle.multiclicker.stats.StatFormat;
 import io.github.shamanalle.multiclicker.stats.Statistics;
 import io.github.shamanalle.multiclicker.util.Inventories;
+import io.github.shamanalle.multiclicker.util.ServerStats;
+import io.github.shamanalle.multiclicker.util.Webhook;
+import net.minecraft.client.resources.language.I18n;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Tells the player when something needs attention while the mod works: a full inventory, a tool
  * about to break, the last item of a stack used up, no food, a player nearby, the mod stopping by
- * itself. Other modules report their events through the public methods.
+ * itself. Other modules report their events through the public methods. The important events can
+ * also go to a Discord webhook, to keep an eye on the game from the phone while away.
  */
 public class NotificationsModule extends Module {
     public enum Where {
@@ -61,6 +68,16 @@ public class NotificationsModule extends Module {
     public final BoolSetting sessionSummary = add(new BoolSetting("session_summary", true));
     public final IntSetting playerRadius = add(new IntSetting("player_radius", 0, 0, 64, Unit.BLOCKS)
             .zeroMeans("options.off"));
+    /** Belongs to the player, not to a setup: profiles neither store nor change it. */
+    public final StringSetting webhook = add(new StringSetting("webhook", "", 300).secret()
+            .validator(Webhook::isValidUrl).tester(this::testWebhook).global());
+    public final BoolSetting webhookStopped = add(webhookEvent("webhook_stopped", true));
+    public final BoolSetting webhookDisconnect = add(webhookEvent("webhook_disconnect", true));
+    public final BoolSetting webhookDeath = add(webhookEvent("webhook_death", true));
+    public final BoolSetting webhookPlayer = add(webhookEvent("webhook_player", true));
+    public final BoolSetting webhookInventory = add(webhookEvent("webhook_inventory", false));
+    public final BoolSetting webhookGoal = add(webhookEvent("webhook_goal", true));
+    public final BoolSetting webhookSummary = add(webhookEvent("webhook_summary", true));
 
     /** Last tick each notification was shown, to keep repeated events quiet. */
     private final Map<String, Integer> lastShown = new HashMap<>();
@@ -74,9 +91,16 @@ public class NotificationsModule extends Module {
     private ItemStack goneStack = ItemStack.EMPTY;
     private int goneSlot = -1;
     private int goneTicks;
+    private boolean wasDead;
+    /** Tick of the last death sent to the webhook, so the stop that follows it is not sent twice. */
+    private int deathPostedAt = Integer.MIN_VALUE / 2;
 
     public NotificationsModule() {
-        super("notifications", Category.VISUAL, true, true);
+        super("notifications", Category.SESSION, true, true);
+    }
+
+    private BoolSetting webhookEvent(String key, boolean defaultValue) {
+        return new BoolSetting(key, defaultValue).visibleWhen(() -> !webhook.isEmpty());
     }
 
     @Override
@@ -88,12 +112,18 @@ public class NotificationsModule extends Module {
         lastHeld = ItemStack.EMPTY;
         lastSlot = -1;
         goneSlot = -1;
+        wasDead = mc.player != null && mc.player.isDeadOrDying();
     }
 
     @Override
     public void tick(Minecraft mc) {
         ticks++;
         LocalPlayer player = mc.player;
+        boolean dead = player.isDeadOrDying();
+        if (dead && !wasDead) {
+            died(mc, player);
+        }
+        wasDead = dead;
         if (player.isCreative() || player.isSpectator()) {
             return;
         }
@@ -107,7 +137,10 @@ public class NotificationsModule extends Module {
     private void checkFull(Minecraft mc, Inventory inventory) {
         boolean full = isFull(inventory);
         if (full && !wasFull && inventoryFull.get()) {
-            send(mc, "inventory_full", REPEAT_TICKS, Component.translatable("multiclicker.notify.inventory_full"));
+            if (send(mc, "inventory_full", REPEAT_TICKS, Component.translatable("multiclicker.notify.inventory_full"))) {
+                post(mc, webhookInventory, Component.translatable("multiclicker.webhook.inventory_full"), Component.empty(),
+                        Webhook.WARNING);
+            }
         }
         wasFull = full;
     }
@@ -153,8 +186,12 @@ public class NotificationsModule extends Module {
         }
         for (Player other : mc.level.players()) {
             if (other != player && !other.isSpectator() && other.distanceTo(player) <= radius) {
-                send(mc, "player:" + other.getUUID(), REPEAT_LASTING_TICKS, Component.translatable("multiclicker.notify.player_nearby",
-                        other.getName(), Math.round(other.distanceTo(player))));
+                Component message = Component.translatable("multiclicker.notify.player_nearby",
+                        other.getName(), Math.round(other.distanceTo(player)));
+                if (send(mc, "player:" + other.getUUID(), REPEAT_LASTING_TICKS, message)) {
+                    post(mc, webhookPlayer, Component.translatable("multiclicker.webhook.player_nearby"), message,
+                            Webhook.WARNING);
+                }
             }
         }
     }
@@ -193,6 +230,9 @@ public class NotificationsModule extends Module {
      * @return false when this module is off, so the caller shows the message the usual way
      */
     public boolean stopped(Minecraft mc, Component reason) {
+        if (ticks - deathPostedAt > SETTLE_TICKS) {
+            post(mc, webhookStopped, Component.translatable("multiclicker.webhook.stopped"), reason, Webhook.DANGER);
+        }
         if (!isEnabled() || !stopped.get() || mc.player == null) {
             return false;
         }
@@ -202,10 +242,14 @@ public class NotificationsModule extends Module {
 
     /** The mod was turned off: a line in the chat with what the session did. */
     public void sessionSummary(Minecraft mc, SessionRecord session) {
-        if (!isEnabled() || !sessionSummary.get() || mc.player == null || session.duration() < SUMMARY_MIN_MS) {
+        if (!isEnabled() || session.duration() < SUMMARY_MIN_MS) {
             return;
         }
         Counters counters = session.counters();
+        postSummary(mc, session, counters);
+        if (!sessionSummary.get() || mc.player == null) {
+            return;
+        }
         MutableComponent text = Component.literal("MultiClicker: ").withStyle(ChatFormatting.GOLD)
                 .append(Component.translatable("multiclicker.notify.session_summary",
                         Statistics.formatDuration(session.duration())).withStyle(ChatFormatting.YELLOW));
@@ -223,14 +267,84 @@ public class NotificationsModule extends Module {
         }
     }
 
-    /** Shows a notification unless the one with the same key was shown less than {@code repeatTicks} ago. */
-    private void send(Minecraft mc, String key, int repeatTicks, Component message) {
+    private void postSummary(Minecraft mc, SessionRecord session, Counters counters) {
+        StringBuilder text = new StringBuilder();
+        for (Stat stat : SUMMARY_STATS) {
+            if (counters.get(stat) > 0) {
+                text.append(I18n.get(stat.translationKey())).append(": **").append(StatFormat.value(counters, stat))
+                        .append("**\n");
+            }
+        }
+        post(mc, webhookSummary, Component.translatable("multiclicker.webhook.summary",
+                Statistics.formatDuration(session.duration())), Component.literal(text.toString().strip()), Webhook.INFO);
+    }
+
+    /** The player died while the mod was working. */
+    private void died(Minecraft mc, LocalPlayer player) {
+        deathPostedAt = ticks;
+        post(mc, webhookDeath, Component.translatable("multiclicker.webhook.death"), deathPlace(player), Webhook.DANGER);
+    }
+
+    /** "x y z in dimension", for the chat and the webhook. */
+    public static Component deathPlace(LocalPlayer player) {
+        return Component.translatable("multiclicker.notify.died_at", player.getBlockX(), player.getBlockY(),
+                player.getBlockZ(), Entities.dimension(player));
+    }
+
+    /** The connection to the server was lost; auto reconnect may try again. */
+    public void disconnected(Minecraft mc, Component reason, boolean reconnecting) {
+        Component text = reconnecting
+                ? reason.copy().append("\n").append(Component.translatable("multiclicker.webhook.reconnecting"))
+                : reason;
+        post(mc, webhookDisconnect, Component.translatable("multiclicker.webhook.disconnected"), text, Webhook.WARNING);
+    }
+
+    /** Auto reconnect joined the server again. */
+    public void reconnected(Minecraft mc) {
+        post(mc, webhookDisconnect, Component.translatable("multiclicker.webhook.reconnected"), Component.empty(),
+                Webhook.SUCCESS);
+    }
+
+    /** A stats goal was reached. */
+    public void goalReached(Minecraft mc, Component goal) {
+        show(mc, Component.translatable("multiclicker.notify.goal_reached", goal), sound.get());
+        post(mc, webhookGoal, Component.translatable("multiclicker.webhook.goal"), goal, Webhook.SUCCESS);
+    }
+
+    /** Sends an event to the webhook, if one is set and the event is chosen. */
+    private void post(Minecraft mc, BoolSetting event, Component title, Component text, int color) {
+        if (isEnabled() && !webhook.isEmpty() && event.get()) {
+            Webhook.send(webhook.get(), title.getString(), text.getString(), color, footer(mc));
+        }
+    }
+
+    private static String footer(Minecraft mc) {
+        String name = mc.player != null ? mc.player.getName().getString() : mc.getUser().getName();
+        String server = ServerStats.address(mc);
+        return server == null ? name : name + " · " + server;
+    }
+
+    private CompletableFuture<Component> testWebhook(String url) {
+        Minecraft mc = Minecraft.getInstance();
+        return Webhook.send(url, I18n.get("multiclicker.webhook.test"), I18n.get("multiclicker.webhook.test.desc"),
+                Webhook.SUCCESS, footer(mc)).thenApply(status -> status >= 200 && status < 300
+                ? Component.translatable("multiclicker.webhook.test.ok")
+                : Component.translatable("multiclicker.webhook.test.failed", status < 0 ? "—" : String.valueOf(status)));
+    }
+
+    /**
+     * Shows a notification unless the one with the same key was shown less than {@code repeatTicks} ago.
+     *
+     * @return whether it was shown
+     */
+    private boolean send(Minecraft mc, String key, int repeatTicks, Component message) {
         Integer last = lastShown.get(key);
         if (last != null && ticks - last < repeatTicks) {
-            return;
+            return false;
         }
         lastShown.put(key, ticks);
         show(mc, message, sound.get());
+        return true;
     }
 
     private void show(Minecraft mc, Component message, boolean withSound) {

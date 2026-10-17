@@ -178,7 +178,8 @@ public class HudModule extends Module {
             for (Module module : mod.modules()) {
                 // Helpers that act on their own; rule modules (target filter, mining rules) and visuals are not listed.
                 boolean listed = module.enabledSetting() != null && module.isEnabled() && module != mod.mining()
-                        && module.category() != Category.VISUAL && module.category() != Category.COMBAT;
+                        && module.category() != Category.VISUAL && module.category() != Category.COMBAT
+                        && module.category() != Category.SESSION;
                 if (!listed) {
                     continue;
                 }

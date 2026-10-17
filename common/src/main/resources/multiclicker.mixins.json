@@ -6,6 +6,7 @@
   "client": [
     "ClientPacketListenerMixin",
     "DamageEventMixin",
+    "DisconnectedScreenAccessor",
     "EntityMixin",
     "FishingHookAccessor",
     "KeyMappingAccessor",

@@ -27,6 +27,7 @@ import io.github.shamanalle.multiclicker.module.clicker.ClickerModule;
 import io.github.shamanalle.multiclicker.module.combat.TargetFilterModule;
 import io.github.shamanalle.multiclicker.module.mining.AutoToolModule;
 import io.github.shamanalle.multiclicker.module.mining.MiningModule;
+import io.github.shamanalle.multiclicker.module.session.AutoReconnectModule;
 import io.github.shamanalle.multiclicker.module.survival.AutoEatModule;
 import io.github.shamanalle.multiclicker.module.survival.OffhandModule;
 import io.github.shamanalle.multiclicker.module.survival.SafetyModule;
@@ -77,11 +78,12 @@ public final class MultiClicker {
     private final HudModule hud = new HudModule();
     private final HighlightModule highlight = new HighlightModule();
     private final NotificationsModule notifications = new NotificationsModule();
+    private final AutoReconnectModule autoReconnect = new AutoReconnectModule();
     private final InterfaceModule ui = new InterfaceModule();
 
     /** Display order (grouped by category in the menu). */
     private final List<Module> modules = List.of(clicker, targetFilter, safety, offhand, autoEat, autoFarm,
-            autoFish, hotbarRefill, antiAfk, autoWalk, inventoryCleaner, mining, autoTool, hud, highlight, notifications, ui);
+            autoFish, hotbarRefill, antiAfk, autoWalk, inventoryCleaner, mining, autoTool, notifications, autoReconnect, hud, highlight, ui);
     /**
      * Tick order. Safety first, so nothing else runs once it stops the mod. Auto eat decides before
      * the clicker, so the clicker already pauses on the tick a meal starts. Hotbar refill swaps a
@@ -205,6 +207,10 @@ public final class MultiClicker {
         return notifications;
     }
 
+    public AutoReconnectModule autoReconnect() {
+        return autoReconnect;
+    }
+
     public ConfigManager config() {
         return config;
     }
@@ -234,6 +240,7 @@ public final class MultiClicker {
         for (InputConstants.Key key : Hotkeys.drain(mc)) {
             onHotkey(mc, key);
         }
+        autoReconnect.watch(mc);
         if (mc.player != null && mc.getConnection() != profileConnection) {
             profileConnection = mc.getConnection();
             loadServerProfile(mc);

@@ -10,6 +10,7 @@ import io.github.shamanalle.multiclicker.setting.KeySetting;
 import io.github.shamanalle.multiclicker.setting.ListSetting;
 import io.github.shamanalle.multiclicker.gui.KeyCapture;
 import io.github.shamanalle.multiclicker.setting.Setting;
+import io.github.shamanalle.multiclicker.setting.StringSetting;
 
 /**
  * The interactive part of a setting row. Controls remember where they were drawn last frame and
@@ -76,6 +77,9 @@ public abstract class SettingControl {
         }
         if (setting instanceof ListSetting list) {
             return new ListControl(list, screen);
+        }
+        if (setting instanceof StringSetting text) {
+            return new TextControl(text, screen);
         }
         throw new IllegalArgumentException("Unsupported setting type: " + setting.getClass());
     }
