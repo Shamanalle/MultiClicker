@@ -305,10 +305,23 @@ public class NotificationsModule extends Module {
                 Webhook.SUCCESS);
     }
 
-    /** A stats goal was reached. */
-    public void goalReached(Minecraft mc, Component goal) {
-        show(mc, Component.translatable("multiclicker.notify.goal_reached", goal), sound.get());
+    /**
+     * A session goal was reached. Shown even while this module is off, since the player asked for
+     * it; when the goal stops the mod, the stop message says it instead.
+     */
+    public void goalReached(Minecraft mc, Component goal, boolean stopping) {
         post(mc, webhookGoal, Component.translatable("multiclicker.webhook.goal"), goal, Webhook.SUCCESS);
+        if (stopping || mc.player == null) {
+            return;
+        }
+        Component message = Component.translatable("multiclicker.notify.goal_reached", goal);
+        if (isEnabled()) {
+            show(mc, message, true);
+        } else {
+            Messages.overlay(mc.player, Component.literal("MultiClicker: ").withStyle(ChatFormatting.GOLD)
+                    .append(message.copy().withStyle(ChatFormatting.YELLOW)));
+            mc.getSoundManager().play(Sounds.notice());
+        }
     }
 
     /** Sends an event to the webhook, if one is set and the event is chosen. */

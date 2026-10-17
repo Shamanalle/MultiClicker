@@ -128,6 +128,17 @@ public abstract class Setting<T> {
     /** Human readable value, used by the UI. */
     public abstract String displayValue();
 
+    /** The default value as {@link #displayValue} would show it. */
+    public String displayDefault() {
+        T current = value;
+        value = defaultValue;
+        try {
+            return displayValue();
+        } finally {
+            value = current;
+        }
+    }
+
     protected abstract T sanitize(T value);
 
     public abstract JsonElement toJson();

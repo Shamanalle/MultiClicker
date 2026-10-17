@@ -33,6 +33,7 @@ import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.config.Preset;
 import io.github.shamanalle.multiclicker.gui.ConfigScreen;
+import io.github.shamanalle.multiclicker.gui.HudEditScreen;
 import io.github.shamanalle.multiclicker.gui.ListEditScreen;
 import io.github.shamanalle.multiclicker.gui.ProfilesScreen;
 import io.github.shamanalle.multiclicker.gui.StatsScreen;
@@ -758,6 +759,10 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         });
         context.takeScreenshot("readme_" + lang + "_hud");
 
+        context.setScreen(() -> new ConfigScreen(null));
+        context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).showOverview());
+        parkCursor(context);
+        context.takeScreenshot("readme_" + lang + "_menu_overview");
         for (Category category : List.of(Category.CLICKER, Category.SURVIVAL, Category.AUTOMATION, Category.VISUAL)) {
             context.setScreen(() -> new ConfigScreen(null));
             context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).showCategory(category));
@@ -792,6 +797,10 @@ public class MultiClickerGameTest implements FabricClientGameTest {
     // --- Menus ----------------------------------------------------------------------------------
 
     private void menuScreenshots(ClientGameTestContext context, String prefix) {
+        context.setScreen(() -> new ConfigScreen(null));
+        context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).showOverview());
+        parkCursor(context);
+        context.takeScreenshot(prefix + "_menu_overview");
         for (Category category : Category.values()) {
             context.setScreen(() -> new ConfigScreen(null));
             context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).showCategory(category));
@@ -810,6 +819,9 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         context.setScreen(() -> new StatsScreen(new ConfigScreen(null)));
         parkCursor(context);
         context.takeScreenshot(prefix + "_stats");
+        context.setScreen(() -> new HudEditScreen(new ConfigScreen(null)));
+        parkCursor(context);
+        context.takeScreenshot(prefix + "_hud_editor");
         context.setScreen(() -> null);
         context.waitTicks(2);
     }

@@ -28,6 +28,7 @@ import io.github.shamanalle.multiclicker.module.combat.TargetFilterModule;
 import io.github.shamanalle.multiclicker.module.mining.AutoToolModule;
 import io.github.shamanalle.multiclicker.module.mining.MiningModule;
 import io.github.shamanalle.multiclicker.module.session.AutoReconnectModule;
+import io.github.shamanalle.multiclicker.module.session.GoalsModule;
 import io.github.shamanalle.multiclicker.module.survival.AutoEatModule;
 import io.github.shamanalle.multiclicker.module.survival.AutoPotionModule;
 import io.github.shamanalle.multiclicker.module.survival.AutoRespawnModule;
@@ -83,12 +84,13 @@ public final class MultiClicker {
     private final HighlightModule highlight = new HighlightModule();
     private final NotificationsModule notifications = new NotificationsModule();
     private final AutoReconnectModule autoReconnect = new AutoReconnectModule();
+    private final GoalsModule goals = new GoalsModule();
     private final InterfaceModule ui = new InterfaceModule();
 
     /** Display order (grouped by category in the menu). */
     private final List<Module> modules = List.of(clicker, targetFilter, safety, offhand, autoEat, autoPotion,
             autoRespawn, autoFarm, autoFish, hotbarRefill, antiAfk, autoWalk, inventoryCleaner, mining, autoTool,
-            notifications, autoReconnect, hud, highlight, ui);
+            notifications, autoReconnect, goals, hud, highlight, ui);
     /**
      * Tick order. Safety first, so nothing else runs once it stops the mod. Auto eat and auto potion
      * decide before the clicker, so the clicker already pauses on the tick a meal starts. Hotbar refill swaps a
@@ -97,7 +99,7 @@ public final class MultiClicker {
      * run last and see what the other modules did.
      */
     private final List<Module> tickOrder = List.of(safety, autoPotion, autoEat, hotbarRefill, clicker, offhand, autoFish,
-            autoFarm, autoTool, inventoryCleaner, antiAfk, autoWalk, notifications);
+            autoFarm, autoTool, inventoryCleaner, antiAfk, autoWalk, goals, notifications);
 
     private final ConfigManager config;
     private final Statistics stats;
@@ -224,6 +226,10 @@ public final class MultiClicker {
 
     public NotificationsModule notifications() {
         return notifications;
+    }
+
+    public GoalsModule goals() {
+        return goals;
     }
 
     public AutoReconnectModule autoReconnect() {

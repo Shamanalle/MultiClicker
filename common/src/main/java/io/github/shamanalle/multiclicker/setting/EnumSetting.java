@@ -5,16 +5,30 @@ import com.google.gson.JsonPrimitive;
 import net.minecraft.client.resources.language.I18n;
 
 import java.util.Locale;
+import java.util.function.Function;
 
 /**
  * Enum setting. Option labels use the key {@code multiclicker.option.<constant>}.
  */
 public class EnumSetting<E extends Enum<E>> extends Setting<E> {
     private final E[] values;
+    private Function<E, String> labels = EnumSetting::label;
 
     public EnumSetting(String key, E defaultValue) {
         super(key, defaultValue);
         this.values = defaultValue.getDeclaringClass().getEnumConstants();
+    }
+
+    /** Shows the options with other labels than {@code multiclicker.option.<constant>}. */
+    public EnumSetting<E> labels(Function<E, String> labels) {
+        this.labels = labels;
+        return this;
+    }
+
+    /** The label of any option of this setting. */
+    @SuppressWarnings("unchecked")
+    public String labelOf(Enum<?> constant) {
+        return labels.apply((E) constant);
     }
 
     public E[] values() {
@@ -32,7 +46,7 @@ public class EnumSetting<E extends Enum<E>> extends Setting<E> {
 
     @Override
     public String displayValue() {
-        return label(value);
+        return labels.apply(value);
     }
 
     @Override

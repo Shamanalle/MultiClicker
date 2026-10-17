@@ -23,7 +23,7 @@ public class CycleControl extends SettingControl {
         if (cachedWidth < 0) {
             int widest = 0;
             for (Enum<?> value : setting.values()) {
-                widest = Math.max(widest, font.width(EnumSetting.label(value)));
+                widest = Math.max(widest, font.width(setting.labelOf(value)));
             }
             cachedWidth = Math.max(70, widest + 28);
         }

@@ -57,6 +57,11 @@ public abstract class SettingControl {
         return false;
     }
 
+    /** Enter or Space on the row picked with the arrow keys: does what a click on the control does. */
+    public boolean activate() {
+        return mouseClicked(x + width / 2.0, y + height / 2.0, 0);
+    }
+
     /** Arrow-key adjustment while the row is hovered. */
     public boolean adjust(int direction) {
         return false;
