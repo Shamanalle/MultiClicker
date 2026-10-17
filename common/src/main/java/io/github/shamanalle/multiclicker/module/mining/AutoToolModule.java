@@ -43,7 +43,7 @@ public class AutoToolModule extends Module {
     public void tick(Minecraft mc) {
         LocalPlayer player = mc.player;
         MultiClicker mod = MultiClicker.get();
-        if (mod.autoEat().isBusy() || mod.clicker().isSwappingWeapon()) {
+        if (mod.isConsuming() || mod.clicker().isSwappingWeapon()) {
             // Another module has the hotbar right now; it switches back to our tool when done.
             idleTicks = 0;
             return;

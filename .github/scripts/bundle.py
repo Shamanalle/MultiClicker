@@ -39,11 +39,17 @@ MOD_ANNOTATIONS = {b'Lnet/minecraftforge/fml/common/Mod;', b'Lnet/neoforged/fml/
 # Unknown annotation types are ignored, so the variants' entry classes lose @Mod and FML only sees the bootstrap.
 MOD_REPLACEMENT = b'Lio/github/shamanalle/multiclicker/boot/VariantEntry;'
 CONFIG = 'multiclicker.mixins.json'
-METADATA = release_groups.METADATA | {CONFIG}
+# The Forge jars for 1.21.3+ carry a second config of the same package; its mixins join the variant's config.
+EXTRA_CONFIGS = {'multiclicker-forge.mixins.json'}
+METADATA = release_groups.METADATA | {CONFIG} | EXTRA_CONFIGS
 # Fixed entry time, so the same inputs give the same jar.
 TIME = (2020, 1, 1, 0, 0, 0)
 # The bundled Forge jar for 1.20.1 is NeoForged's Forge and is published under the neoforge loader too.
 ALSO_PUBLISHED = {('forge', '1.20.1'): 'neoforge'}
+# Quilt runs Fabric mods (with Fabric API or Quilted Fabric API), so the stores list the Fabric jars for it too.
+STORE_LOADERS = {'fabric': ['fabric', 'quilt']}
+# The Quilt Loader the start-up check runs the Fabric jars on, at the oldest and newest version of each.
+QUILT_LOADER = '0.30.1'
 
 BOOT_CLASSES = {
     'fabric': ['FabricBoot', 'ModMenuBoot'],
@@ -186,6 +192,7 @@ def build(folder, output, loaders, oldest, newest, boot):
         variant = variant_id(loader, versions)
         for version in versions:
             properties.append(f'{loader}.{version}={variant}')
+        mixins = []
         with zipfile.ZipFile(path) as archive:
             for name in archive.namelist():
                 if name.endswith('/'):
@@ -196,11 +203,15 @@ def build(folder, output, loaders, oldest, newest, boot):
                     if not name.endswith('.class'):
                         sys.exit(f'{path.name}: unexpected resource {name} in the class packages')
                     entries[moved] = relocate_class(data, variant)
-                elif name == CONFIG:
+                elif name == CONFIG or name in EXTRA_CONFIGS:
                     config = json.loads(data)
-                    mixins = config.get('mixins', []) + config.get('client', [])
                     if config.get('mixins') or config.get('server'):
                         sys.exit(f'{path.name}: only client mixins can be bundled')
+                    if config['package'] != 'io.github.shamanalle.multiclicker.mixin':
+                        sys.exit(f'{path.name}: {name} has an unexpected package')
+                    mixins += config.get('client', [])
+                    if name != CONFIG:
+                        continue
                     levels.append(config['compatibilityLevel'])
                     config['package'] = f'io.github.shamanalle.multiclicker.v.{variant}.mixin'
                     config['plugin'] = 'io.github.shamanalle.multiclicker.boot.VariantMixinPlugin'
@@ -208,7 +219,6 @@ def build(folder, output, loaders, oldest, newest, boot):
                     config_name = f'multiclicker-{variant}.mixins.json'
                     entries[config_name] = config
                     configs[loader].append(config_name)
-                    properties.append(f'{variant}.mixins={",".join(mixins)}')
                 elif name in METADATA:
                     if name != 'META-INF/MANIFEST.MF':
                         metadata.append((loader, name, data.decode(), versions[0]))
@@ -221,6 +231,7 @@ def build(folder, output, loaders, oldest, newest, boot):
                     if name in shared and shared[name][0] != data:
                         sys.exit(f'{path.name}: {name} differs from the one of variant {shared[name][1]}')
                     shared.setdefault(name, (data, variant))
+            properties.append(f'{variant}.mixins={",".join(mixins)}')
             entry = [name for name in entries if name.startswith(f'io/github/shamanalle/multiclicker/v/{variant}/')
                      and name.endswith('.class') and MOD_REPLACEMENT in entries[name]]
             if loader == 'fabric':
@@ -374,10 +385,11 @@ def entries_json():
         for loader in loaders:
             versions = loaders_versions(loader, parts)
             result.append({'loader': loader, 'label': release_groups.label(versions), 'versions': ' '.join(versions),
-                           'file': file, 'marker': len(loaders) > 1})
+                           'file': file, 'marker': len(loaders) > 1, 'loaders': ' '.join(STORE_LOADERS.get(loader, [loader]))})
         for (loader, version), other in ALSO_PUBLISHED.items():
             if loader in loaders and version in loaders_versions(loader, parts):
-                result.append({'loader': other, 'label': version, 'versions': version, 'file': file, 'marker': True})
+                result.append({'loader': other, 'label': version, 'versions': version, 'file': file, 'marker': True,
+                               'loaders': other})
     return json.dumps(result)
 
 
@@ -399,6 +411,9 @@ def games():
                 launch = f"neoforge:{props['neoforge_version']}"
             result.append({'loader': entry['loader'], 'mc': version, 'file': entry['file'], 'launch': launch,
                            'java': java})
+            if 'quilt' in entry['loaders'].split() and version in (entry['versions'].split()[0], entry['versions'].split()[-1]):
+                result.append({'loader': 'quilt', 'mc': version, 'file': entry['file'],
+                               'launch': f'quilt:{version}:{QUILT_LOADER}', 'java': java})
     print(json.dumps(result))
 
 

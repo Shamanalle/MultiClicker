@@ -184,7 +184,7 @@ public class ClickerModule extends Module {
             return;
         }
 
-        boolean eating = mod.autoEat().isBusy();
+        boolean eating = mod.isConsuming();
         raiseShield(mc);
         lowerShieldNow = false;
 
@@ -201,7 +201,7 @@ public class ClickerModule extends Module {
             // The shield stays down for this tick; the use channel picks the key up again next tick.
             Input.forceUp(mc.options.keyUse);
             shieldLowered = true;
-        } else if (mod.autoEat().holdsUseKey()) {
+        } else if (mod.holdsUseKeyForItem()) {
             // Releasing the key now would stop the meal; auto eat gives it back when done.
             use.handOver();
         } else if (use.enabled.get()) {

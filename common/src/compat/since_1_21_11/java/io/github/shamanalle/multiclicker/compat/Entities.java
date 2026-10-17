@@ -16,4 +16,9 @@ public final class Entities {
     public static Entity whole(Entity entity) {
         return entity instanceof EnderDragonPart part ? part.parentMob : entity;
     }
+
+    /** The id of the dimension the entity is in, such as {@code minecraft:the_nether}. */
+    public static String dimension(Entity entity) {
+        return entity.level().dimension().identifier().toString();
+    }
 }

@@ -37,7 +37,7 @@ public class SliderControl extends SettingControl {
     }
 
     private float progress() {
-        return (float) (setting.get() - setting.min()) / Math.max(1, setting.max() - setting.min());
+        return (float) setting.fraction(setting.get());
     }
 
     /** The width the widest value of this slider needs. */
@@ -137,7 +137,7 @@ public class SliderControl extends SettingControl {
             editText = "";
             replaceOnType = false;
         }
-        if (editText.length() < 6) {
+        if (editText.length() < Integer.toString(setting.max()).length()) {
             editText += character;
         }
         return true;
@@ -160,6 +160,15 @@ public class SliderControl extends SettingControl {
 
     public void cancelEdit() {
         editing = false;
+    }
+
+    /** Starts typing a number. */
+    @Override
+    public boolean activate() {
+        if (!editing) {
+            beginEdit();
+        }
+        return true;
     }
 
     @Override
@@ -206,13 +215,11 @@ public class SliderControl extends SettingControl {
 
     @Override
     public boolean adjust(int direction) {
-        int step = Keys.shiftDown() ? 10 : 1;
-        setting.set(setting.get() + direction * step);
+        setting.set(setting.step(setting.get(), direction, Keys.shiftDown()));
         return true;
     }
 
     private void setFromMouse(double mouseX) {
-        double t = Mth.clamp((mouseX - x) / trackWidth, 0.0, 1.0);
-        setting.set((int) Math.round(setting.min() + t * (setting.max() - setting.min())));
+        setting.set(setting.valueAt((mouseX - x) / trackWidth));
     }
 }

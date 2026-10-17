@@ -5,6 +5,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Enchants;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.compat.Tools;
@@ -19,7 +20,9 @@ import java.util.function.Predicate;
 
 /**
  * Keeps the most useful item in the offhand, by priority:
- * totem (low health) &gt; food (hungry) &gt; torch (holding a pickaxe) &gt; shield.
+ * totem (low health) &gt; food (hungry) &gt; torch (holding a pickaxe) &gt; a damaged Mending item &gt; shield.
+ * Mending items take turns: a repaired one is swapped for the next damaged one, so experience
+ * from a farm repairs the whole inventory.
  *
  * <p>Each rule has hysteresis so the offhand does not flip back and forth around a threshold,
  * and nothing but an emergency totem is swapped while an item is being used.</p>
@@ -36,6 +39,7 @@ public class OffhandModule extends Module {
     public final IntSetting foodHunger = add(new IntSetting("food_hunger", 0, 0, 19, Unit.HUNGER)
             .zeroMeans("options.off"));
     public final BoolSetting torchWithPickaxe = add(new BoolSetting("torch_with_pickaxe", false));
+    public final BoolSetting mending = add(new BoolSetting("mending", false));
     public final BoolSetting shield = add(new BoolSetting("shield", false));
 
     private int cooldown;
@@ -44,6 +48,7 @@ public class OffhandModule extends Module {
         TOTEM(stack -> stack.is(Items.TOTEM_OF_UNDYING)),
         FOOD(stack -> AutoEatModule.isAcceptableFood(stack, true, true)),
         TORCH(stack -> stack.is(Items.TORCH) || stack.is(Items.SOUL_TORCH)),
+        MENDING(stack -> stack.isDamaged() && Enchants.of(Minecraft.getInstance()).mending(stack) > 0),
         SHIELD(stack -> stack.is(Items.SHIELD));
 
         final Predicate<ItemStack> matcher;
@@ -105,11 +110,12 @@ public class OffhandModule extends Module {
         return switch (want) {
             case TOTEM -> totemHealth.get() > 0 && (health <= totemHealth.get()
                     || offhand.is(Items.TOTEM_OF_UNDYING) && health <= totemHealth.get() + TOTEM_HYSTERESIS);
-            case FOOD -> foodHunger.get() > 0 && !MultiClicker.get().autoEat().isBusy()
+            case FOOD -> foodHunger.get() > 0 && !MultiClicker.get().isConsuming()
                     && (hunger <= foodHunger.get() || Want.FOOD.matcher.test(offhand) && hunger < FULL_HUNGER);
             // Keep the torch while auto tool briefly holds a shovel or an axe during a mining session.
             case TORCH -> torchWithPickaxe.get() && (Tools.kind(player.getMainHandItem()) == Tools.PICKAXE
                     || Want.TORCH.matcher.test(offhand) && MultiClicker.get().autoTool().isToolSelected());
+            case MENDING -> mending.get();
             case SHIELD -> shield.get();
         };
     }

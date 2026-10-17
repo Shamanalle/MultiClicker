@@ -16,6 +16,7 @@ import io.github.shamanalle.multiclicker.compat.Widgets;
 import io.github.shamanalle.multiclicker.config.ConfigManager;
 import io.github.shamanalle.multiclicker.config.Preset;
 import io.github.shamanalle.multiclicker.gui.widget.FlatButton;
+import io.github.shamanalle.multiclicker.util.KeyConflicts;
 import io.github.shamanalle.multiclicker.util.ServerStats;
 
 import java.util.HashMap;
@@ -197,6 +198,7 @@ public class ProfilesScreen extends PanelScreen {
         }
         float maxScroll = Math.max(0, profiles.size() * ROW - (listH - 4));
         scroll = Mth.clamp(scroll, 0, maxScroll);
+        KeyConflicts.refresh(minecraft);
         Component tooltip = null;
         g.enableScissor(listX + 1, listY + 1, listX + listW - 1, listY + listH - 1);
         if (profiles.isEmpty()) {
@@ -280,13 +282,19 @@ public class ProfilesScreen extends PanelScreen {
         boolean overChip = overRow && mouseX >= row.chipX() && mouseX < row.chipX() + row.chipW();
         float h = chipHover.computeIfAbsent(name, n -> new Anim(0)).update(overChip ? 1 : 0, delta, 20);
         boolean bound = !meta.key().isEmpty();
+        List<Component> conflicts = KeyConflicts.others(name, meta.key());
         if (bound || capture.isWaitingFor(name) || h > 0.01F) {
-            Draw.chip(g, font, row.chipText(), row.chipX(), y + 3, CHIP_HEIGHT, h, capture.isWaitingFor(name), bound);
+            Draw.chip(g, font, row.chipText(), row.chipX(), y + 3, CHIP_HEIGHT, h, capture.isWaitingFor(name), bound,
+                    !conflicts.isEmpty());
         } else {
             Draw.keyboardIcon(g, row.chipX() + (row.chipW() - 9) / 2, y + 7, Theme.alpha(Theme.TEXT_MUTED, 0.7F));
         }
         if (overChip) {
             tooltip = Component.translatable("multiclicker.gui.profiles.key.desc");
+            if (!conflicts.isEmpty()) {
+                tooltip = tooltip.copy().append("\n").append(Component.translatable("multiclicker.gui.conflict",
+                        KeyConflicts.join(conflicts)).withStyle(ChatFormatting.GOLD));
+            }
         }
 
         boolean onServer = server != null && meta.servers().contains(server);

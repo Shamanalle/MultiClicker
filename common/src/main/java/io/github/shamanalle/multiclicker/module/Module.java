@@ -1,6 +1,7 @@
 package io.github.shamanalle.multiclicker.module;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 import io.github.shamanalle.multiclicker.MultiClicker;
@@ -11,6 +12,7 @@ import io.github.shamanalle.multiclicker.setting.Setting;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * A feature of the mod. Modules only tick while the mod is <b>active</b> (toggled with the
@@ -83,6 +85,19 @@ public abstract class Module {
     /** Whether the module is currently doing its job (mod active and module enabled). */
     public boolean isRunning() {
         return isEnabled() && MultiClicker.get().isActive();
+    }
+
+    /** A button on the module's card in the menu, such as "Edit position" of the HUD. */
+    public record Action(String key, Consumer<Screen> run) {
+        /** E.g. {@code multiclicker.module.hud.edit_position}. */
+        public Component label(Module module) {
+            return Component.translatable("multiclicker.module." + module.id() + "." + key);
+        }
+    }
+
+    /** The buttons the module's card shows below its settings; none by default. */
+    public List<Action> actions() {
+        return List.of();
     }
 
     /** Short status for the HUD module list, or {@code null} to show only the name. */

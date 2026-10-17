@@ -10,6 +10,7 @@ public enum Category {
     SURVIVAL("❤"),
     AUTOMATION("⚙"),
     MINING("⛏"),
+    SESSION("⚑"),
     VISUAL("◈");
 
     private final String icon;

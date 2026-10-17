@@ -73,6 +73,7 @@ public class SafetyModule extends Module {
         mod.setActive(false, reason);
         if (action.get() == Action.DISCONNECT) {
             Component message = Component.translatable("multiclicker.message.safety.disconnected", reason);
+            mod.autoReconnect().expectDisconnect();
             Session.disconnect(mc, message);
         }
     }

@@ -67,13 +67,20 @@ public final class Draw {
      * @param waiting the chip waits for the player to press a key
      */
     public static void chip(Canvas g, Font font, String text, int x, int y, int h, float hover, boolean waiting, boolean bound) {
+        chip(g, font, text, x, y, h, hover, waiting, bound, false);
+    }
+
+    /** @param conflict the key is also bound to something else: drawn in the warning color */
+    public static void chip(Canvas g, Font font, String text, int x, int y, int h, float hover, boolean waiting, boolean bound,
+                            boolean conflict) {
         int w = chipWidth(font, text);
-        int accent = Theme.accent();
+        int accent = conflict && !waiting ? Theme.WARNING : Theme.accent();
         int fill = waiting ? Theme.alpha(accent, 0.28F) : Theme.mix(Theme.CONTROL, Theme.CONTROL_HOVER, hover);
-        int border = waiting ? accent : bound ? Theme.mix(Theme.CONTROL_HOVER, accent, 0.35F + 0.65F * hover)
+        int border = waiting || conflict ? accent : bound ? Theme.mix(Theme.CONTROL_HOVER, accent, 0.35F + 0.65F * hover)
                 : Theme.mix(Theme.CONTROL, Theme.CONTROL_HOVER, hover);
         box(g, x, y, w, h, 3, fill, border);
-        int color = waiting ? Theme.TEXT : bound ? Theme.TEXT : Theme.mix(Theme.TEXT_MUTED, Theme.TEXT_DIM, hover);
+        int color = conflict && !waiting ? Theme.WARNING : waiting || bound ? Theme.TEXT
+                : Theme.mix(Theme.TEXT_MUTED, Theme.TEXT_DIM, hover);
         if (text == null) {
             keyboardIcon(g, x + (w - 9) / 2, y + (h - 6) / 2, color);
         } else {

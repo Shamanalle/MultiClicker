@@ -80,7 +80,7 @@ public class HotbarRefillModule extends Module {
             remember(player);
             return;
         }
-        if (!Inventories.canClickInventory(mc) || mod.autoEat().isBusy() || mod.clicker().isSwappingWeapon()) {
+        if (!Inventories.canClickInventory(mc) || mod.isConsuming() || mod.clicker().isSwappingWeapon()) {
             // Another module has the hotbar; look again once it is done, against the hotbar from before.
             return;
         }

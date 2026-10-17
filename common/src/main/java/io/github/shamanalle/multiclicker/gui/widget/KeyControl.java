@@ -7,6 +7,7 @@ import io.github.shamanalle.multiclicker.gui.Anim;
 import io.github.shamanalle.multiclicker.gui.Draw;
 import io.github.shamanalle.multiclicker.gui.KeyCapture;
 import io.github.shamanalle.multiclicker.setting.KeySetting;
+import io.github.shamanalle.multiclicker.util.KeyConflicts;
 
 /** A hotkey: click and press a key to bind it, right-click to remove it. */
 public class KeyControl extends SettingControl {
@@ -34,7 +35,8 @@ public class KeyControl extends SettingControl {
         float hovered = hover.update(isMouseOver(mouseX, mouseY) ? 1 : 0, delta, 20);
         String text = label();
         int chipW = Draw.chipWidth(font, text);
-        Draw.chip(g, font, text, x + width - chipW, y, height, hovered, capture.isWaitingFor(setting), setting.isBound());
+        Draw.chip(g, font, text, x + width - chipW, y, height, hovered, capture.isWaitingFor(setting), setting.isBound(),
+                !KeyConflicts.others(setting).isEmpty());
     }
 
     @Override

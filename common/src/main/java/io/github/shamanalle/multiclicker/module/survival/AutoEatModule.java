@@ -2,13 +2,11 @@ package io.github.shamanalle.multiclicker.module.survival;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Screens;
-import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.compat.Stacks;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
@@ -16,8 +14,8 @@ import io.github.shamanalle.multiclicker.stats.Stat;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
 import io.github.shamanalle.multiclicker.setting.Unit;
-import io.github.shamanalle.multiclicker.util.Input;
 import io.github.shamanalle.multiclicker.util.Inventories;
+import io.github.shamanalle.multiclicker.util.ItemUse;
 
 import java.util.Set;
 
@@ -31,27 +29,14 @@ public class AutoEatModule extends Module {
             Items.POISONOUS_POTATO, Items.PUFFERFISH, Items.CHICKEN, Items.SUSPICIOUS_STEW, Items.CHORUS_FRUIT);
     private static final Set<Item> VALUABLE_FOOD = Set.of(Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE,
             Items.GOLDEN_CARROT);
-    private static final int EAT_TIMEOUT = 100;
     private static final int RETRY_COOLDOWN = 20;
-    private static final int START_RETRY = 4;
 
     public final IntSetting hunger = add(new IntSetting("hunger", 14, 1, 19, Unit.HUNGER));
     public final BoolSetting avoidHarmful = add(new BoolSetting("avoid_harmful", true));
     public final BoolSetting keepValuable = add(new BoolSetting("keep_valuable", true));
 
-    private enum State {
-        IDLE, EATING
-    }
-
-    private State state = State.IDLE;
-    private int previousSlot = -1;
-    private int foodSlot = -1;
-    private int timer;
+    private final ItemUse meal = new ItemUse();
     private int cooldown;
-    private boolean startedUsing;
-    private boolean holdingUse;
-    /** The food stack as it was when the meal started, to tell whether it was eaten. */
-    private ItemStack mealStack = ItemStack.EMPTY;
 
     public AutoEatModule() {
         super("auto_eat", Category.SURVIVAL, true, false);
@@ -59,18 +44,18 @@ public class AutoEatModule extends Module {
 
     /** True while eating; the clicker, auto tool and auto fish wait so they do not interrupt the meal. */
     public boolean isBusy() {
-        return state == State.EATING && isRunning();
+        return meal.isActive() && isRunning();
     }
 
     /** True while the use key is held down for the meal; the use clicker must not release it then. */
     public boolean holdsUseKey() {
-        return holdingUse && isBusy();
+        return meal.holdsUseKey() && isBusy();
     }
 
     @Override
     public void stop(Minecraft mc) {
-        if (state == State.EATING) {
-            finish(mc);
+        if (meal.isActive()) {
+            meal.finish(mc);
         }
         cooldown = 0;
     }
@@ -78,7 +63,7 @@ public class AutoEatModule extends Module {
     @Override
     public void tick(Minecraft mc) {
         LocalPlayer player = mc.player;
-        if (state == State.EATING) {
+        if (meal.isActive()) {
             tickEating(mc, player);
             return;
         }
@@ -91,7 +76,7 @@ public class AutoEatModule extends Module {
         boolean usingItem = player.isUsingItem() && !MultiClicker.get().clicker().isHoldingUse();
         if (Screens.current(mc) != null || player.isCreative() || player.isSpectator()
                 || player.getFoodData().getFoodLevel() > hunger.get() || usingItem
-                || MultiClicker.get().clicker().isSwappingWeapon()) {
+                || MultiClicker.get().clicker().isSwappingWeapon() || MultiClicker.get().autoPotion().isBusy()) {
             return;
         }
         int slot = findFood(player);
@@ -99,63 +84,19 @@ public class AutoEatModule extends Module {
             MultiClicker.get().notifications().noFood(mc);
             return;
         }
-        int selected = Slots.selected(player.getInventory());
-        previousSlot = slot != selected ? selected : -1;
-        foodSlot = slot;
-        Inventories.selectSlot(player, slot);
-        state = State.EATING;
-        timer = 0;
-        startedUsing = false;
-        mealStack = player.getInventory().getItem(slot).copy();
+        meal.begin(player, slot, false, AutoEatModule::isFood);
         tickEating(mc, player);
     }
 
     private void tickEating(Minecraft mc, LocalPlayer player) {
-        timer++;
-        if (Screens.current(mc) != null || timer > EAT_TIMEOUT || Slots.selected(player.getInventory()) != foodSlot
-                || !isFood(player.getMainHandItem())) {
-            finish(mc);
-            return;
+        ItemUse.Result result = meal.tick(mc, player);
+        if (result == ItemUse.Result.USED) {
+            MultiClicker.get().stats().count(Stat.FOOD);
         }
-        if (!player.isUsingItem()) {
-            if (startedUsing) {
-                // Finished the item; the next tick decides whether to eat another one.
-                if (wasEaten(player.getInventory().getItem(foodSlot))) {
-                    MultiClicker.get().stats().count(Stat.FOOD);
-                }
-                finish(mc);
-                return;
-            }
-            // The item is used directly, so the block or entity in the crosshair is never touched.
-            // Retry every few ticks: the first attempt can fail while a block is still being broken.
-            if (timer % START_RETRY != 1 || !Input.useItem(mc, InteractionHand.MAIN_HAND) || !player.isUsingItem()) {
-                return;
-            }
+        if (result != ItemUse.Result.RUNNING) {
+            // Finished the item; the next tick decides whether to eat another one.
+            cooldown = meal.startedUsing() ? 2 : RETRY_COOLDOWN;
         }
-        startedUsing = true;
-        // Vanilla stops using an item as soon as the use key is up.
-        Input.hold(mc.options.keyUse);
-        holdingUse = true;
-    }
-
-    private void finish(Minecraft mc) {
-        if (holdingUse) {
-            Input.release(mc.options.keyUse);
-            holdingUse = false;
-        }
-        // Switch back only if the food is still selected: a slot the player picked meanwhile wins.
-        if (mc.player != null && previousSlot != -1 && Slots.selected(mc.player.getInventory()) == foodSlot) {
-            Inventories.selectSlot(mc.player, previousSlot);
-        }
-        previousSlot = -1;
-        foodSlot = -1;
-        state = State.IDLE;
-        cooldown = startedUsing ? 2 : RETRY_COOLDOWN;
-    }
-
-    /** One of the stack is gone (or it turned into its bowl or bottle). */
-    private boolean wasEaten(ItemStack now) {
-        return !now.is(mealStack.getItem()) || now.getCount() < mealStack.getCount();
     }
 
     private int findFood(LocalPlayer player) {

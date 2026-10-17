@@ -2,6 +2,50 @@
 
 All notable changes to **MultiClicker** will be documented in this file. In Russian: [CHANGELOG.ru.md](CHANGELOG.ru.md).
 
+## [Unreleased]
+### Added
+- **Auto reconnect** (new *Session* category): after the connection is lost it waits, joins the server again,
+  loads the server's profile and turns the mod back on. It can also come back after a kick (for example for
+  being idle), but never after a ban, a login from elsewhere, the safety disconnect or leaving by hand. The
+  disconnect screen counts down and has a *Reconnect now* button.
+- **Discord webhook** in notifications: the mod stopping by itself, a lost connection and the reconnect, a
+  death, a player nearby, a full inventory, a reached goal and the session summary can be posted to a Discord
+  channel, each switched separately. The URL is entered in a text field with a *Test* button and is never saved
+  into profiles.
+- **Session goal**: kills, attacks, clicks, catches, fish, treasure, harvest, mined blocks, experience or food
+  eaten, with a target number. A progress bar in the HUD, a notification when the goal is reached and, if you
+  like, the mod turns off.
+- **Auto potion**: drinks or throws potions from the hotbar, healing or regeneration at low health and fire
+  resistance when burning or in lava. Splash potions can be preferred; regeneration already active is waited
+  out.
+- **Auto respawn**: on death the mod stops, the death coordinates are written to the chat (only you see them)
+  and the respawn button is pressed a second later. Never in hardcore.
+- **Mending rotation** in the offhand module: keeps a damaged Mending item in the offhand and swaps in the next
+  one once it is repaired, so the experience of a farm repairs every Mending item in the inventory.
+- **Bone meal** in auto farm: while nothing is ripe, growing wheat, carrots, potatoes, beetroots, cocoa and
+  sweet berries in range get bone meal from the inventory.
+- **Open water check** in auto fish: the HUD shows whether the bobber floats in open water, the only place
+  treasure is caught, and a warning comes once per cast when it does not.
+- **Overview page**, the first page of the menu: whether the mod is on and for how long, the session's stats,
+  the goal's progress, every module as a chip (click to switch it, right-click to open its settings) and the
+  hotkey conflicts.
+- **HUD editor**: drag the status panel anywhere; it snaps to the edges and the middle of the screen (Shift
+  places it freely). The arrow keys nudge it, the mouse wheel scales it, R or a right-click puts it back in the
+  corner.
+- **Hotkey conflict warnings**: a key that a module, channel or profile shares with another one of them or
+  with a game or mod key binding is highlighted, and its tooltip names the others.
+- The Fabric jars are listed for Quilt too: they run on Quilt Loader 0.30 and newer with Fabric API. CI starts
+  them on Quilt at the oldest and newest version of each jar.
+### Changed
+- The menu is reworked: module cards fold away, each card has its actions in the header, settings can be
+  picked and changed from the keyboard (↑/↓, ←/→, Enter, Backspace), and the tooltip of a setting shows its
+  default value. Notifications and the new modules for long sessions are in the *Session* category.
+- Auto eat and auto potion share one item-use helper: other modules wait while either of them uses an item.
+- After an upload to Modrinth, CI reads the version back and checks its file, loaders and game versions.
+### Fixed
+- On Forge 1.21.3 and newer the outline and filled target highlight styles are drawn again: a mixin into the
+  world renderer replaces the render event Forge no longer has.
+
 ## [2.6.1] - 2026-10-12
 ### Added
 - Forge for Minecraft 1.20.2 – 1.20.4, 1.20.6, 1.21 – 1.21.1, 1.21.3 – 1.21.11 and 26.1 – 26.3 (Forge has no

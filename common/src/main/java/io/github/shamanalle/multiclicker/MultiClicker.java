@@ -27,7 +27,11 @@ import io.github.shamanalle.multiclicker.module.clicker.ClickerModule;
 import io.github.shamanalle.multiclicker.module.combat.TargetFilterModule;
 import io.github.shamanalle.multiclicker.module.mining.AutoToolModule;
 import io.github.shamanalle.multiclicker.module.mining.MiningModule;
+import io.github.shamanalle.multiclicker.module.session.AutoReconnectModule;
+import io.github.shamanalle.multiclicker.module.session.GoalsModule;
 import io.github.shamanalle.multiclicker.module.survival.AutoEatModule;
+import io.github.shamanalle.multiclicker.module.survival.AutoPotionModule;
+import io.github.shamanalle.multiclicker.module.survival.AutoRespawnModule;
 import io.github.shamanalle.multiclicker.module.survival.OffhandModule;
 import io.github.shamanalle.multiclicker.module.survival.SafetyModule;
 import io.github.shamanalle.multiclicker.module.visual.HighlightModule;
@@ -66,6 +70,8 @@ public final class MultiClicker {
     private final SafetyModule safety = new SafetyModule();
     private final OffhandModule offhand = new OffhandModule();
     private final AutoEatModule autoEat = new AutoEatModule();
+    private final AutoPotionModule autoPotion = new AutoPotionModule();
+    private final AutoRespawnModule autoRespawn = new AutoRespawnModule();
     private final AutoFishModule autoFish = new AutoFishModule();
     private final AntiAfkModule antiAfk = new AntiAfkModule();
     private final AutoWalkModule autoWalk = new AutoWalkModule();
@@ -77,20 +83,23 @@ public final class MultiClicker {
     private final HudModule hud = new HudModule();
     private final HighlightModule highlight = new HighlightModule();
     private final NotificationsModule notifications = new NotificationsModule();
+    private final AutoReconnectModule autoReconnect = new AutoReconnectModule();
+    private final GoalsModule goals = new GoalsModule();
     private final InterfaceModule ui = new InterfaceModule();
 
     /** Display order (grouped by category in the menu). */
-    private final List<Module> modules = List.of(clicker, targetFilter, safety, offhand, autoEat, autoFarm,
-            autoFish, hotbarRefill, antiAfk, autoWalk, inventoryCleaner, mining, autoTool, hud, highlight, notifications, ui);
+    private final List<Module> modules = List.of(clicker, targetFilter, safety, offhand, autoEat, autoPotion,
+            autoRespawn, autoFarm, autoFish, hotbarRefill, antiAfk, autoWalk, inventoryCleaner, mining, autoTool,
+            notifications, autoReconnect, goals, hud, highlight, ui);
     /**
-     * Tick order. Safety first, so nothing else runs once it stops the mod. Auto eat decides before
-     * the clicker, so the clicker already pauses on the tick a meal starts. Hotbar refill swaps a
+     * Tick order. Safety first, so nothing else runs once it stops the mod. Auto eat and auto potion
+     * decide before the clicker, so the clicker already pauses on the tick a meal starts. Hotbar refill swaps a
      * worn tool before the clicker would refuse to mine with it. Auto tool runs after the clicker,
      * so the tool is selected before vanilla processes the click of the same tick. Notifications
      * run last and see what the other modules did.
      */
-    private final List<Module> tickOrder = List.of(safety, autoEat, hotbarRefill, clicker, offhand, autoFish,
-            autoFarm, autoTool, inventoryCleaner, antiAfk, autoWalk, notifications);
+    private final List<Module> tickOrder = List.of(safety, autoPotion, autoEat, hotbarRefill, clicker, offhand, autoFish,
+            autoFarm, autoTool, inventoryCleaner, antiAfk, autoWalk, goals, notifications);
 
     private final ConfigManager config;
     private final Statistics stats;
@@ -149,6 +158,20 @@ public final class MultiClicker {
         return autoEat;
     }
 
+    public AutoPotionModule autoPotion() {
+        return autoPotion;
+    }
+
+    /** True while auto eat or auto potion uses an item; the other modules leave the hotbar alone. */
+    public boolean isConsuming() {
+        return autoEat.isBusy() || autoPotion.isBusy();
+    }
+
+    /** True while a meal or a potion holds the use key down; the use clicker must not release it. */
+    public boolean holdsUseKeyForItem() {
+        return autoEat.holdsUseKey() || autoPotion.holdsUseKey();
+    }
+
     public AutoFishModule autoFish() {
         return autoFish;
     }
@@ -205,6 +228,14 @@ public final class MultiClicker {
         return notifications;
     }
 
+    public GoalsModule goals() {
+        return goals;
+    }
+
+    public AutoReconnectModule autoReconnect() {
+        return autoReconnect;
+    }
+
     public ConfigManager config() {
         return config;
     }
@@ -234,6 +265,7 @@ public final class MultiClicker {
         for (InputConstants.Key key : Hotkeys.drain(mc)) {
             onHotkey(mc, key);
         }
+        autoReconnect.watch(mc);
         if (mc.player != null && mc.getConnection() != profileConnection) {
             profileConnection = mc.getConnection();
             loadServerProfile(mc);
@@ -255,6 +287,7 @@ public final class MultiClicker {
                 }
             }
         }
+        autoRespawn.watch(mc);
         if (saveCountdown > 0 && --saveCountdown == 0) {
             saveConfig();
         }
