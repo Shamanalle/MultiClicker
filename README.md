@@ -36,6 +36,7 @@ profile can have its own hotkey.
    - Fabric: `MultiClicker-fabric-<mod version>+1.19-1.20.4.jar` or `+1.20.5-1.21.11.jar` together with
      [Fabric API](https://modrinth.com/mod/fabric-api). Optional: [Mod Menu](https://modrinth.com/mod/modmenu)
      adds a settings button to the mod list.
+   - Quilt: the same Fabric jar, with Quilt Loader 0.30 or newer and Fabric API.
    - NeoForge: `MultiClicker-neoforge-<mod version>+1.20.2-1.21.11.jar` (for 1.20.1 the Forge jar
      `+1.19-1.20.1`), nothing else is needed. The settings button is in the mod list.
    - Forge: `MultiClicker-forge-<mod version>+1.19-1.20.1.jar` or `+1.20.2-1.21.11.jar`, nothing else is
@@ -93,21 +94,27 @@ the crosshair rests on one, a notification says once where to turn them on.
   take any damage, or when another player comes within a set distance.
 - **Offhand.** Keeps one item in the offhand, by priority: a totem at low health, food when
   you're hungry, a torch while you hold a pickaxe, otherwise a shield.
+  It can also rotate Mending items: a damaged one stays in the offhand until it is repaired, then the next
+  takes its place, so the experience of a farm repairs them all.
 - **Auto eat.** Eats the best safe food from the hotbar, then returns to the previous slot. It can skip harmful
   food (rotten flesh, pufferfish, suspicious stew…) and golden food. It never opens the chest, door or
   villager you look at.
+- **Auto potion.** Drinks or throws potions from the hotbar: healing or regeneration at low health, fire
+  resistance when you burn or stand in lava. Splash potions can come first.
+- **Auto respawn.** On death stops the mod, writes the death coordinates to the chat and respawns a second
+  later (never in hardcore).
 
 ### Automation
 - **Auto fish.** Reels in on a bite after a reaction time you set, casts again, recasts if nothing
   bites for too long, stops when the rod is about to break or after a number of catches. The rod can
-  be in either hand.
+  be in either hand. The HUD shows whether the bobber is in open water, the only place treasure is caught.
 - **Anti-AFK.** Jump, sneak, swing, look around, step or switch the hotbar slot for a moment, at random
   intervals between a minimum and a maximum. Each action can be turned off. Sneak, swing and the slot
   switch keep you on the spot; the slot switch also counts on servers that ignore swings and head turns.
 - **Auto walk.** Walks forward, optionally sprinting and jumping over obstacles.
 - **Auto farm.** Harvests ripe wheat, carrots, potatoes, beetroots, nether wart, cocoa and sweet berries
   around you (or only under the crosshair) and plants them again from the offhand, the hotbar or the
-  inventory.
+  inventory. While nothing is ripe it can use bone meal on the growing crops.
 - **Hotbar refill.** When the last item of a hotbar stack is used up, or a tool breaks, the same item
   comes in from the inventory; a stack can also be topped up before it runs out. The tool or weapon in
   your hand is swapped for a spare before it breaks, so a tool with Mending is kept.
@@ -120,20 +127,32 @@ the crosshair rests on one, a notification says once where to turn them on.
 - **Auto tool.** Picks the fastest hotbar tool for the block, taking Efficiency into account, skips
   nearly broken tools and switches back afterwards.
 
-### Interface
-- **HUD.** A status panel in any corner with the scale you choose: the loaded profile, active channels,
-  clicks per second, attacks, kills, damage, catches, harvest, session time (with rates per hour if you
-  like), ping, server TPS, FPS and the list of active modules. Every line can be hidden.
-- **Target highlight.** The creature about to be hit is outlined, filled or glowing, in a color you
-  pick.
-- **Menu.** Categories, module cards, search (also by English names), tooltips and a list editor with
-  item icons. Click a number to type an exact value; changed settings are marked with a dot and a whole
-  module can be reset with ↺. Fits the window size; on small screens the sidebar turns into icons.
-- **Feedback.** Accent color, a sound and a message above the hotbar when the mod turns on or off.
+### Session
+- **Auto reconnect.** When the connection is lost, waits, joins the server again, loads its profile and
+  turns the mod back on. It can come back after a kick for being idle too, but never after a ban, a login
+  from elsewhere, the safety disconnect or leaving by hand.
+- **Session goal.** Kills, catches, harvest, mined blocks, experience and more, up to a number you set: a
+  progress bar in the HUD, a notification when it is reached, and the mod can turn itself off.
 - **Notifications.** A message above the hotbar or in the chat, with a chime, when something needs your
   attention while the mod works: the inventory is full, the tool in hand is about to break, the last item
   in hand is used up, auto eat finds no food, a player comes near, a fish is caught, or the mod stopped by
-  itself and why. Each one can be turned off.
+  itself and why. Each one can be turned off. The important ones can also go to a **Discord webhook**, so
+  you know what happens while you are away.
+
+### Interface
+- **Overview.** The first page of the menu: whether the mod is on, the session, the goal, every module as a
+  chip (click to switch it, right-click for its settings) and the hotkey conflicts.
+- **HUD.** A status panel with the scale you choose: the loaded profile, active channels, clicks per
+  second, attacks, kills, damage, catches, harvest, session time (with rates per hour if you like), the
+  goal, ping, server TPS, FPS and the list of active modules. Every line can be hidden. Put it in a
+  corner, or drag it anywhere in the HUD editor: it snaps to the edges and the middle of the screen.
+- **Target highlight.** The creature about to be hit is outlined, filled or glowing, in a color you
+  pick.
+- **Menu.** Categories, module cards that fold away, search (also by English names), tooltips with the
+  default value and a list editor with item icons. Click a number to type an exact value; changed settings
+  are marked with a dot and a whole module can be reset with ↺. Every setting can be reached from the
+  keyboard. Fits the window size; on small screens the sidebar turns into icons.
+- **Feedback.** Accent color, a sound and a message above the hotbar when the mod turns on or off.
 - **Statistics.** What the mod did, kept between games: for the session, for each server and for all
   time, plus the last 20 sessions. Clicks, kills by mob, damage and DPS, catches by kind and item, harvest,
   mined blocks, food, totems, deaths, experience and more, with rates per hour. The live session shows
@@ -141,7 +160,8 @@ the crosshair rests on one, a notification says once where to turn them on.
   measured from the health of the mobs, so it is exact; where a server hides their health it says so
   instead of guessing. Export to CSV, reset with a second click, and a summary in the chat when you stop.
 - **Hotkeys.** Any module, each clicker channel and each profile can get a key (or a side mouse button)
-  that switches it while you play. Hotkeys stay as they are when you load a profile or a preset.
+  that switches it while you play. Hotkeys stay as they are when you load a profile or a preset. A key
+  that is also bound to something else is highlighted.
 - **Profiles.** Save your settings under a name and load them later, with a hotkey or by themselves when
   you join a given server or single player. Copy a profile as a line of text to share it, and paste one
   you got from someone else.
@@ -179,17 +199,19 @@ running game:
 | 1.21.3 – 1.21.11 | ✓ | ✓ | ✓ |
 | 26.1 – 26.3 | ✓ | ✓ | ✓ |
 
-Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer. NeoForge for 1.20.1 is the NeoForged fork of
-Forge 47 (still with the Forge API), so it takes the Forge jar for 1.19 – 1.20.1.
+Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer. The Fabric jars also run on
+[Quilt](https://quiltmc.org/) Loader 0.30 or newer, together with Fabric API. NeoForge for 1.20.1 is the
+NeoForged fork of Forge 47 (still with the Forge API), so it takes the Forge jar for 1.19 – 1.20.1.
 
 - Fabric 1.21.4 and newer: every build plays the in-game tests.
 - Fabric 1.19 – 1.21.3 and every NeoForge version: CI checks that the game starts with the mod and that every
   mixin applies.
 - Forge: CI starts the release jar in the real game and checks the same.
-- The six bundled jars are built on every pull request.
+- The six bundled jars are built on every pull request and started in the real game on every loader and
+  version they are published for; on Quilt, the Fabric jars are started on the oldest and newest version of
+  their range.
 - Fabric 1.21.9: the outline and filled highlight styles are not drawn (Fabric API for this version has
-  no world rendering events); the glow style works. The same goes for Forge 1.21.3 and newer, which has no
-  world rendering event either. On NeoForge and older Forge all styles work.
+  no world rendering events); the glow style works. On every other version and loader all styles work.
 - Before 1.19.3 search fields have no grey hint text.
 
 ## Controls
@@ -204,7 +226,9 @@ set in the menu with the ⌨ button of a module card or the *Hotkey* row of a ch
 are set in *Profiles*. Hotkeys do nothing while a menu or the chat is open.
 
 In the menu, start typing to search, press <kbd>Tab</kbd> for the next category, use the mouse wheel or
-the arrow keys to fine-tune sliders, or click a number to type it.
+the arrow keys to fine-tune sliders, or click a number to type it. Without the mouse: <kbd>↑</kbd> /
+<kbd>↓</kbd> pick a setting, <kbd>←</kbd> / <kbd>→</kbd> change it, <kbd>Enter</kbd> types a number or
+switches a toggle and <kbd>Backspace</kbd> resets it to the default.
 
 ## Languages
 

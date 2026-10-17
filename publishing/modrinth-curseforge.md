@@ -15,12 +15,12 @@ the version fields · 5. Upload checklist
 | Name | `MultiClicker – Auto Clicker` |
 | Slug / URL | `multiclicker` (if it is taken: `multiclicker-fabric`) |
 | Summary (Modrinth, 256 characters max; CurseForge, 250 max) | see below |
-| Loaders | Fabric, NeoForge, Forge |
+| Loaders | Fabric, Quilt, NeoForge, Forge |
 | Environment | Client: required. Server: unsupported (the mod is client-only) |
 | License | MIT |
 | Source code | https://github.com/Shamanalle/MultiClicker |
 | Issues | https://github.com/Shamanalle/MultiClicker/issues |
-| Dependencies | Fabric: Fabric API required, Mod Menu optional. NeoForge and Forge: none |
+| Dependencies | Fabric and Quilt: Fabric API required, Mod Menu optional. NeoForge and Forge: none |
 | Modrinth categories (up to 3 featured) | Utility, Game Mechanics, Mobs |
 | Modrinth additional categories | Food, Equipment |
 | CurseForge categories | Utility & QoL (main; if the list has no such entry: Miscellaneous), plus Food and Armor, Tools, and Weapons |
@@ -84,10 +84,12 @@ An auto clicker and AFK helper for Minecraft: it clicks attack, use and jump at 
 - Safety: stop the mod or leave the server at low health, on any damage, or when a player comes near.
 - Offhand: a totem at low health, food when you're hungry, a torch with a pickaxe, otherwise a shield.
 - Auto eat: the best safe food from the hotbar. It never opens the chest, door or villager you look at.
+- Auto potion: healing or regeneration at low health, fire resistance in fire or lava; drinks or throws.
+- Auto respawn with the death coordinates in the chat. Mending rotation: damaged Mending items take turns in the offhand.
 
 **⚙️ Automation**
-- Auto fish: reels in on a bite after the reaction time you set and casts again. Stops before the rod breaks.
-- Auto farm: wheat, carrots, potatoes, beetroots, nether wart, cocoa and sweet berries, harvested and planted again.
+- Auto fish: reels in on a bite after the reaction time you set and casts again. Stops before the rod breaks. Shows whether the bobber is in open water, where treasure is caught.
+- Auto farm: wheat, carrots, potatoes, beetroots, nether wart, cocoa and sweet berries, harvested and planted again, with bone meal while nothing is ripe.
 - Hotbar refill: used-up stacks and broken tools are replaced from the inventory. A tool is swapped out before it breaks, so Mending tools are kept.
 - Anti-AFK (jump, sneak, swing, look around, step), auto walk and an inventory cleaner for your junk list.
 
@@ -96,12 +98,17 @@ An auto clicker and AFK helper for Minecraft: it clicks attack, use and jump at 
 - Auto tool picks the fastest tool for the block, counts Efficiency and skips nearly broken tools.
 - Stops when the inventory is full and protects the tool in hand.
 
+**🌙 Session**
+- Auto reconnect: joins the server again after a lost connection, loads its profile and turns the mod back on.
+- Session goal: kills, catches, harvest, blocks, experience… up to a number, with a progress bar; the mod can stop when it is reached.
+- Notifications with a chime: full inventory, tool about to break, no food, a player nearby, a fish caught. The important ones can also go to a Discord webhook.
+
 **👀 HUD and menu**
-- Status panel: profile, CPS, attacks, kills, damage, catches, harvest, session time, ping, TPS, FPS and active modules. Any corner, any scale.
+- Overview page: the state of the mod, the session, the goal and every module at a glance.
+- Status panel: profile, CPS, attacks, kills, damage, catches, harvest, session time, goal, ping, TPS, FPS and active modules. Drag it anywhere in the HUD editor, any scale.
 - Statistics for the session, each server and all time: kills by mob, exact damage and DPS, catches by kind, harvest, blocks, rates per hour, a live CPS graph, history of the last 20 sessions and CSV export.
 - The target about to be hit is outlined, filled or glowing, in your color.
-- Notifications with a chime: full inventory, tool about to break, no food, a player nearby, a fish caught.
-- A menu with search, tooltips and exact values. It fits any window size.
+- A menu with search, foldable cards, tooltips with the default value, exact values and full keyboard control. Hotkey conflicts are pointed out. It fits any window size.
 
 **🔗 Also:** a hotkey for any module, channel or profile (side mouse buttons too), profiles that load by themselves on a given server, a profile shared as one line of text. 13 languages.
 
@@ -109,11 +116,14 @@ An auto clicker and AFK helper for Minecraft: it clicks attack, use and jump at 
 
 | You play on | File |
 |---|---|
-| Fabric 1.19 – 1.19.4, 1.20 – 1.20.6, 1.21 – 1.21.11, 26.1 – 26.3 | `MultiClicker-fabric`, needs [Fabric API](https://modrinth.com/mod/fabric-api); [Mod Menu](https://modrinth.com/mod/modmenu) optional |
-| NeoForge 1.20.1 – 26.3 | `MultiClicker-neoforge` |
-| Forge 1.19 – 1.20.1 | `MultiClicker-forge` |
+| Fabric or Quilt 1.19 – 1.20.4 | `MultiClicker-fabric-…+1.19-1.20.4`, needs [Fabric API](https://modrinth.com/mod/fabric-api) |
+| Fabric or Quilt 1.20.5 – 1.21.11 | `MultiClicker-fabric-…+1.20.5-1.21.11`, needs [Fabric API](https://modrinth.com/mod/fabric-api) |
+| NeoForge 1.20.2 – 1.21.11 | `MultiClicker-neoforge-…+1.20.2-1.21.11` |
+| Forge 1.19 – 1.20.1, NeoForge 1.20.1 | `MultiClicker-forge-…+1.19-1.20.1` |
+| Forge 1.20.2 – 1.21.11 | `MultiClicker-forge-…+1.20.2-1.21.11` |
+| 26.1 – 26.3 on Fabric, Quilt, NeoForge or Forge | `MultiClicker-…+26.1-26.3` (on Fabric and Quilt with [Fabric API](https://modrinth.com/mod/fabric-api)) |
 
-Fabric 1.21.9 and newer needs Fabric Loader 0.17 or newer. On Fabric 1.21.9 only the glow highlight is drawn.
+[Mod Menu](https://modrinth.com/mod/modmenu) is optional on Fabric and Quilt. Fabric 1.21.9 and newer needs Fabric Loader 0.17 or newer; Quilt needs Quilt Loader 0.30 or newer. On Fabric 1.21.9 only the glow highlight is drawn.
 
 > Many servers forbid auto clickers and AFK tools. Check the rules before using it there.
 
@@ -161,10 +171,12 @@ workflow does that). On CurseForge paste it after a `---` line; both languages f
 - Безопасность: остановить мод или выйти с сервера при низком здоровье, при любом уроне или когда рядом игрок.
 - Вторая рука: тотем при низком здоровье, еда при голоде, факел с киркой, иначе щит.
 - Авто-еда: лучшая безопасная еда из хотбара. Никогда не открывает сундук, дверь или торговца, на которого вы смотрите.
+- Авто-зелья: исцеление или регенерация при низком здоровье, огнестойкость в огне или лаве; пьёт или бросает.
+- Авто-возрождение с координатами смерти в чате. Чередование «Починки»: повреждённые предметы с «Починкой» по очереди встают во вторую руку.
 
 **⚙️ Автоматизация**
-- Авто-рыбалка: подсекает при поклёвке через заданное время реакции и забрасывает снова. Останавливается до поломки удочки.
-- Автоферма: пшеница, морковь, картофель, свёкла, незерский нарост, какао и сладкие ягоды — собирает и сажает заново.
+- Авто-рыбалка: подсекает при поклёвке через заданное время реакции и забрасывает снова. Останавливается до поломки удочки. Показывает, в открытой ли воде поплавок: только там ловятся сокровища.
+- Автоферма: пшеница, морковь, картофель, свёкла, незерский нарост, какао и сладкие ягоды — собирает и сажает заново, а пока ничего не созрело, удобряет костной мукой.
 - Пополнение хотбара: закончившиеся стаки и сломанные инструменты заменяются из инвентаря. Инструмент меняется до поломки, так что инструменты с «Починкой» сохраняются.
 - Анти-АФК (прыжок, приседание, взмах, взгляд по сторонам, шаг), авто-ходьба и очистка инвентаря по списку мусора.
 
@@ -173,12 +185,17 @@ workflow does that). On CurseForge paste it after a `---` line; both languages f
 - Авто-инструмент берёт самый быстрый инструмент для блока с учётом Эффективности и пропускает почти сломанные.
 - Останавливается при полном инвентаре и бережёт инструмент в руке.
 
+**🌙 Сессия**
+- Авто-переподключение: после потери связи снова заходит на сервер, загружает его профиль и включает мод.
+- Цель сессии: убийства, улов, урожай, блоки, опыт… до заданного числа, с полосой прогресса; мод может остановиться, когда цель достигнута.
+- Уведомления со звуком: полный инвентарь, инструмент вот-вот сломается, нет еды, рядом игрок, поймана рыба. Важные можно отправлять и в Discord-вебхук.
+
 **👀 HUD и меню**
-- Панель состояния: профиль, кл/с, удары, убийства, урон, улов, урожай, время сессии, пинг, TPS, FPS и активные модули. Любой угол, любой размер.
+- Страница обзора: состояние мода, сессия, цель и все модули на одном экране.
+- Панель состояния: профиль, кл/с, удары, убийства, урон, улов, урожай, время сессии, цель, пинг, TPS, FPS и активные модули. Перетаскивается куда угодно в редакторе HUD, любой размер.
 - Статистика за сессию, по серверам и за всё время: убийства по мобам, точный урон и DPS, улов по видам, урожай, блоки, скорость в час, живой график кл/с, история последних 20 сессий и экспорт в CSV.
 - Цель, которую сейчас ударят, обводится, заливается или светится вашим цветом.
-- Уведомления со звуком: полный инвентарь, инструмент вот-вот сломается, нет еды, рядом игрок, поймана рыба.
-- Меню с поиском, подсказками и вводом точных значений. Подстраивается под любой размер окна.
+- Меню с поиском, сворачиваемыми карточками, подсказками со значением по умолчанию, вводом точных значений и полным управлением с клавиатуры. Подсказывает о конфликтах горячих клавиш. Подстраивается под любой размер окна.
 
 **🔗 Ещё:** горячая клавиша для любого модуля, канала и профиля (и боковые кнопки мыши), профили, которые сами загружаются на нужном сервере, профиль одной строкой текста, чтобы поделиться. 13 языков.
 
@@ -186,11 +203,14 @@ workflow does that). On CurseForge paste it after a `---` line; both languages f
 
 | Вы играете на | Файл |
 |---|---|
-| Fabric 1.19 – 1.19.4, 1.20 – 1.20.6, 1.21 – 1.21.11, 26.1 – 26.3 | `MultiClicker-fabric`, нужен [Fabric API](https://modrinth.com/mod/fabric-api); [Mod Menu](https://modrinth.com/mod/modmenu) по желанию |
-| NeoForge 1.20.1 – 26.3 | `MultiClicker-neoforge` |
-| Forge 1.19 – 1.20.1 | `MultiClicker-forge` |
+| Fabric или Quilt 1.19 – 1.20.4 | `MultiClicker-fabric-…+1.19-1.20.4`, нужен [Fabric API](https://modrinth.com/mod/fabric-api) |
+| Fabric или Quilt 1.20.5 – 1.21.11 | `MultiClicker-fabric-…+1.20.5-1.21.11`, нужен [Fabric API](https://modrinth.com/mod/fabric-api) |
+| NeoForge 1.20.2 – 1.21.11 | `MultiClicker-neoforge-…+1.20.2-1.21.11` |
+| Forge 1.19 – 1.20.1, NeoForge 1.20.1 | `MultiClicker-forge-…+1.19-1.20.1` |
+| Forge 1.20.2 – 1.21.11 | `MultiClicker-forge-…+1.20.2-1.21.11` |
+| 26.1 – 26.3 на Fabric, Quilt, NeoForge или Forge | `MultiClicker-…+26.1-26.3` (на Fabric и Quilt вместе с [Fabric API](https://modrinth.com/mod/fabric-api)) |
 
-Fabric 1.21.9 и новее требует Fabric Loader 0.17 или новее. На Fabric 1.21.9 рисуется только подсветка «свечение».
+[Mod Menu](https://modrinth.com/mod/modmenu) на Fabric и Quilt — по желанию. Fabric 1.21.9 и новее требует Fabric Loader 0.17 или новее; Quilt — Quilt Loader 0.30 или новее. На Fabric 1.21.9 рисуется только подсветка «свечение».
 
 > Многие серверы запрещают автокликеры и анти-АФК. Сначала проверьте правила.
 
@@ -202,10 +222,10 @@ Fabric 1.21.9 и новее требует Fabric Loader 0.17 или новее.
 ## 4. Version fields
 
 Upload every jar as its own version/file and tick the Minecraft versions of its range and the loader of the
-jar: Fabric for `MultiClicker-fabric-*`, NeoForge for `MultiClicker-neoforge-*`, Forge for `MultiClicker-forge-*` (Fabric 1.21.9 and newer: Fabric Loader 0.17+, mention it in the
+jar: Fabric and Quilt for `MultiClicker-fabric-*`, NeoForge for `MultiClicker-neoforge-*`, Forge for `MultiClicker-forge-*` (Fabric 1.21.9 and newer: Fabric Loader 0.17+, mention it in the
 changelog). Each jar is for every supported version of its range (`MultiClicker-fabric-<mod version>+1.20.5-1.21.11.jar`
 covers 1.20.5 to 1.21.11); see `versions/bundles.txt`. Two jars go up more than once: `MultiClicker-<mod
-version>+26.1-26.3.jar` once per loader (Fabric, NeoForge, Forge), and the Forge jar for 1.19 – 1.20.1 also as
+version>+26.1-26.3.jar` once per loader (Fabric with Quilt, NeoForge, Forge), and the Forge jar for 1.19 – 1.20.1 also as
 NeoForge 1.20.1. Modrinth refuses a file it already has, so the workflow adds a one-line marker file to each
 of these copies.
 
@@ -216,7 +236,7 @@ or `MultiClicker 2.6.1 for 26.1–26.3 (Forge)`.
 
 **Release channel:** Release.
 
-**Dependencies:** Fabric jars: Fabric API (required), Mod Menu (optional). NeoForge and Forge jars: none.
+**Dependencies:** Fabric jars (also on Quilt): Fabric API (required), Mod Menu (optional). NeoForge and Forge jars: none.
 
 **Changelog** (the same text for every file; the release workflow uploads the section of `CHANGELOG.md`
 followed by the one of `CHANGELOG.ru.md`):
