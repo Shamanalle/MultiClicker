@@ -58,7 +58,7 @@ An auto clicker and AFK helper for Minecraft: it clicks attack, use and jump at 
 
 ![A mob farm: the status panel and the highlighted target](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/hud.png)
 
-## Quick start
+![Quick start](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/header_quick_start.png)
 
 1. Put the jar for your loader and Minecraft version into `mods` (on Fabric also [Fabric API](https://modrinth.com/mod/fabric-api)).
 2. In a world press **O** for the menu and **I** to turn the mod on or off.
@@ -66,12 +66,12 @@ An auto clicker and AFK helper for Minecraft: it clicks attack, use and jump at 
 
 | Preset | What it does |
 |---|---|
-| **Mob farm** | Hits on full charge with a small random delay, leaves passive mobs, pets and named mobs alone. Auto eat and anti-AFK on. |
-| **Mining** | Holds the attack key, auto tool picks the pickaxe, stops when the inventory is full. |
-| **Fishing** | Auto fish reels in and casts again. Auto eat and anti-AFK on. |
-| **Farming** | Auto farm harvests ripe crops around you and plants them again, hotbar refill brings more seeds. |
+| ⚔️ **Mob farm** | Hits on full charge with a small random delay, leaves passive mobs, pets and named mobs alone. Auto eat and anti-AFK on. |
+| ⛏️ **Mining** | Holds the attack key, auto tool picks the pickaxe, stops when the inventory is full. |
+| 🎣 **Fishing** | Auto fish reels in and casts again. Auto eat and anti-AFK on. |
+| 🌾 **Farming** | Auto farm harvests ripe crops around you and plants them again, hotbar refill brings more seeds. |
 
-## Features
+![Features](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/header_features.png)
 
 **🖱️ Auto clicker**
 - Three channels: attack, use and jump. Each one clicks or holds its key, with its own speed, pause, random delay and hotkey.
@@ -116,7 +116,17 @@ An auto clicker and AFK helper for Minecraft: it clicks attack, use and jump at 
 
 **🔗 Also:** a hotkey for any module, channel or profile (side mouse buttons too), profiles that load by themselves on a given server, a profile shared as one line of text. 13 languages.
 
-## Which file do I need?
+![Screenshots](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/header_screenshots.png)
+
+| ![Overview](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/menu_overview.png) | ![Clicker settings](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/menu_clicker.png) |
+|:-:|:-:|
+| Overview: the mod, the session and its goal at a glance | Every module is a card, every option has a tooltip |
+| ![Statistics](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/stats.png) | ![HUD editor](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/hud_editor.png) |
+| Statistics with graphs and rates per hour | Drag and scale the status panel |
+
+More in the gallery.
+
+![Downloads: which file do I need?](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/header_downloads.png)
 
 | You play on | File |
 |---|---|
@@ -143,9 +153,11 @@ it inside `<details><summary><b>🇷🇺 Русский</b></summary> ... </deta
 workflow does that). On CurseForge the Russian part is already at the end of `curseforge.html`.
 
 ````markdown
+![MultiClicker: автокликер и помощник для AFK](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/banner.png)
+
 Автокликер и помощник для AFK в Minecraft: нажимает атаку, использование и прыжок в заданном ритме, а модули берут на себя AFK-фермы, копание, огород и рыбалку. Только клиент, работает в одиночной игре и на серверах.
 
-## Быстрый старт
+![Быстрый старт](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/header_quick_start.png)
 
 1. Положите jar для своего загрузчика и версии Minecraft в `mods` (на Fabric ещё [Fabric API](https://modrinth.com/mod/fabric-api)).
 2. В мире **O** открывает меню, **I** включает и выключает мод.
@@ -153,12 +165,12 @@ workflow does that). On CurseForge the Russian part is already at the end of `cu
 
 | Пресет | Что делает |
 |---|---|
-| **Ферма мобов** | Бьёт при полной зарядке со случайной задержкой, не трогает мирных мобов, питомцев и мобов с именем. Авто-еда и анти-АФК включены. |
-| **Копание** | Держит клавишу атаки, авто-инструмент берёт кирку, останавливается при полном инвентаре. |
-| **Рыбалка** | Авто-рыбалка подсекает и забрасывает снова. Авто-еда и анти-АФК включены. |
-| **Ферма** | Автоферма собирает созревший урожай вокруг и сажает заново, пополнение хотбара подкладывает семена. |
+| ⚔️ **Ферма мобов** | Бьёт при полной зарядке со случайной задержкой, не трогает мирных мобов, питомцев и мобов с именем. Авто-еда и анти-АФК включены. |
+| ⛏️ **Копание** | Держит клавишу атаки, авто-инструмент берёт кирку, останавливается при полном инвентаре. |
+| 🎣 **Рыбалка** | Авто-рыбалка подсекает и забрасывает снова. Авто-еда и анти-АФК включены. |
+| 🌾 **Ферма** | Автоферма собирает созревший урожай вокруг и сажает заново, пополнение хотбара подкладывает семена. |
 
-## Возможности
+![Возможности](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/header_features.png)
 
 **🖱️ Автокликер**
 - Три канала: атака, использование и прыжок. Каждый нажимает или удерживает свою клавишу, со своей скоростью, паузой, случайной задержкой и горячей клавишей.
@@ -203,7 +215,7 @@ workflow does that). On CurseForge the Russian part is already at the end of `cu
 
 **🔗 Ещё:** горячая клавиша для любого модуля, канала и профиля (и боковые кнопки мыши), профили, которые сами загружаются на нужном сервере, профиль одной строкой текста, чтобы поделиться. 13 языков.
 
-## Какой файл нужен?
+![Загрузка: какой файл нужен?](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/header_downloads.png)
 
 | Вы играете на | Файл |
 |---|---|
@@ -218,7 +230,7 @@ workflow does that). On CurseForge the Russian part is already at the end of `cu
 
 > Многие серверы запрещают автокликеры и анти-АФК. Сначала проверьте правила.
 
-**[Все настройки и управление →](https://github.com/Shamanalle/MultiClicker/blob/main/README.ru.md)** · [Список изменений](https://github.com/Shamanalle/MultiClicker/blob/main/CHANGELOG.md) · [Сообщить об ошибке](https://github.com/Shamanalle/MultiClicker/issues)
+**[Все настройки и управление →](https://github.com/Shamanalle/MultiClicker/blob/main/README.ru.md)** · [Список изменений](https://github.com/Shamanalle/MultiClicker/blob/main/CHANGELOG.ru.md) · [Сообщить об ошибке](https://github.com/Shamanalle/MultiClicker/issues)
 ````
 
 ---
@@ -242,42 +254,8 @@ or `MultiClicker 2.7.0 for 26.1–26.3 (Forge)`.
 
 **Dependencies:** Fabric jars (also on Quilt): Fabric API (required), Mod Menu (optional). NeoForge and Forge jars: none.
 
-**Changelog** (the same text for every file; the release workflow uploads the section of `CHANGELOG.md`
-followed by the one of `CHANGELOG.ru.md`):
-
-```
-2.4.0
-
-- Statistics: a new screen with the session, each server, all time and the last 20 sessions. Clicks,
-  kills by mob, exact damage and DPS, catches by kind and item, harvest, mined blocks, food, totems,
-  deaths, experience, rates per hour, a live clicks-per-second graph and a per-minute chart.
-- Export statistics to CSV; a summary of the session in the chat when the mod is turned off.
-- HUD: damage, catches, harvest, blocks and experience, optionally per hour.
-- Works on Minecraft 1.19 to 1.19.4, 1.20 to 1.20.6, 1.21 to 1.21.11 and 26.1 to 26.3; download the file
-  for your loader and game version. Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer.
-
-2.3.0
-
-- NeoForge support: a NeoForge jar for every version from 1.20.1 to 26.3.
-- Forge support for Minecraft 1.19 to 1.20.1.
-- Fabric support for Minecraft 1.19 to 1.19.4 and 1.20 to 1.20.6.
-- Notifications: a message above the hotbar or in the chat when the inventory is full, a tool is about
-  to break, the last item in hand is used up, there is no food, a player comes near, a fish is caught or
-  the mod stopped by itself.
-- Works on Minecraft 1.19 to 1.19.4, 1.20 to 1.20.6, 1.21 to 1.21.11 and 26.1 to 26.3; download the file
-  for your loader and game version. Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer.
-
-2.2.0
-
-- Hotkeys for every module, clicker channel and profile.
-- Click speed in clicks per second, and a choice of random delay: even, bell curve or natural.
-- Profiles can be shared as one line of text and can load by themselves on a given server.
-- New modules: Auto Farm (harvests and replants crops) and Hotbar Refill (refills used-up stacks and
-  swaps a tool before it breaks). New Farming preset.
-- Menu: type exact numbers, changed settings are marked, reset a module at once, Tab switches categories.
-- Works on Minecraft 1.21 to 1.21.11 and 26.1 to 26.3; download the file for your game version.
-  Minecraft 1.21.9 and newer needs Fabric Loader 0.17 or newer.
-```
+**Changelog:** the same text for every file. The release workflow uploads the section of the version from
+`CHANGELOG.md` followed by the one from `CHANGELOG.ru.md`; for a hand upload copy those two sections.
 
 Full history: https://github.com/Shamanalle/MultiClicker/blob/main/CHANGELOG.md
 
@@ -302,3 +280,8 @@ Full history: https://github.com/Shamanalle/MultiClicker/blob/main/CHANGELOG.md
    workflow* with the tag. It skips the files a site already has, so nothing is uploaded twice; *only*
    limits it to some jars (`forge:1.19-1.20.1 neoforge:26.1-26.3`) and *stores* to one site. CurseForge uploads
    made before this workflow existed are not known to it: pick *modrinth* for those.
+7. After the texts or the screenshots change, run *Actions → Modrinth page → Run workflow*: it sends the
+   summary and sections 2 and 3 to Modrinth and replaces its gallery. On CurseForge paste
+   `curseforge.html` again (HTML source view) and upload new screenshots by hand.
+8. GitHub: *Settings → General → Social preview* takes `docs/images/social_preview.png` (1280×640), the
+   picture shown when the repository link is posted in Discord, Telegram and elsewhere.
