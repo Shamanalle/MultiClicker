@@ -2,7 +2,7 @@ name: Modrinth page
 
 # Updates the Modrinth project page: the summary and the description from publishing/modrinth-curseforge.md
 # (sections 2 and 3, the Russian one folded), and the gallery from the screenshots in docs/images/en, in the
-# order below, the first one featured. Run it by hand after the texts or the screenshots change. CurseForge has
+# order below, the social preview first and featured. Run it by hand after the texts or the screenshots change. CurseForge has
 # no API for either: paste publishing/curseforge.html there by hand.
 # Needs MODRINTH_ID (variable) and MODRINTH_TOKEN (secret) with the "Write projects" scope.
 
@@ -59,6 +59,7 @@ jobs:
           api = 'https://api.modrinth.com/v2/project/' + os.environ['MODRINTH_ID']
           headers = {'Authorization': os.environ['MODRINTH_TOKEN'], 'User-Agent': 'Shamanalle/MultiClicker gallery'}
           shots = [
+              ('../social_preview', 'MultiClicker', 'An auto clicker and AFK helper: mob farms, mining, farming and fishing'),
               ('hud', 'Status panel', 'A mob farm with MultiClicker: the status panel and the highlighted target'),
               ('menu_overview', 'Overview', 'Overview: status, the current session and its goal at a glance'),
               ('menu_clicker', 'Clicker settings', 'Settings: every module is a card, with a tooltip for every option'),
