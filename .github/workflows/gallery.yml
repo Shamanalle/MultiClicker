@@ -30,10 +30,13 @@ jobs:
           headers = {'Authorization': os.environ['MODRINTH_TOKEN'], 'User-Agent': 'Shamanalle/MultiClicker gallery'}
           shots = [
               ('hud', 'Status panel', 'A mob farm with MultiClicker: the status panel and the highlighted target'),
+              ('menu_overview', 'Overview', 'Overview: status, the current session and its goal at a glance'),
               ('menu_clicker', 'Clicker settings', 'Settings: every module is a card, with a tooltip for every option'),
               ('menu_automation', 'Automation', 'Automation: auto farm with a hotkey, auto fish'),
               ('menu_survival', 'Survival', 'Survival: safety, offhand and auto eat'),
               ('menu_visual', 'Visuals', 'Visuals: HUD and target highlight'),
+              ('menu_session', 'Session', 'Session: notifications when something needs your attention'),
+              ('hud_editor', 'HUD editor', 'HUD editor: drag the panel, snap it to the edges, scale it with the wheel'),
               ('profiles', 'Presets and profiles', 'Presets and your own profiles, with a hotkey, a server and sharing'),
               ('list_editor', 'Block list editor', 'List editor: item icons, add the held item or the block you look at'),
               ('stats', 'Statistics', 'Statistics: the session, each server and all time, with graphs and rates per hour'),

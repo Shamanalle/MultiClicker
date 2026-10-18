@@ -763,12 +763,16 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).showOverview());
         parkCursor(context);
         context.takeScreenshot("readme_" + lang + "_menu_overview");
-        for (Category category : List.of(Category.CLICKER, Category.SURVIVAL, Category.AUTOMATION, Category.VISUAL)) {
+        for (Category category : List.of(Category.CLICKER, Category.SURVIVAL, Category.AUTOMATION, Category.SESSION,
+                Category.VISUAL)) {
             context.setScreen(() -> new ConfigScreen(null));
             context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).showCategory(category));
             parkCursor(context);
             context.takeScreenshot("readme_" + lang + "_menu_" + category.name().toLowerCase());
         }
+        context.setScreen(() -> new HudEditScreen(null));
+        parkCursor(context);
+        context.takeScreenshot("readme_" + lang + "_hud_editor");
         List<String> profiles = lang.equals("ru")
                 ? List.of("Железная ферма", "Рыбалка на ночь")
                 : List.of("Iron farm", "Night fishing");

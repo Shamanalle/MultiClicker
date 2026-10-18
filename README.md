@@ -176,8 +176,10 @@ the crosshair rests on one, a notification says once where to turn them on.
 | Survival: safety, offhand and auto eat | Visuals: HUD and target highlight |
 | ![Presets and profiles](docs/images/en/profiles.png) | ![Block list editor](docs/images/en/list_editor.png) |
 | Presets and your own profiles, with a hotkey, a server and sharing | List editor: item icons, add the held item or the block you look at |
-| ![Statistics](docs/images/en/stats.png) | |
-| Statistics: the session, each server and all time, with graphs and rates per hour | |
+| ![Overview](docs/images/en/menu_overview.png) | ![Session](docs/images/en/menu_session.png) |
+| Overview: status, the current session and its goal at a glance | Session: notifications when something needs your attention |
+| ![HUD editor](docs/images/en/hud_editor.png) | ![Statistics](docs/images/en/stats.png) |
+| HUD editor: drag the panel, snap it to the edges, scale it with the wheel | Statistics: the session, each server and all time, with graphs and rates per hour |
 
 ## Supported versions
 
