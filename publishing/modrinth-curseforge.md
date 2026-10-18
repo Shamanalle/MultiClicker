@@ -139,6 +139,20 @@ More in the gallery.
 
 [Mod Menu](https://modrinth.com/mod/modmenu) is optional on Fabric and Quilt. Fabric 1.21.9 and newer needs Fabric Loader 0.17 or newer; Quilt needs Quilt Loader 0.30 or newer. On Fabric 1.21.9 only the glow highlight is drawn.
 
+![FAQ](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/header_faq.png)
+
+**Does the server need it?** No. It is client-side: put it only into your own `mods` folder. It works in singleplayer and on any server.
+
+**Can I switch to another window while it runs?** Yes. Turn on **Work in background** in the clicker settings and the game keeps running when its window loses focus.
+
+**How do I change the I and O keys?** *Options → Controls → Key Binds → MultiClicker*. Hotkeys for modules, channels and profiles are set in the mod menu.
+
+**How do I share my setup?** In **Profiles** copy a profile as one line of text; a friend pastes it in their Profiles. Your hotkeys and servers stay with you.
+
+**Where are the settings?** `config/multiclicker.json`, profiles in `config/multiclicker/profiles/`, statistics in `config/multiclicker/stats.json`.
+
+**Found a bug or have an idea?** Open an issue on [GitHub](https://github.com/Shamanalle/MultiClicker/issues).
+
 > Many servers forbid auto clickers and AFK tools. Check the rules before using it there.
 
 **[All settings and controls →](https://github.com/Shamanalle/MultiClicker#readme)** · [Changelog](https://github.com/Shamanalle/MultiClicker/blob/main/CHANGELOG.md) · [Report a bug](https://github.com/Shamanalle/MultiClicker/issues)
@@ -159,13 +173,13 @@ workflow does that). On CurseForge the Russian part is already at the end of `cu
 
 ![Быстрый старт](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/header_quick_start.png)
 
-1. Положите jar для своего загрузчика и версии Minecraft в `mods` (на Fabric ещё [Fabric API](https://modrinth.com/mod/fabric-api)).
+1. Положите jar для своего загрузчика и версии Minecraft в `mods` (на Fabric и Quilt ещё [Fabric API](https://modrinth.com/mod/fabric-api)).
 2. В мире **O** открывает меню, **I** включает и выключает мод.
 3. Откройте **Профили → Пресеты**, выберите набор и нажмите **I**.
 
 | Пресет | Что делает |
 |---|---|
-| ⚔️ **Ферма мобов** | Бьёт при полной зарядке со случайной задержкой, не трогает мирных мобов, питомцев и мобов с именем. Авто-еда и анти-АФК включены. |
+| ⚔️ **Моб-ферма** | Бьёт при полной зарядке со случайной задержкой, не трогает мирных мобов, питомцев и мобов с именем. Авто-еда и анти-АФК включены. |
 | ⛏️ **Копание** | Держит клавишу атаки, авто-инструмент берёт кирку, останавливается при полном инвентаре. |
 | 🎣 **Рыбалка** | Авто-рыбалка подсекает и забрасывает снова. Авто-еда и анти-АФК включены. |
 | 🌾 **Ферма** | Автоферма собирает созревший урожай вокруг и сажает заново, пополнение хотбара подкладывает семена. |
@@ -215,6 +229,16 @@ workflow does that). On CurseForge the Russian part is already at the end of `cu
 
 **🔗 Ещё:** горячая клавиша для любого модуля, канала и профиля (и боковые кнопки мыши), профили, которые сами загружаются на нужном сервере, профиль одной строкой текста, чтобы поделиться. 13 языков.
 
+![Скриншоты](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/header_screenshots.png)
+
+| ![Обзор](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/menu_overview.png) | ![Настройки кликера](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/menu_clicker.png) |
+|:-:|:-:|
+| Обзор: мод, сессия и её цель на одном экране | Каждый модуль — карточка, у каждой настройки есть подсказка |
+| ![Статистика](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/stats.png) | ![Редактор HUD](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/hud_editor.png) |
+| Статистика с графиками и скоростью в час | Перетаскивайте и масштабируйте панель состояния |
+
+Ещё больше в галерее.
+
 ![Загрузка: какой файл нужен?](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/header_downloads.png)
 
 | Вы играете на | Файл |
@@ -227,6 +251,20 @@ workflow does that). On CurseForge the Russian part is already at the end of `cu
 | 26.1 – 26.3 на Fabric, Quilt, NeoForge или Forge | `MultiClicker-…+26.1-26.3` (на Fabric и Quilt вместе с [Fabric API](https://modrinth.com/mod/fabric-api)) |
 
 [Mod Menu](https://modrinth.com/mod/modmenu) на Fabric и Quilt — по желанию. Fabric 1.21.9 и новее требует Fabric Loader 0.17 или новее; Quilt — Quilt Loader 0.30 или новее. На Fabric 1.21.9 рисуется только подсветка «свечение».
+
+![Частые вопросы](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/header_faq.png)
+
+**Нужно ли ставить мод на сервер?** Нет. Мод клиентский: положите его только в свою папку `mods`. Работает в одиночной игре и на любом сервере.
+
+**Можно переключиться на другое окно, пока он работает?** Да. Включите **Работать в фоне** в настройках кликера, и игра не встанет на паузу, когда окно потеряет фокус.
+
+**Как сменить клавиши I и O?** *Настройки → Управление → Назначение клавиш → MultiClicker*. Горячие клавиши модулей, каналов и профилей задаются в меню мода.
+
+**Как поделиться своими настройками?** В **Профилях** скопируйте профиль одной строкой текста, друг вставит её у себя. Ваши клавиши и серверы при этом останутся у вас.
+
+**Где хранятся настройки?** `config/multiclicker.json`, профили — в `config/multiclicker/profiles/`, статистика — в `config/multiclicker/stats.json`.
+
+**Нашли ошибку или есть идея?** Напишите на [GitHub](https://github.com/Shamanalle/MultiClicker/issues), можно по-русски.
 
 > Многие серверы запрещают автокликеры и анти-АФК. Сначала проверьте правила.
 
