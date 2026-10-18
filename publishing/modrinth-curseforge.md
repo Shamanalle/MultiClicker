@@ -52,6 +52,8 @@ save. Upload the screenshots to the gallery on both sites; the links below point
 repository images, so they work on Modrinth as they are.
 
 ````markdown
+![MultiClicker: an auto clicker and AFK helper](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/banner.png)
+
 An auto clicker and AFK helper for Minecraft: it clicks attack, use and jump at the rhythm you set, and its modules take care of AFK farms, mining, crop farming and fishing. Client-side only, works in singleplayer and on servers.
 
 ![A mob farm: the status panel and the highlighted target](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/hud.png)
