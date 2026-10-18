@@ -1,24 +1,54 @@
-name: Modrinth gallery
+name: Modrinth page
 
-# Replaces the Modrinth gallery with the screenshots in docs/images/en, in the order below, the first one
-# featured. Run it by hand after the screenshots change. CurseForge has no API for its gallery.
+# Updates the Modrinth project page: the summary and the description from publishing/modrinth-curseforge.md
+# (sections 2 and 3, the Russian one folded), and the gallery from the screenshots in docs/images/en, in the
+# order below, the first one featured. Run it by hand after the texts or the screenshots change. CurseForge has
+# no API for either: paste publishing/curseforge.html there by hand.
 # Needs MODRINTH_ID (variable) and MODRINTH_TOKEN (secret) with the "Write projects" scope.
 
 on:
   workflow_dispatch:
+    inputs:
+      parts:
+        description: 'What to update'
+        type: choice
+        options: [description and gallery, description, gallery]
+        default: description and gallery
 
 permissions:
   contents: read
 
 jobs:
   gallery:
-    name: Replace the Modrinth gallery
+    name: Update the Modrinth page
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Update the summary and the description
+        if: inputs.parts != 'gallery'
+        env:
+          MODRINTH_ID: ${{ vars.MODRINTH_ID }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import json, os, sys, urllib.request
+          sys.path.insert(0, '.github/scripts')
+          from modrinth_create import USER_AGENT, texts
+
+          summary, body = texts()
+          request = urllib.request.Request(
+              'https://api.modrinth.com/v2/project/' + os.environ['MODRINTH_ID'], method='PATCH',
+              data=json.dumps({'description': summary, 'body': body}).encode(),
+              headers={'Authorization': os.environ['MODRINTH_TOKEN'], 'User-Agent': USER_AGENT,
+                       'Content-Type': 'application/json'})
+          urllib.request.urlopen(request).close()
+          print(f'Description updated: {len(body)} characters')
+          PY
+
       - name: Replace the gallery
+        if: inputs.parts != 'description'
         env:
           MODRINTH_ID: ${{ vars.MODRINTH_ID }}
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}

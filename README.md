@@ -1,16 +1,14 @@
 <div align="center">
 
-<img src="common/src/main/resources/assets/multiclicker/icon.png" width="96" alt="MultiClicker icon">
-
-# MultiClicker
-
-**Auto clicker for Fabric, NeoForge and Forge with helpers for AFK farms, mining, farming and fishing.**
+<img src="docs/images/en/banner.png" width="800" alt="MultiClicker: an auto clicker and AFK helper">
 
 [![Minecraft 1.19 – 26.3](https://img.shields.io/badge/Minecraft-1.19%20%E2%80%93%2026.3-62b47a)](https://minecraft.net/)
 [![Fabric](https://img.shields.io/badge/loader-Fabric-dbd0b4)](https://fabricmc.net/)
+[![Quilt](https://img.shields.io/badge/loader-Quilt-8e4dd0)](https://quiltmc.org/)
 [![NeoForge](https://img.shields.io/badge/loader-NeoForge-e68c37)](https://neoforged.net/)
 [![Forge](https://img.shields.io/badge/loader-Forge-2b2b33)](https://files.minecraftforge.net/)
 [![Release](https://img.shields.io/github/v/release/Shamanalle/MultiClicker?color=4c8bf5)](https://github.com/Shamanalle/MultiClicker/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/Shamanalle/MultiClicker/total?color=e8466a)](https://github.com/Shamanalle/MultiClicker/releases)
 [![In-game tests](https://github.com/Shamanalle/MultiClicker/actions/workflows/gametest.yml/badge.svg)](https://github.com/Shamanalle/MultiClicker/actions/workflows/gametest.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
