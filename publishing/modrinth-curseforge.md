@@ -45,8 +45,10 @@ filters.
 
 ## 2. English description
 
-Markdown, works on Modrinth. For CurseForge paste it into the Markdown editor (or switch the editor
-to Markdown first). Upload the screenshots to the gallery on both sites; the links below point to the
+Markdown, for Modrinth. CurseForge gets a styled HTML version of both languages instead,
+[`curseforge.html`](curseforge.html): colored headings, ✦ feature lines and a screenshot grid. In the
+CurseForge description editor switch to the HTML source view (the `<>` button), paste the whole file and
+save. Upload the screenshots to the gallery on both sites; the links below point to the
 repository images, so they work on Modrinth as they are.
 
 ````markdown
@@ -136,7 +138,7 @@ An auto clicker and AFK helper for Minecraft: it clicks attack, use and jump at 
 
 Both sites have one description per project, so this block goes after the English text. On Modrinth put
 it inside `<details><summary><b>🇷🇺 Русский</b></summary> ... </details>` (the "Create Modrinth project"
-workflow does that). On CurseForge paste it after a `---` line; both languages fit.
+workflow does that). On CurseForge the Russian part is already at the end of `curseforge.html`.
 
 ````markdown
 Автокликер и помощник для AFK в Minecraft: нажимает атаку, использование и прыжок в заданном ритме, а модули берут на себя AFK-фермы, копание, огород и рыбалку. Только клиент, работает в одиночной игре и на серверах.
