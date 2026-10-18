@@ -229,10 +229,10 @@ version>+26.1-26.3.jar` once per loader (Fabric with Quilt, NeoForge, Forge), an
 NeoForge 1.20.1. Modrinth refuses a file it already has, so the workflow adds a one-line marker file to each
 of these copies.
 
-**Version name:** `MultiClicker <mod version> for <versions> (<loader>)`, for example `MultiClicker 2.6.1 for 1.20.5–1.21.11 (Fabric)`
-or `MultiClicker 2.6.1 for 26.1–26.3 (Forge)`.
+**Version name:** `MultiClicker <mod version> for <versions> (<loader>)`, for example `MultiClicker 2.7.0 for 1.20.5–1.21.11 (Fabric)`
+or `MultiClicker 2.7.0 for 26.1–26.3 (Forge)`.
 
-**Version number:** `<mod version>+<Minecraft versions>-<loader>`, for example `2.6.1+1.20.5-1.21.11-fabric` or `2.6.1+26.1-26.3-forge`.
+**Version number:** `<mod version>+<Minecraft versions>-<loader>`, for example `2.7.0+1.20.5-1.21.11-fabric` or `2.7.0+26.1-26.3-forge`.
 
 **Release channel:** Release.
 

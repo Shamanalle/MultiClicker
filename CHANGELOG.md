@@ -2,7 +2,7 @@
 
 All notable changes to **MultiClicker** will be documented in this file. In Russian: [CHANGELOG.ru.md](CHANGELOG.ru.md).
 
-## [Unreleased]
+## [2.7.0] - 2026-10-17
 ### Added
 - **Auto reconnect** (new *Session* category): after the connection is lost it waits, joins the server again,
   loads the server's profile and turns the mod back on. It can also come back after a kick (for example for
