@@ -41,7 +41,7 @@ jobs:
       entries: ${{ steps.list.outputs.entries }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag }}
 
@@ -77,7 +77,7 @@ jobs:
         include: ${{ fromJSON(needs.entries.outputs.entries) }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.tag }}
 
@@ -121,7 +121,7 @@ jobs:
 
       - name: Look for the CurseForge upload
         id: curseforge-done
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: curseforge-uploaded
           key: curseforge-${{ steps.prep.outputs.number }}
@@ -181,7 +181,7 @@ jobs:
 
       - name: Save the CurseForge marker
         if: steps.stores.outputs.curseforge == 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: curseforge-uploaded
           key: curseforge-${{ steps.prep.outputs.number }}
