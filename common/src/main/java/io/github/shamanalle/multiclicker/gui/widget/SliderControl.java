@@ -173,7 +173,7 @@ public class SliderControl extends SettingControl {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!isMouseOver(mouseX, mouseY)) {
+        if (!isMouseOver(mouseX, mouseY) || (button != 0 && button != 1)) {
             return false;
         }
         if (button == 1) {
@@ -185,7 +185,7 @@ public class SliderControl extends SettingControl {
             commit();
             dragging = true;
             setFromMouse(mouseX);
-        } else if (button == 0 && isOverValue(mouseX, mouseY) && !editing) {
+        } else if (isOverValue(mouseX, mouseY) && !editing) {
             beginEdit();
         }
         return true;

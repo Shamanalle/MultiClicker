@@ -45,7 +45,7 @@ public class CycleControl extends SettingControl {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!isMouseOver(mouseX, mouseY)) {
+        if (!isMouseOver(mouseX, mouseY) || (button != 0 && button != 1)) {
             return false;
         }
         if (button == 1) {

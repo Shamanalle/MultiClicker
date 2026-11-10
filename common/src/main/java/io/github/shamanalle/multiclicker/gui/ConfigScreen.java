@@ -1316,7 +1316,7 @@ public class ConfigScreen extends ModScreen {
                         playClick();
                         return true;
                     }
-                    if (row.setting instanceof BoolSetting bool && mouseX >= cardX && mouseX < cardX + cardW) {
+                    if (row.setting instanceof BoolSetting bool && (button == 0 || button == 1) && mouseX >= cardX && mouseX < cardX + cardW) {
                         // A click anywhere on a switch row flips the switch.
                         if (button == 0) {
                             bool.toggle();

@@ -1,5 +1,6 @@
 package io.github.shamanalle.multiclicker.compat;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
@@ -18,8 +19,31 @@ public abstract class ModScreen extends Screen {
         super(title);
     }
 
+    /**
+     * Converts an SDL3 mouse button code (1 = left, 2 = middle, 3 = right, 4+ = side) used by
+     * Minecraft 26.3+ into the GLFW convention (0 = left, 1 = right, 2 = middle, 3+ = side) used by
+     * all MultiClicker screens and controls.
+     */
+    private static int toModButton(int sdlButton) {
+        return switch (sdlButton) {
+            case InputConstants.MOUSE_BUTTON_LEFT -> 0;
+            case InputConstants.MOUSE_BUTTON_RIGHT -> 1;
+            case InputConstants.MOUSE_BUTTON_MIDDLE -> 2;
+            default -> sdlButton - 1;
+        };
+    }
+
+    private static int toSdlButton(int button) {
+        return switch (button) {
+            case 0 -> InputConstants.MOUSE_BUTTON_LEFT;
+            case 1 -> InputConstants.MOUSE_BUTTON_RIGHT;
+            case 2 -> InputConstants.MOUSE_BUTTON_MIDDLE;
+            default -> button + 1;
+        };
+    }
+
     private static MouseButtonEvent event(double mouseX, double mouseY, int button) {
-        return new MouseButtonEvent(mouseX, mouseY, new MouseButtonInfo(button, 0));
+        return new MouseButtonEvent(mouseX, mouseY, new MouseButtonInfo(toSdlButton(button), 0));
     }
 
     protected void draw(Canvas g, int mouseX, int mouseY, float partialTick) {
@@ -62,17 +86,17 @@ public abstract class ModScreen extends Screen {
 
     @Override
     public final boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        return clicked(event.x(), event.y(), event.button());
+        return clicked(event.x(), event.y(), toModButton(event.button()));
     }
 
     @Override
     public final boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
-        return dragged(event.x(), event.y(), event.button(), dragX, dragY);
+        return dragged(event.x(), event.y(), toModButton(event.button()), dragX, dragY);
     }
 
     @Override
     public final boolean mouseReleased(MouseButtonEvent event) {
-        return released(event.x(), event.y(), event.button());
+        return released(event.x(), event.y(), toModButton(event.button()));
     }
 
     @Override

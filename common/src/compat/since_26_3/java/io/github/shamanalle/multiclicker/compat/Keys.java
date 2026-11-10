@@ -3,6 +3,7 @@ package io.github.shamanalle.multiclicker.compat;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import org.lwjgl.sdl.SDLMouse;
 
 /** Keyboard state and key bindings. */
 public final class Keys {
@@ -18,7 +19,7 @@ public final class Keys {
                 case InputConstants.MOUSE_BUTTON_LEFT -> mc.mouseHandler.isLeftPressed();
                 case InputConstants.MOUSE_BUTTON_RIGHT -> mc.mouseHandler.isRightPressed();
                 case InputConstants.MOUSE_BUTTON_MIDDLE -> mc.mouseHandler.isMiddlePressed();
-                default -> false;
+                default -> key.getValue() > 0 && (SDLMouse.SDL_GetMouseState(null, null) & (1 << (key.getValue() - 1))) != 0;
             };
             case KEYBOARD -> key.getValue() != InputConstants.UNKNOWN.getValue() && InputConstants.isKeyDown(key.getValue());
         };
@@ -35,14 +36,20 @@ public final class Keys {
                 || InputConstants.isKeyDown(mac ? InputConstants.KEY_RGUI : InputConstants.KEY_RCONTROL);
     }
 
-    /** A keyboard key by its GLFW key code. */
+    /** A keyboard key by its key code. */
     public static InputConstants.Key keyboard(int keyCode) {
         return InputConstants.Type.KEYBOARD.getOrCreate(keyCode);
     }
 
     /** A mouse button (0 = left, 1 = right, 2 = middle, 3+ = side buttons). */
     public static InputConstants.Key mouse(int button) {
-        return InputConstants.Type.MOUSE.getOrCreate(button);
+        int sdlButton = switch (button) {
+            case 0 -> InputConstants.MOUSE_BUTTON_LEFT;
+            case 1 -> InputConstants.MOUSE_BUTTON_RIGHT;
+            case 2 -> InputConstants.MOUSE_BUTTON_MIDDLE;
+            default -> button + 1;
+        };
+        return InputConstants.Type.MOUSE.getOrCreate(sdlButton);
     }
 
     /** Reads a saved key name such as {@code key.keyboard.g}; unknown names give {@link InputConstants#UNKNOWN}. */
