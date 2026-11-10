@@ -2,6 +2,12 @@
 
 All notable changes to **MultiClicker** will be documented in this file. In Russian: [CHANGELOG.ru.md](CHANGELOG.ru.md).
 
+## [2.7.1] - 2026-11-10
+### Fixed
+- On Minecraft 26.3 the menu buttons, switches, sliders and hotkey chips did not respond to left-clicks (or
+  reset the setting instead): Minecraft 26.3 moved from GLFW to SDL3, where mouse button numbers start at 1
+  instead of 0. Middle and side mouse buttons can also be bound and held as hotkeys on 26.3 again.
+
 ## [2.7.0] - 2026-10-17
 ### Added
 - **Auto reconnect** (new *Session* category): after the connection is lost it waits, joins the server again,
