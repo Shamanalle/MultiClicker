@@ -320,6 +320,8 @@ Full history: https://github.com/Shamanalle/MultiClicker/blob/main/CHANGELOG.md
    made before this workflow existed are not known to it: pick *modrinth* for those.
 7. After the texts or the screenshots change, run *Actions → Modrinth page → Run workflow*: it sends the
    summary and sections 2 and 3 to Modrinth and replaces its gallery. On CurseForge paste
-   `curseforge.html` again (HTML source view) and upload new screenshots by hand.
+   `curseforge.html` again (HTML source view) and upload new screenshots by hand. The first image in the
+   CurseForge gallery, marked featured, is `docs/images/curseforge_featured.png` (16:9, the shape of the
+   CurseForge viewer): CurseForge shows it above the description, so `curseforge.html` starts without a banner.
 8. GitHub: *Settings → General → Social preview* takes `docs/images/social_preview.png` (1280×640), the
    picture shown when the repository link is posted in Discord, Telegram and elsewhere.
