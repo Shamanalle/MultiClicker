@@ -36,6 +36,7 @@ public final class ClickChannel {
 
     private final String name;
     public final BoolSetting enabled;
+    public final BoolSetting onlyWhileHeld;
     public final KeySetting key;
     public final EnumSetting<Mode> mode;
     public final EnumSetting<Rate> rate;
@@ -49,12 +50,14 @@ public final class ClickChannel {
     private final ClickTimer timer = new ClickTimer();
     private int holdLeft;
     private boolean down;
+    private boolean holdingContinuous;
 
     ClickChannel(ClickerModule module, String name, boolean enabledByDefault, Mode defaultMode, int defaultInterval,
                  int defaultCps) {
         this.name = name;
         this.enabled = module.register(new BoolSetting(name, enabledByDefault));
         this.mode = module.register(new EnumSetting<>(name + "_mode", defaultMode).visibleWhen(enabled::get));
+        this.onlyWhileHeld = module.register(new BoolSetting(name + "_only_while_held", false).visibleWhen(enabled::get));
         this.rate = module.register(new EnumSetting<>(name + "_rate", Rate.INTERVAL)
                 .visibleWhen(() -> enabled.get() && mode.get() == Mode.CLICK));
         this.interval = module.register(new IntSetting(name + "_interval", defaultInterval, 1, 100, Unit.CLICK_INTERVAL)
@@ -79,6 +82,11 @@ public final class ClickChannel {
         return enabled.get() && (mode.get() == Mode.CLICK || holdTime.get() > 0);
     }
 
+    /** True when this channel may act given its "only while held" requirement. */
+    boolean isTriggerSatisfied(KeyMapping key) {
+        return !onlyWhileHeld.get() || Input.isPhysicallyDown(key);
+    }
+
     /**
      * Advances the channel by one tick.
      *
@@ -89,13 +97,73 @@ public final class ClickChannel {
      * @return {@code true} if a new press happened this tick
      */
     boolean tick(KeyMapping key, boolean allowed, boolean countDown) {
-        return mode.get() == Mode.CLICK ? tickClick(key, allowed, countDown) : tickHold(key, allowed);
+        boolean physicallyHeld = onlyWhileHeld.get() && Input.isPhysicallyDown(key);
+        boolean mayAct = allowed && isTriggerSatisfied(key);
+        holdingContinuous = false;
+        return mode.get() == Mode.CLICK ? tickClick(key, mayAct, countDown, physicallyHeld) : tickHold(key, mayAct, physicallyHeld);
     }
 
-    private boolean tickClick(KeyMapping key, boolean allowed, boolean countDown) {
+    /**
+     * Holds the attack key continuously while breaking a block in {@link Mode#CLICK}, so blocks with
+     * non-zero hardness do not reset their mining progress on every click interval.
+     */
+    boolean tickContinuousBlock(KeyMapping key, boolean allowed) {
+        boolean mayAct = allowed && isTriggerSatisfied(key);
+        if (mode.get() == Mode.HOLD) {
+            holdingContinuous = false;
+            return tickHold(key, mayAct, onlyWhileHeld.get() && Input.isPhysicallyDown(key));
+        }
+        if (!mayAct) {
+            if (down) {
+                releaseKey(key, onlyWhileHeld.get() && Input.isPhysicallyDown(key));
+                down = false;
+            }
+            holdingContinuous = false;
+            return false;
+        }
+        if (!down || !holdingContinuous) {
+            Input.click(key);
+            down = true;
+            holdingContinuous = true;
+            return true;
+        }
+        Input.hold(key);
+        return false;
+    }
+
+    /**
+     * Attacks an entity while the channel is in {@link Mode#HOLD}: vanilla only swings at entities on
+     * discrete clicks, so holding the key without pulsing a click would never hit a mob that steps in
+     * front of the player while mining.
+     */
+    boolean tickEntityInHoldMode(KeyMapping key, boolean allowed, boolean countDown) {
+        boolean physicallyHeld = onlyWhileHeld.get() && Input.isPhysicallyDown(key);
+        boolean mayAct = allowed && isTriggerSatisfied(key);
+        holdingContinuous = false;
         if (down) {
-            Input.release(key);
+            releaseKey(key, physicallyHeld);
             down = false;
+        }
+        if (countDown) {
+            timer.tick();
+        }
+        if (!mayAct || !timer.ready()) {
+            return false;
+        }
+        Input.click(key);
+        down = true;
+        double delay = holdTime.get() > 0 ? pause.get() + randomDelay() : 1.0;
+        timer.restart(delay);
+        return true;
+    }
+
+    private boolean tickClick(KeyMapping key, boolean allowed, boolean countDown, boolean suppressPhysicalHold) {
+        if (down) {
+            releaseKey(key, suppressPhysicalHold);
+            down = false;
+        } else if (suppressPhysicalHold) {
+            // Keep the key logically up between clicks so holding LMB/RMB physically clicks at the set rate.
+            Input.forceUp(key);
         }
         if (countDown) {
             timer.tick();
@@ -109,16 +177,21 @@ public final class ClickChannel {
         return true;
     }
 
-    private boolean tickHold(KeyMapping key, boolean allowed) {
+    private boolean tickHold(KeyMapping key, boolean allowed, boolean suppressPhysicalHold) {
         if (!allowed) {
             if (down) {
-                Input.release(key);
+                releaseKey(key, suppressPhysicalHold);
                 down = false;
+            } else if (suppressPhysicalHold) {
+                Input.forceUp(key);
             }
             return false;
         }
         if (!down) {
             if (!timer.ready()) {
+                if (suppressPhysicalHold) {
+                    Input.forceUp(key);
+                }
                 timer.tick();
                 return false;
             }
@@ -129,11 +202,19 @@ public final class ClickChannel {
         }
         Input.hold(key);
         if (holdLeft > 0 && --holdLeft == 0) {
-            Input.release(key);
+            releaseKey(key, suppressPhysicalHold);
             down = false;
             timer.restart(pause.get() + randomDelay());
         }
         return false;
+    }
+
+    private static void releaseKey(KeyMapping key, boolean suppressPhysicalHold) {
+        if (suppressPhysicalHold) {
+            Input.forceUp(key);
+        } else {
+            Input.release(key);
+        }
     }
 
     /**
@@ -143,9 +224,13 @@ public final class ClickChannel {
      * @return {@code true} once the next click is due
      */
     boolean waitTick(KeyMapping key, boolean countDown) {
+        holdingContinuous = false;
+        boolean physicallyHeld = onlyWhileHeld.get() && Input.isPhysicallyDown(key);
         if (down) {
-            Input.release(key);
+            releaseKey(key, physicallyHeld);
             down = false;
+        } else if (physicallyHeld) {
+            Input.forceUp(key);
         }
         if (countDown) {
             timer.tick();
@@ -166,6 +251,7 @@ public final class ClickChannel {
             Input.release(key);
         }
         down = false;
+        holdingContinuous = false;
         holdLeft = 0;
     }
 
@@ -193,22 +279,24 @@ public final class ClickChannel {
         return enabled.translationKey();
     }
 
-    /** Whether the channel is currently holding its key down in hold mode. */
+    /** Whether the channel is currently holding its key down continuously (hold mode or block mining). */
     boolean isHolding() {
-        return down && mode.get() == Mode.HOLD;
+        return down && (mode.get() == Mode.HOLD || holdingContinuous);
     }
 
     /** Another module holds the key now (auto eat, to eat): forget the press without releasing it. */
     void handOver() {
         down = false;
+        holdingContinuous = false;
         holdLeft = 0;
     }
 
     void reset(KeyMapping key) {
-        if (down) {
+        if (down || onlyWhileHeld.get()) {
             Input.release(key);
         }
         down = false;
+        holdingContinuous = false;
         timer.reset();
         holdLeft = 0;
     }

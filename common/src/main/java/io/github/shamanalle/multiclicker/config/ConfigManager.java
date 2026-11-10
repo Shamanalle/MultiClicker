@@ -37,6 +37,10 @@ public final class ConfigManager {
     @Nullable
     private String activeProfile;
     private boolean applying;
+    @Nullable
+    private JsonObject undoSnapshot;
+    @Nullable
+    private String undoActiveProfile;
 
     /** A profile's hotkey and the servers it is loaded on automatically. */
     public static final class ProfileMeta {
@@ -143,10 +147,50 @@ public final class ConfigManager {
     }
 
     public void resetAll() {
+        clearUndo();
         for (Module module : modules) {
             module.settings().forEach(Setting::reset);
         }
         activeProfile = null;
+    }
+
+    /**
+     * Runs a destructive bulk change (such as resetting a module or applying a preset) after
+     * capturing an in-memory snapshot that {@link #undo()} can restore.
+     */
+    public void runUndoable(Runnable change) {
+        JsonObject before = serialize(false);
+        String profileBefore = activeProfile;
+        applying = true;
+        try {
+            change.run();
+        } finally {
+            applying = false;
+        }
+        undoSnapshot = before;
+        undoActiveProfile = profileBefore;
+    }
+
+    public boolean canUndo() {
+        return undoSnapshot != null;
+    }
+
+    public void clearUndo() {
+        undoSnapshot = null;
+        undoActiveProfile = null;
+    }
+
+    /** Restores the snapshot captured by {@link #runUndoable(Runnable)}, if still available. */
+    public boolean undo() {
+        if (undoSnapshot == null) {
+            return false;
+        }
+        JsonObject snapshot = undoSnapshot;
+        String profileBefore = undoActiveProfile;
+        clearUndo();
+        apply(snapshot, false);
+        activeProfile = profileBefore;
+        return true;
     }
 
     // --- Profiles -------------------------------------------------------------------------------
@@ -178,6 +222,7 @@ public final class ConfigManager {
         if (clean.isEmpty() || !write(profilePath(clean), serialize(true))) {
             return false;
         }
+        clearUndo();
         activeProfile = clean;
         return true;
     }
@@ -189,6 +234,7 @@ public final class ConfigManager {
         if (root == null || !root.has("modules") || !root.get("modules").isJsonObject()) {
             return false;
         }
+        clearUndo();
         ConfigMigrations.migrate(root);
         resetProfileSettings();
         apply(root, true);

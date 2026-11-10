@@ -99,6 +99,15 @@ public class AutoFishModule extends Module {
         state = State.WAITING;
     }
 
+    /** Durability threshold for the rod: reeling in a hooked entity costs 5 durability in vanilla. */
+    public int effectiveProtectRod(LocalPlayer player) {
+        int min = protectRod.get();
+        if (min > 0 && player.fishing != null && player.fishing.getHookedIn() != null) {
+            return Math.max(min, 5);
+        }
+        return min;
+    }
+
     @Override
     public void tick(Minecraft mc) {
         LocalPlayer player = mc.player;
@@ -106,7 +115,11 @@ public class AutoFishModule extends Module {
         if (Screens.current(mc) != null || !isHoldingRod(player) || MultiClicker.get().isConsuming()) {
             return;
         }
-        if (Inventories.isNearlyBroken(rod(player), protectRod.get())) {
+        int minDurability = effectiveProtectRod(player);
+        if (Inventories.isNearlyBroken(rod(player), minDurability)) {
+            if (MultiClicker.get().hotbarRefill().willReplaceTool(player, rod(player), minDurability)) {
+                return;
+            }
             MultiClicker.get().setActive(false, Component.translatable("multiclicker.message.rod_protected"));
             return;
         }

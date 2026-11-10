@@ -11,9 +11,13 @@ import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.EnumSetting;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
+import io.github.shamanalle.multiclicker.setting.ListSetting;
 import io.github.shamanalle.multiclicker.setting.Unit;
+import io.github.shamanalle.multiclicker.util.Players;
 
-/** Emergency stop for unattended sessions: low health, damage or another player nearby. */
+import java.util.List;
+
+/** Emergency stop for unattended sessions: low health, damage, totem pop or another player nearby. */
 public class SafetyModule extends Module {
     public enum Action {
         STOP, DISCONNECT
@@ -22,12 +26,29 @@ public class SafetyModule extends Module {
     public final EnumSetting<Action> action = add(new EnumSetting<>("action", Action.STOP));
     public final IntSetting health = add(new IntSetting("health", 30, 0, 95, Unit.PERCENT).zeroMeans("options.off"));
     public final BoolSetting onDamage = add(new BoolSetting("on_damage", false));
+    public final BoolSetting onTotem = add(new BoolSetting("on_totem", false));
     public final IntSetting playerRadius = add(new IntSetting("player_radius", 0, 0, 64, Unit.BLOCKS).zeroMeans("options.off"));
+    /** Friends and alt accounts: kept globally so presets and imported profiles cannot alter them. */
+    public final ListSetting ignoredPlayers = add(new ListSetting("ignored_players", ListSetting.Kind.PLAYER, List.of()).global());
 
     private float lastHealth = -1;
 
     public SafetyModule() {
         super("safety", Category.SURVIVAL, true, false);
+    }
+
+    public boolean isIgnoredPlayer(Player other) {
+        return other != null && ignoredPlayers.containsPlayer(other.getName().getString());
+    }
+
+    public boolean willStopOnTotem(Minecraft mc) {
+        return isRunning() && onTotem.get() && mc.player != null && !mc.player.isCreative() && !mc.player.isSpectator();
+    }
+
+    public void onTotemUsed(Minecraft mc) {
+        if (willStopOnTotem(mc)) {
+            trigger(mc, Component.translatable("multiclicker.message.safety.totem"));
+        }
     }
 
     @Override
@@ -60,7 +81,7 @@ public class SafetyModule extends Module {
         int radius = playerRadius.get();
         if (radius > 0) {
             for (Player other : mc.level.players()) {
-                if (other != player && !other.isSpectator() && other.distanceTo(player) <= radius) {
+                if (Players.isRealPlayer(mc, other) && !isIgnoredPlayer(other) && other.distanceTo(player) <= radius) {
                     return Component.translatable("multiclicker.message.safety.player", other.getName());
                 }
             }

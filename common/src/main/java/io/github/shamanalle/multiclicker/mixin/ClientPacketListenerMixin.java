@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import io.github.shamanalle.multiclicker.MultiClicker;
-import io.github.shamanalle.multiclicker.stats.Stat;
 import io.github.shamanalle.multiclicker.util.ServerStats;
 
 @Mixin(ClientPacketListener.class)
@@ -28,14 +27,14 @@ public abstract class ClientPacketListenerMixin {
         ServerStats.onTimeUpdate();
     }
 
-    /** Counts the totems that saved the player. TAIL runs on the main thread only. */
+    /** Counts the totems that saved the player and notifies active survival/session modules. TAIL runs on the main thread only. */
     @Inject(method = "handleEntityEvent", at = @At("TAIL"))
     private void multiclicker$countTotem(ClientboundEntityEventPacket packet, CallbackInfo ci) {
         Minecraft mc = Minecraft.getInstance();
         MultiClicker mod = MultiClicker.get();
         if (mod != null && packet.getEventId() == TOTEM_USED && mc.level != null && mc.player != null
                 && packet.getEntity(mc.level) == mc.player) {
-            mod.stats().count(Stat.TOTEMS);
+            mod.onTotemUsed(mc);
         }
     }
 }

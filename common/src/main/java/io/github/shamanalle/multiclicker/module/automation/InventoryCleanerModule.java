@@ -42,7 +42,7 @@ public class InventoryCleanerModule extends Module {
         }
         LocalPlayer player = mc.player;
         // Never while a screen is open: the player may be sorting the inventory by hand.
-        if (Screens.current(mc) != null || player.isCreative() || items.get().isEmpty() || !Inventories.canClickInventory(mc)) {
+        if (Screens.current(mc) != null || player.isCreative() || items.get().isEmpty() || !Inventories.canClickMainInventory(mc)) {
             return;
         }
         int first = keepHotbar.get() ? Inventories.HOTBAR_SIZE : 0;

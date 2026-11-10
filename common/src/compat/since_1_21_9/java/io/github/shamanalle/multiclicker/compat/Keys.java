@@ -73,4 +73,14 @@ public final class Keys {
     public static KeyMapping keyMapping(String name, int key) {
         return new KeyMapping(name, key, CATEGORY);
     }
+
+    /** Flashes the taskbar or dock icon when the game window is in the background. */
+    public static void requestAttention(Minecraft mc) {
+        if (!mc.isWindowActive()) {
+            long handle = mc.getWindow().handle();
+            if (handle != 0L) {
+                GLFW.glfwRequestWindowAttention(handle);
+            }
+        }
+    }
 }

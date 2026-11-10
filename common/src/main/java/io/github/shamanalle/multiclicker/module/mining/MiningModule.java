@@ -2,6 +2,7 @@ package io.github.shamanalle.multiclicker.module.mining;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.module.Category;
@@ -24,6 +25,7 @@ public class MiningModule extends Module {
     public final EnumSetting<FilterMode> filterMode = add(new EnumSetting<>("filter_mode", FilterMode.OFF));
     public final ListSetting blocks = add(new ListSetting("blocks", ListSetting.Kind.BLOCK, List.of())
             .visibleWhen(() -> filterMode.get() != FilterMode.OFF));
+    public final BoolSetting protectStems = add(new BoolSetting("protect_stems", true));
     public final BoolSetting stopWhenFull = add(new BoolSetting("stop_when_full", false));
     public final IntSetting protectTool = add(new IntSetting("protect_tool", 10, 0, 100, Unit.NONE)
             .zeroMeans("options.off"));
@@ -32,12 +34,20 @@ public class MiningModule extends Module {
         super("mining", Category.MINING, true, true);
     }
 
+    public static boolean isStem(BlockState state) {
+        return state.is(Blocks.MELON_STEM) || state.is(Blocks.PUMPKIN_STEM)
+                || state.is(Blocks.ATTACHED_MELON_STEM) || state.is(Blocks.ATTACHED_PUMPKIN_STEM);
+    }
+
     public boolean allowsBreaking(Minecraft mc, BlockPos pos) {
         if (!isEnabled()) {
             return true;
         }
         BlockState state = mc.level.getBlockState(pos);
         if (state.isAir()) {
+            return false;
+        }
+        if (protectStems.get() && isStem(state)) {
             return false;
         }
         boolean listed = blocks.contains(state.getBlock());

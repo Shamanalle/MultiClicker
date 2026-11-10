@@ -15,6 +15,7 @@ import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
 import io.github.shamanalle.multiclicker.setting.Unit;
 import io.github.shamanalle.multiclicker.util.Input;
+import io.github.shamanalle.multiclicker.util.Rotations;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.Random;
 /** Performs small random actions at random intervals so the server does not kick you for idling. */
 public class AntiAfkModule extends Module {
     private static final Random RANDOM = new Random();
+    private static final float ROTATE_STEP = 8.5F;
 
     private enum Action {
         JUMP, SNEAK, SWING, ROTATE, STEP, SWITCH_SLOT
@@ -41,6 +43,8 @@ public class AntiAfkModule extends Module {
     private Action current;
     private int actionTick;
     private float originalYaw;
+    private float targetYaw;
+    private boolean rotating;
     private KeyMapping heldKey;
     private int originalSlot = -1;
     private int switchedSlot = -1;
@@ -109,10 +113,19 @@ public class AntiAfkModule extends Module {
                 if (tick == 0) {
                     originalYaw = player.getYRot();
                     float delta = (10.0F + RANDOM.nextFloat() * 20.0F) * (RANDOM.nextBoolean() ? 1 : -1);
-                    player.setYRot(originalYaw + delta);
-                } else if (tick >= 10) {
-                    player.setYRot(originalYaw);
-                    finishAction(mc);
+                    targetYaw = originalYaw + delta;
+                    rotating = true;
+                }
+                if (tick < 4) {
+                    player.setYRot(Rotations.stepToward(mc, player.getYRot(), targetYaw, ROTATE_STEP));
+                } else if (tick >= 8) {
+                    float next = Rotations.stepToward(mc, player.getYRot(), originalYaw, ROTATE_STEP);
+                    player.setYRot(next);
+                    if (tick >= 12 || Math.abs(next - originalYaw) <= 0.05F) {
+                        player.setYRot(originalYaw);
+                        rotating = false;
+                        finishAction(mc);
+                    }
                 }
             }
             case STEP -> {
@@ -145,6 +158,10 @@ public class AntiAfkModule extends Module {
             Input.release(heldKey);
             heldKey = null;
         }
+        if (rotating && mc.player != null) {
+            mc.player.setYRot(originalYaw);
+        }
+        rotating = false;
         // Back to the original slot, unless the player picked another one meanwhile.
         if (originalSlot != -1 && mc.player != null && Slots.selected(mc.player.getInventory()) == switchedSlot) {
             Slots.select(mc.player.getInventory(), originalSlot);

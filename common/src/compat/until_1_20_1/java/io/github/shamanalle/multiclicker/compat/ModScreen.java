@@ -76,4 +76,14 @@ public abstract class ModScreen extends Screen {
     public final boolean charTyped(char codePoint, int modifiers) {
         return typed(codePoint, modifiers);
     }
+
+    /** Dispatches a mouse click in MultiClicker's button convention (0 = left, 1 = right, 2 = middle). */
+    public final boolean simulateClick(double mouseX, double mouseY, int button) {
+        return clicked(mouseX, mouseY, button);
+    }
+
+    /** Dispatches a mouse release in MultiClicker's button convention (0 = left, 1 = right, 2 = middle). */
+    public final boolean simulateRelease(double mouseX, double mouseY, int button) {
+        return released(mouseX, mouseY, button);
+    }
 }

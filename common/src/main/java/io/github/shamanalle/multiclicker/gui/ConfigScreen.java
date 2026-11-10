@@ -83,6 +83,7 @@ public class ConfigScreen extends ModScreen {
     private final Anim overviewHover = new Anim(0);
     private final Anim profilesHover = new Anim(0);
     private final Anim statsHover = new Anim(0);
+    private final Anim filterAnim = new Anim(0);
     private final Anim masterAnim;
     private final Map<Object, Anim> headerHover = new HashMap<>();
     /** Slides the cards in when another category is shown. */
@@ -100,6 +101,7 @@ public class ConfigScreen extends ModScreen {
     @Nullable
     private Category category = lastCategory;
     private String query = "";
+    private boolean activeOnly;
     private EditBox search;
 
     private int panelX;
@@ -116,8 +118,12 @@ public class ConfigScreen extends ModScreen {
     private int viewH;
     private int searchX;
     private int searchW;
+    private int filterX;
+    private int filterW;
     private int masterX;
     private int masterW;
+    private int undoX = -1;
+    private int undoW;
 
     private float scroll;
     private float scrollTarget;
@@ -149,10 +155,11 @@ public class ConfigScreen extends ModScreen {
         this.masterAnim = new Anim(mod.isActive() ? 1 : 0);
     }
 
-    /** Shows a category and clears the search. */
+    /** Shows a category and clears the search and active filter. */
     public void showCategory(@Nullable Category target) {
         category = lastCategory = target;
         query = "";
+        activeOnly = false;
         focused = null;
         if (search != null) {
             search.setValue("");
@@ -164,6 +171,23 @@ public class ConfigScreen extends ModScreen {
     /** Shows the overview page. */
     public void showOverview() {
         showCategory(null);
+    }
+
+    public boolean isActiveOnly() {
+        return activeOnly;
+    }
+
+    public void setActiveOnly(boolean value) {
+        if (activeOnly != value) {
+            activeOnly = value;
+            focused = null;
+            rebuild();
+        }
+    }
+
+    /** Number of module cards currently listed on the right side. */
+    public int visibleCardCount() {
+        return cards.size();
     }
 
     /** Shows the card of a module, opened, and scrolls to it. */
@@ -181,7 +205,7 @@ public class ConfigScreen extends ModScreen {
     }
 
     private boolean isOverview() {
-        return category == null && query.isEmpty();
+        return category == null && query.isEmpty() && !activeOnly;
     }
 
     // --- Model ----------------------------------------------------------------------------------
@@ -250,9 +274,12 @@ public class ConfigScreen extends ModScreen {
         scroll = scrollTarget = 0;
         String q = query.trim().toLowerCase(Locale.ROOT);
         for (Module module : mod.modules()) {
+            if (activeOnly && !module.isEnabled()) {
+                continue;
+            }
             List<Row> rows = new ArrayList<>();
             if (q.isEmpty()) {
-                if (module.category() != category) {
+                if (category != null && module.category() != category) {
                     continue;
                 }
                 addRows(module, rows, null);
@@ -345,13 +372,15 @@ public class ConfigScreen extends ModScreen {
 
         masterW = Math.max(font.width(I18n.get("multiclicker.gui.active")), font.width(I18n.get("multiclicker.gui.inactive"))) + 24;
         masterX = panelX + panelW - masterW - 8;
+        filterW = 18;
+        filterX = masterX - 6 - filterW;
         int titleEnd = panelX + 15 + font.width(title.copy().withStyle(ChatFormatting.BOLD)) + 12;
-        showVersion = masterX - 8 - (titleEnd + font.width("v" + mod.version()) + 5) >= 110;
+        showVersion = filterX - 6 - (titleEnd + font.width("v" + mod.version()) + 5) >= 110;
         if (showVersion) {
             titleEnd += font.width("v" + mod.version()) + 5;
         }
-        searchW = Mth.clamp(masterX - 8 - titleEnd, 60, 170);
-        searchX = masterX - 8 - searchW;
+        searchW = Mth.clamp(filterX - 6 - titleEnd, 56, 170);
+        searchX = filterX - 6 - searchW;
 
         search = new EditBox(font, searchX + 6, panelY + 11, searchW - 12, 10, Component.translatable("multiclicker.gui.search"));
         search.setBordered(false);
@@ -404,17 +433,18 @@ public class ConfigScreen extends ModScreen {
         g.fill(panelX + sidebarW, panelY + HEADER, panelX + sidebarW + 1, panelY + panelH - 1, Theme.DIVIDER);
         g.fill(panelX + 1, panelY + HEADER - 1, panelX + panelW - 1, panelY + HEADER, Theme.DIVIDER);
 
-        Object hovered = null;
-        renderHeader(g, mouseX, mouseY, delta);
+        Object hovered = renderHeader(g, mouseX, mouseY, delta);
         hovered = renderSidebar(g, mouseX, mouseY, delta, hovered);
         hovered = renderContent(g, mouseX, mouseY, delta, hovered);
-        renderFooter(g);
+        hovered = renderFooter(g, mouseX, mouseY, hovered);
 
         super.draw(g, mouseX, mouseY, partialTick);
         renderTooltip(g, mouseX, mouseY, hovered);
     }
 
-    private void renderHeader(Canvas g, int mouseX, int mouseY, float delta) {
+    @Nullable
+    private Object renderHeader(Canvas g, int mouseX, int mouseY, float delta) {
+        Object hovered = null;
         int textY = panelY + 11;
         int accent = Theme.accent();
         Draw.rect(g, panelX + 8, panelY + 10, 3, 10, 1, accent);
@@ -431,6 +461,18 @@ public class ConfigScreen extends ModScreen {
             Draw.textRight(g, font, "⌕", searchX + searchW - 6, textY, Theme.TEXT_MUTED);
         }
 
+        boolean overFilter = isOverFilter(mouseX, mouseY);
+        float f = filterAnim.update(activeOnly ? 1 : 0, delta, 16);
+        int filterBg = Theme.mix(overFilter ? Theme.CONTROL_HOVER : Theme.CONTROL, Theme.alpha(accent, 0.24F), f);
+        Draw.box(g, filterX, panelY + 7, filterW, 16, 3, filterBg, activeOnly ? Theme.alpha(accent, 0.85F) : filterBg);
+        int filterIcon = activeOnly ? accent : overFilter ? Theme.TEXT_DIM : Theme.TEXT_MUTED;
+        g.fill(filterX + 5, panelY + 12, filterX + 13, panelY + 13, filterIcon);
+        g.fill(filterX + 6, panelY + 14, filterX + 12, panelY + 15, filterIcon);
+        g.fill(filterX + 8, panelY + 16, filterX + 10, panelY + 18, filterIcon);
+        if (overFilter) {
+            hovered = "filter_active";
+        }
+
         boolean inWorld = minecraft.player != null;
         float on = masterAnim.update(mod.isActive() ? 1 : 0, delta, 14);
         boolean over = inWorld && isOverMaster(mouseX, mouseY);
@@ -440,6 +482,11 @@ public class ConfigScreen extends ModScreen {
         Draw.rect(g, masterX + 8, panelY + 12, 6, 6, 3, dotColor);
         String label = I18n.get(mod.isActive() ? "multiclicker.gui.active" : "multiclicker.gui.inactive");
         Draw.text(g, font, label, masterX + 18, textY, inWorld ? (mod.isActive() ? Theme.SUCCESS : Theme.TEXT_DIM) : Theme.TEXT_MUTED);
+        return hovered;
+    }
+
+    private boolean isOverFilter(double mouseX, double mouseY) {
+        return mouseX >= filterX && mouseX < filterX + filterW && mouseY >= panelY + 7 && mouseY < panelY + 23;
     }
 
     private boolean isOverMaster(double mouseX, double mouseY) {
@@ -932,7 +979,7 @@ public class ConfigScreen extends ModScreen {
             }
             titleX = x + 18;
         }
-        String prefix = query.isEmpty() ? "" : module.category().icon() + " ";
+        String prefix = query.isEmpty() && category != null ? "" : module.category().icon() + " ";
 
         int buttonsRight = x + w - 10 - (card.toggle != null ? 30 : 0);
         int textRight = buttonsRight - headerButtonsWidth(module);
@@ -1049,10 +1096,22 @@ public class ConfigScreen extends ModScreen {
     }
 
     private void resetModule(Module module) {
-        for (Setting<?> setting : module.settings()) {
-            if (setting != module.enabledSetting() && !setting.isGlobal() && !setting.isInternal()) {
-                setting.reset();
+        mod.restartModules(minecraft, () -> mod.config().runUndoable(() -> {
+            for (Setting<?> setting : module.settings()) {
+                if (setting != module.enabledSetting() && !setting.isGlobal() && !setting.isInternal()) {
+                    setting.reset();
+                }
             }
+        }));
+        mod.saveConfig();
+    }
+
+    private void performUndo() {
+        if (mod.config().canUndo()) {
+            mod.restartModules(minecraft, mod.config()::undo);
+            mod.saveConfig();
+            rebuild();
+            playClick();
         }
     }
 
@@ -1098,10 +1157,29 @@ public class ConfigScreen extends ModScreen {
         return mouseX >= x && mouseX < x + w && mouseY >= y && mouseY < y + h;
     }
 
-    /** Tips in the footer take turns, fading from one to the next. */
-    private void renderFooter(Canvas g) {
+    /** Tips in the footer take turns, fading from one to the next, with an Undo pill when available. */
+    @Nullable
+    private Object renderFooter(Canvas g, int mouseX, int mouseY, @Nullable Object hovered) {
         int y = panelY + panelH - FOOTER + 4;
         g.fill(viewX + 1, panelY + panelH - FOOTER, panelX + panelW - 1, panelY + panelH - FOOTER + 1, Theme.DIVIDER);
+        int hintWidth = viewW - 16;
+        int hintCenterX = viewX + viewW / 2;
+        if (mod.config().canUndo()) {
+            String undoText = "↺ " + I18n.get("multiclicker.gui.undo");
+            undoW = font.width(undoText) + 12;
+            undoX = panelX + panelW - 6 - undoW;
+            int undoY = panelY + panelH - FOOTER + 2;
+            boolean overUndo = isOverUndo(mouseX, mouseY);
+            Draw.rect(g, undoX, undoY, undoW, 12, 3, overUndo ? Theme.CONTROL_HOVER : Theme.CONTROL);
+            Draw.textCentered(g, font, undoText, undoX + undoW / 2, undoY + 2, overUndo ? Theme.accent() : Theme.TEXT);
+            if (overUndo) {
+                hovered = "undo";
+            }
+            hintWidth = Math.max(20, undoX - viewX - 16);
+            hintCenterX = viewX + 8 + hintWidth / 2;
+        } else {
+            undoX = -1;
+        }
         long elapsed = System.currentTimeMillis() - openedAt;
         int index = (int) (elapsed / HINT_MS % HINTS.length);
         long phase = elapsed % HINT_MS;
@@ -1110,8 +1188,14 @@ public class ConfigScreen extends ModScreen {
             visible = Math.min(1, (HINT_MS - phase) / 300.0F); // no fade-in when the menu opens
         }
         String hint = I18n.get(HINTS[index], mod.toggleKey.getTranslatedKeyMessage().getString());
-        Draw.textCentered(g, font, Draw.ellipsize(font, hint, viewW - 16), viewX + viewW / 2, y,
+        Draw.textCentered(g, font, Draw.ellipsize(font, hint, hintWidth), hintCenterX, y,
                 Theme.mix(Theme.PANEL, Theme.TEXT_MUTED, visible));
+        return hovered;
+    }
+
+    private boolean isOverUndo(double mouseX, double mouseY) {
+        return undoX >= 0 && mod.config().canUndo()
+                && isOver(mouseX, mouseY, undoX, panelY + panelH - FOOTER + 2, undoW, 12);
     }
 
     private void renderTooltip(Canvas g, int mouseX, int mouseY, @Nullable Object hovered) {
@@ -1157,6 +1241,10 @@ public class ConfigScreen extends ModScreen {
             lines.addAll(font.split(sidebarTooltip("multiclicker.gui.stats"), 220));
         } else if ("profiles".equals(hovered)) {
             lines.addAll(font.split(sidebarTooltip("multiclicker.gui.profiles"), 220));
+        } else if ("filter_active".equals(hovered)) {
+            lines.addAll(font.split(Component.translatable("multiclicker.gui.filter_active"), 220));
+        } else if ("undo".equals(hovered)) {
+            lines.addAll(font.split(Component.translatable("multiclicker.gui.undo.desc"), 220));
         }
         if (!lines.isEmpty()) {
             Gfx.tooltip(g, font, lines, mouseX, mouseY);
@@ -1218,30 +1306,39 @@ public class ConfigScreen extends ModScreen {
         Widgets.focus(search, false);
         setFocused(null);
 
+        if (isOverFilter(mouseX, mouseY) && button == 0) {
+            setActiveOnly(!activeOnly);
+            playClick();
+            return true;
+        }
         if (isOverMaster(mouseX, mouseY) && button == 0 && minecraft.player != null) {
             mod.setActive(!mod.isActive(), null);
             return true;
         }
-        if (isOverSidebarItem(mouseX, mouseY, sidebarTop())) {
+        if (isOverUndo(mouseX, mouseY) && button == 0) {
+            performUndo();
+            return true;
+        }
+        if (button == 0 && isOverSidebarItem(mouseX, mouseY, sidebarTop())) {
             showOverview();
             playClick();
             return true;
         }
         int y = categoriesTop();
         for (Category entry : Category.values()) {
-            if (isOverSidebarItem(mouseX, mouseY, y)) {
+            if (button == 0 && isOverSidebarItem(mouseX, mouseY, y)) {
                 showCategory(entry);
                 playClick();
                 return true;
             }
             y += sidebarItem;
         }
-        if (isOverSidebarItem(mouseX, mouseY, statsItemY())) {
+        if (button == 0 && isOverSidebarItem(mouseX, mouseY, statsItemY())) {
             playClick();
             openStats();
             return true;
         }
-        if (isOverSidebarItem(mouseX, mouseY, profilesItemY())) {
+        if (button == 0 && isOverSidebarItem(mouseX, mouseY, profilesItemY())) {
             playClick();
             openProfiles();
             return true;
@@ -1249,7 +1346,7 @@ public class ConfigScreen extends ModScreen {
 
         boolean inView = mouseX >= viewX && mouseX < viewX + viewW && mouseY >= viewY && mouseY < viewY + viewH;
         if (inView) {
-            if (maxScroll() > 0 && mouseX >= viewX + viewW - 7) {
+            if (button == 0 && maxScroll() > 0 && mouseX >= viewX + viewW - 7) {
                 draggingScrollbar = true;
                 scrollFromMouse(mouseY);
                 return true;
@@ -1326,6 +1423,12 @@ public class ConfigScreen extends ModScreen {
                         playClick();
                         return true;
                     }
+                    if (button == 1 && !(row.setting instanceof KeySetting) && mouseX >= cardX && mouseX < cardX + cardW) {
+                        finishEditing(false);
+                        row.setting.reset();
+                        playClick();
+                        return true;
+                    }
                 }
             }
         }
@@ -1333,12 +1436,15 @@ public class ConfigScreen extends ModScreen {
     }
 
     private boolean clickedHeaderButton(Card card, double mouseX, double mouseY, int button) {
+        if (button != 0 && button != 1) {
+            return false;
+        }
         int buttonY = card.y + 9;
         KeySetting key = card.module.keySetting();
         if (key != null && card.chipX >= 0 && isOver(mouseX, mouseY, card.chipX, buttonY, card.chipW, CHIP_HEIGHT)) {
             if (button == 0) {
                 capture.start(key, key::bind);
-            } else if (button == 1) {
+            } else {
                 key.clear();
             }
             return true;
@@ -1412,6 +1518,10 @@ public class ConfigScreen extends ModScreen {
         if (keyCode == InputConstants.KEY_F && Keys.controlDown()) {
             setFocused(search);
             Widgets.focus(search, true);
+            return true;
+        }
+        if (keyCode == InputConstants.KEY_Z && Keys.controlDown() && !search.isFocused() && mod.config().canUndo()) {
+            performUndo();
             return true;
         }
         if (search.isFocused()) {

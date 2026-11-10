@@ -49,7 +49,8 @@ public class AutoRespawnModule extends Module {
             }
             return;
         }
-        if (respawn.get() && !mc.level.getLevelData().isHardcore() && ++deadTicks == RESPAWN_DELAY) {
+        if (respawn.get() && !mc.level.getLevelData().isHardcore()
+                && ++deadTicks >= RESPAWN_DELAY && (deadTicks - RESPAWN_DELAY) % 40 == 0) {
             player.respawn();
         }
     }

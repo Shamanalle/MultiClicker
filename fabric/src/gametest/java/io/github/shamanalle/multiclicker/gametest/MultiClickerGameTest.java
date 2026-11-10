@@ -24,11 +24,13 @@ import net.minecraft.world.phys.HitResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CocoaBlock;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Keys;
+import io.github.shamanalle.multiclicker.compat.ModScreen;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.config.Preset;
@@ -106,6 +108,10 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             scenario(context, server, "profiles are shared as text and bound to a server", this::sharedProfiles);
             scenario(context, server, "hotbar refill and worn tool replacement", this::hotbarRefill);
             scenario(context, server, "auto farm harvests and replants", this::autoFarm);
+            scenario(context, server, "cocoa replanting, tall crops and line of sight", this::cocoaTallCropsAndLineOfSight);
+            scenario(context, server, "click mining, stem protection and weapon-only filter", this::clickMiningStemProtectionAndWeaponOnly);
+            scenario(context, server, "auto eat from inventory and fireworks with elytra", this::inventoryEatAndElytraFireworks);
+            scenario(context, server, "menu mouse clicks, active filter, row reset and undo", this::guiClicksAndUndo);
             scenario(context, server, "hud and highlight", this::hudScreenshots);
 
             reset(context, server);
@@ -668,6 +674,252 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         check(context.computeOnClient(mc -> mc.level.getBlockState(new BlockPos(1, -60, 3)).getValue(CropBlock.AGE) == 3),
                 "harvested wheat that was not ripe");
         check(context.computeOnClient(mc -> Slots.selected(mc.player.getInventory())) == 0, "the slot in use was not selected again");
+    }
+
+    private void cocoaTallCropsAndLineOfSight(ClientGameTestContext context, TestServerContext server) {
+        // Ripe cocoa on a jungle log at z=3 (facing south attaches to the log's north face at z=2).
+        server.runCommand("setblock 0 -60 3 minecraft:jungle_log");
+        server.runCommand("setblock 0 -60 2 minecraft:cocoa[age=2,facing=south]");
+        give(server, 4, new ItemStack(Items.COCOA_BEANS, 8));
+
+        // 3-tall sugar cane next to water: auto farm cuts the 2nd block (-59) and leaves the root (-60).
+        server.runCommand("setblock -3 -61 2 minecraft:water");
+        server.runCommand("setblock -2 -60 2 minecraft:sugar_cane");
+        server.runCommand("setblock -2 -59 2 minecraft:sugar_cane");
+        server.runCommand("setblock -2 -58 2 minecraft:sugar_cane");
+
+        // Ripe wheat completely sealed behind stone walls and roof: line-of-sight must skip it.
+        server.runCommand("setblock 2 -61 3 minecraft:farmland");
+        server.runCommand("setblock 2 -60 3 minecraft:wheat[age=7]");
+        server.runCommand("fill 1 -60 2 3 -58 2 minecraft:stone");
+        server.runCommand("fill 1 -60 4 3 -58 4 minecraft:stone");
+        server.runCommand("fill 1 -60 3 1 -58 3 minecraft:stone");
+        server.runCommand("fill 3 -60 3 3 -58 3 minecraft:stone");
+        server.runCommand("fill 1 -58 2 3 -58 4 minecraft:stone");
+
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.clicker().attack.enabled.set(false);
+            mod.autoFarm().enabledSetting().set(true);
+            mod.autoFarm().tallCrops.set(true);
+            mod.autoFarm().lineOfSight.set(true);
+            mod.autoFarm().delay.set(1);
+        });
+        context.waitTicks(5);
+        activate(context);
+
+        waitUntil(context, "cocoa to be harvested and replanted on the jungle log", 200, mc -> {
+            BlockState cocoa = mc.level.getBlockState(new BlockPos(0, -60, 2));
+            return cocoa.is(Blocks.COCOA) && cocoa.getValue(CocoaBlock.AGE) < CocoaBlock.MAX_AGE;
+        });
+        waitUntil(context, "tall sugar cane to be trimmed above the root", 120,
+                mc -> mc.level.getBlockState(new BlockPos(-2, -59, 2)).isAir());
+        check(context.computeOnClient(mc -> mc.level.getBlockState(new BlockPos(-2, -60, 2)).is(Blocks.SUGAR_CANE)),
+                "auto farm broke the bottom root block of sugar cane");
+        context.waitTicks(20);
+        check(context.computeOnClient(mc -> {
+            BlockState hidden = mc.level.getBlockState(new BlockPos(2, -60, 3));
+            return hidden.is(Blocks.WHEAT) && ((CropBlock) hidden.getBlock()).isMaxAge(hidden);
+        }), "auto farm harvested ripe wheat through a solid stone wall");
+    }
+
+    private void clickMiningStemProtectionAndWeaponOnly(ClientGameTestContext context, TestServerContext server) {
+        // 1) Mode.CLICK with interval=4 + weaponOnly=true still mines stone continuously with a pickaxe.
+        give(server, 0, new ItemStack(Items.IRON_PICKAXE));
+        server.runCommand("setblock 0 -59 2 minecraft:stone");
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.clicker().attack.mode.set(ClickChannel.Mode.CLICK);
+            mod.clicker().attack.interval.set(4);
+            mod.clicker().attackTarget.set(ClickerModule.AttackTarget.ENTITIES_AND_BLOCKS);
+            mod.clicker().weaponOnly.set(true);
+        });
+        context.waitTicks(3);
+        activate(context);
+        waitUntil(context, "stone to break in Mode.CLICK", 120,
+                mc -> mc.level.getBlockState(new BlockPos(0, -59, 2)).isAir());
+        deactivate(context);
+
+        // 2) Stem protection prevents breaking melon stems under the crosshair.
+        server.runCommand("setblock 0 -61 2 minecraft:farmland");
+        server.runCommand("setblock 0 -60 2 minecraft:melon_stem[age=7]");
+        server.runCommand("tp @a 0.5 -60 0.5 0 30");
+        context.waitTicks(5);
+        activate(context);
+        context.waitTicks(25);
+        check(context.computeOnClient(mc -> mc.level.getBlockState(new BlockPos(0, -60, 2)).is(Blocks.MELON_STEM)),
+                "the clicker broke a protected melon stem");
+        deactivate(context);
+
+        // 3) Weapon-only suppresses entity highlight & attacks with bread, then resumes with a sword.
+        server.runCommand("setblock 0 -60 2 minecraft:air");
+        server.runCommand("tp @a 0.5 -60 0.5 0 0");
+        give(server, 0, new ItemStack(Items.BREAD, 4));
+        give(server, 1, new ItemStack(Items.IRON_SWORD));
+        server.runCommand("summon minecraft:husk 0.5 -60 2.5 {NoAI:1b,Silent:1b,PersistenceRequired:1b}");
+        context.waitTicks(5);
+        activate(context);
+        context.waitTicks(25);
+        check(context.computeOnClient(mc -> MultiClicker.get().stats().attacks() == 0),
+                "weapon-only attacked a mob while holding bread");
+        check(context.computeOnClient(mc -> MultiClicker.get().highlight().target(mc) == null),
+                "highlight stayed active while weapon-only blocked attacks");
+
+        context.runOnClient(mc -> Slots.select(mc.player.getInventory(), 1));
+        context.waitTicks(2);
+        check(context.computeOnClient(mc -> MultiClicker.get().highlight().target(mc) != null),
+                "highlight did not turn back on when holding a sword");
+        waitUntil(context, "sword attack to land", 40, mc -> MultiClicker.get().stats().attacks() >= 1);
+    }
+
+    private void inventoryEatAndElytraFireworks(ClientGameTestContext context, TestServerContext server) {
+        // Fill all 9 hotbar slots with non-food items; keep food only in main inventory slot 20.
+        give(server, 0, new ItemStack(Items.IRON_SWORD));
+        for (int slot = 1; slot < 9; slot++) {
+            give(server, slot, new ItemStack(Items.COBBLESTONE, 16));
+        }
+        give(server, 20, new ItemStack(Items.COOKED_BEEF, 4));
+        server.runOnServer(s -> player(s).getFoodData().setFoodLevel(6));
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.clicker().attack.enabled.set(false);
+            mod.autoEat().enabledSetting().set(true);
+            mod.autoEat().fromInventory.set(true);
+        });
+        context.waitTicks(5);
+        activate(context);
+        waitUntil(context, "auto eat to eat food from main inventory", 140,
+                mc -> mc.player.getFoodData().getFoodLevel() > 6 && !MultiClicker.get().autoEat().isBusy());
+        check(context.computeOnClient(mc -> Slots.selected(mc.player.getInventory()) == 0),
+                "auto eat did not restore the selected sword slot");
+        check(context.computeOnClient(mc -> mc.player.getInventory().getItem(1).is(Items.COBBLESTONE)),
+                "auto eat did not put cobblestone back into the borrowed hotbar slot");
+
+        // Equip elytra on chest and verify fireworks take offhand priority over a shield.
+        server.runCommand("item replace entity @a armor.chest with minecraft:elytra");
+        give(server, 22, new ItemStack(Items.FIREWORK_ROCKET, 16));
+        give(server, 23, new ItemStack(Items.SHIELD));
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.offhand().enabledSetting().set(true);
+            mod.offhand().fireworksWithElytra.set(true);
+            mod.offhand().shield.set(true);
+        });
+        waitUntil(context, "firework rockets to be placed in the offhand", 40,
+                mc -> mc.player.getOffhandItem().is(Items.FIREWORK_ROCKET));
+    }
+
+    private void guiClicksAndUndo(ClientGameTestContext context, TestServerContext server) {
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.autoEat().enabledSetting().set(true);
+            mod.clicker().attack.enabled.set(false);
+        });
+        context.setScreen(() -> new ConfigScreen(null));
+        context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).showCategory(Category.SURVIVAL));
+        context.waitTicks(2);
+
+        // 1) Header active-only filter toggle + side mouse button ignored on sidebar.
+        context.runOnClient(mc -> {
+            ConfigScreen screen = (ConfigScreen) Screens.current(mc);
+            check(screen.visibleCardCount() > 1, "expected all survival modules before filtering");
+            int panelW = Math.min(screen.width - 24, 640);
+            int panelH = Math.min(screen.height - 24, 400);
+            int panelX = (screen.width - panelW) / 2;
+            int panelY = (screen.height - panelH) / 2;
+            int masterW = Math.max(
+                    mc.font.width(net.minecraft.client.resources.language.I18n.get("multiclicker.gui.active")),
+                    mc.font.width(net.minecraft.client.resources.language.I18n.get("multiclicker.gui.inactive"))) + 24;
+            int filterCenterX = panelX + panelW - masterW - 8 - 6 - 9;
+            clickScreen(screen, filterCenterX, panelY + 15, 0);
+            check(screen.isActiveOnly() && screen.visibleCardCount() == 1,
+                    "active-only filter button did not filter down to Auto Eat");
+
+            // Side mouse button (3) on the Overview sidebar item must not switch tabs or clear the filter.
+            clickScreen(screen, panelX + 14, panelY + 30 + 6 + 7, 3);
+            check(screen.isActiveOnly() && screen.visibleCardCount() == 1,
+                    "side mouse click on the sidebar switched pages");
+        });
+
+        // 2) Full-row right-click reset + card header reset + footer Undo pill.
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.clicker().attack.enabled.set(false);
+            mod.clicker().weaponOnly.set(true);
+            ConfigScreen screen = (ConfigScreen) Screens.current(mc);
+            screen.showCategory(Category.CLICKER);
+        });
+        context.waitTicks(10); // let category slide animation settle
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            ConfigScreen screen = (ConfigScreen) Screens.current(mc);
+            int panelW = Math.min(screen.width - 24, 640);
+            int panelH = Math.min(screen.height - 24, 400);
+            int panelX = (screen.width - panelW) / 2;
+            int panelY = (screen.height - panelH) / 2;
+            int resetHeaderX = panelX + panelW - 28;
+            int cardTopY = panelY + 30 + 8;
+            // Right-click the first setting row below the Attack subheader to reset attack_enabled -> true.
+            for (int probeY = cardTopY + 45; probeY <= cardTopY + 80; probeY += 4) {
+                if (!mod.clicker().attack.enabled.get()) {
+                    clickScreen(screen, panelX + panelW / 2, probeY, 1);
+                }
+            }
+            check(mod.clicker().attack.enabled.get(), "right-clicking a setting row label did not reset it");
+
+            // Left-click the ↺ reset button in the Clicker card header to reset weaponOnly -> false (undoable).
+            clickScreen(screen, resetHeaderX, cardTopY + 16, 0);
+            check(!mod.clicker().weaponOnly.get() && mod.config().canUndo(),
+                    "clicking module reset did not reset settings with an undo snapshot");
+        });
+        context.waitTicks(2); // let renderFooter compute undoX
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            ConfigScreen screen = (ConfigScreen) Screens.current(mc);
+            int panelW = Math.min(screen.width - 24, 640);
+            int panelH = Math.min(screen.height - 24, 400);
+            int panelX = (screen.width - panelW) / 2;
+            int panelY = (screen.height - panelH) / 2;
+            clickScreen(screen, panelX + panelW - 12, panelY + panelH - 16 + 8, 0);
+            check(mod.clicker().weaponOnly.get() && !mod.config().canUndo(),
+                    "clicking the footer Undo pill did not restore weaponOnly");
+        });
+
+        // 3) ProfilesScreen preset click + header Undo button.
+        context.setScreen(() -> new ProfilesScreen(new ConfigScreen(null)));
+        context.waitTicks(2);
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            ProfilesScreen screen = (ProfilesScreen) Screens.current(mc);
+            int panelW = Math.min(screen.width - 24, 400);
+            int panelH = Math.min(screen.height - 24, 320);
+            int panelX = (screen.width - panelW) / 2;
+            int panelY = (screen.height - panelH) / 2;
+            clickScreen(screen, panelX + 20, panelY + 57, 0); // Preset.MOB_FARM
+            check(!mod.targetFilter().passive.get() && mod.config().canUndo(),
+                    "clicking Mob farm preset on ProfilesScreen did not apply it");
+
+            int backW = Math.max(46, mc.font.width(net.minecraft.client.resources.language.I18n.get("gui.back")) + 16);
+            int copyW = Math.max(46, mc.font.width(net.minecraft.client.resources.language.I18n.get("multiclicker.gui.profiles.copy_current")) + 16);
+            int undoCenterX = panelX + panelW - 8 - backW - 4 - copyW - 4 - 16;
+            clickScreen(screen, undoCenterX, panelY + 15, 0);
+            check(mod.targetFilter().passive.get() && !mod.config().canUndo(),
+                    "clicking Undo on ProfilesScreen did not restore passive targets");
+        });
+
+        // 4) ListEditScreen with Kind.PLAYER renders cleanly without item icons.
+        context.runOnClient(mc -> {
+            MultiClicker.get().safety().ignoredPlayers.add("Steve");
+            MultiClicker.get().safety().ignoredPlayers.add(".bedrock_friend");
+        });
+        context.setScreen(() -> new ListEditScreen(new ConfigScreen(null), MultiClicker.get().safety().ignoredPlayers));
+        context.waitTicks(2);
+        context.setScreen(() -> null);
+    }
+
+    private static void clickScreen(ModScreen screen, double x, double y, int button) {
+        screen.simulateClick(x, y, button);
+        screen.simulateRelease(x, y, button);
     }
 
     private void hudScreenshots(ClientGameTestContext context, TestServerContext server) {

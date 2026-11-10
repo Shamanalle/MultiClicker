@@ -14,16 +14,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-/** A list of item or block identifiers, e.g. {@code minecraft:cobblestone}. */
+/** A list of item/block identifiers (e.g. {@code minecraft:cobblestone}) or player names. */
 public class ListSetting extends Setting<List<String>> {
     public enum Kind {
-        ITEM, BLOCK
+        ITEM, BLOCK, PLAYER
     }
 
     private final Kind kind;
 
     public ListSetting(String key, Kind kind, List<String> defaultValue) {
-        super(key, List.copyOf(defaultValue));
+        super(key, sanitizeList(defaultValue, kind));
         this.kind = kind;
     }
 
@@ -32,7 +32,7 @@ public class ListSetting extends Setting<List<String>> {
     }
 
     public boolean add(String rawId) {
-        String id = normalize(rawId);
+        String id = normalizeEntry(rawId);
         if (id.isEmpty() || value.contains(id)) {
             return false;
         }
@@ -61,18 +61,66 @@ public class ListSetting extends Setting<List<String>> {
         return contains(Ids.blockId(block));
     }
 
-    /** Whether the id refers to an existing item/block (unknown ids are highlighted in the UI). */
-    public boolean isKnown(String id) {
-        return kind == Kind.ITEM ? Ids.itemExists(id) : Ids.blockExists(id);
+    public boolean containsPlayer(String playerName) {
+        return playerName != null && contains(normalize(playerName, Kind.PLAYER));
     }
 
-    /** Lower-cases the id and adds the {@code minecraft:} namespace when omitted. */
+    /** Whether the entry refers to an existing item/block or a valid player username. */
+    public boolean isKnown(String id) {
+        return switch (kind) {
+            case ITEM -> Ids.itemExists(id);
+            case BLOCK -> Ids.blockExists(id);
+            case PLAYER -> isValidPlayerName(id);
+        };
+    }
+
+    /** Normalizes {@code raw} according to this list's {@link Kind}. */
+    public String normalizeEntry(String raw) {
+        return normalize(raw, kind);
+    }
+
+    /** Lower-cases an item/block id and adds the {@code minecraft:} namespace when omitted. */
     public static String normalize(String raw) {
+        return normalize(raw, Kind.ITEM);
+    }
+
+    public static String normalize(String raw, Kind kind) {
+        if (raw == null) {
+            return "";
+        }
+        if (kind == Kind.PLAYER) {
+            return raw.trim().toLowerCase(Locale.ROOT);
+        }
         String id = raw.trim().toLowerCase(Locale.ROOT).replace(' ', '_');
         if (id.isEmpty()) {
             return "";
         }
         return id.indexOf(':') < 0 ? "minecraft:" + id : id;
+    }
+
+    private static boolean isValidPlayerName(String name) {
+        if (name.isEmpty() || name.length() > 16) {
+            return false;
+        }
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            boolean valid = c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '_' || c == '.';
+            if (!valid) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static List<String> sanitizeList(List<String> entries, Kind kind) {
+        Set<String> unique = new LinkedHashSet<>();
+        for (String entry : entries) {
+            String id = normalize(entry, kind);
+            if (!id.isEmpty()) {
+                unique.add(id);
+            }
+        }
+        return Collections.unmodifiableList(new ArrayList<>(unique));
     }
 
     @Override
@@ -85,14 +133,7 @@ public class ListSetting extends Setting<List<String>> {
         if (value == null) {
             return defaultValue();
         }
-        Set<String> unique = new LinkedHashSet<>();
-        for (String entry : value) {
-            String id = normalize(entry);
-            if (!id.isEmpty()) {
-                unique.add(id);
-            }
-        }
-        return Collections.unmodifiableList(new ArrayList<>(unique));
+        return sanitizeList(value, kind);
     }
 
     @Override

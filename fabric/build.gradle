@@ -74,6 +74,7 @@ loom {
             name = "Client Game Test"
             source sourceSets.gametest
             property "fabric.client.gametest"
+            vmArg "-Xmx2G"
             runDir "build/run/clientGameTest"
         }
     }

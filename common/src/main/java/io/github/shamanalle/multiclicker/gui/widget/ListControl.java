@@ -39,10 +39,14 @@ public class ListControl extends SettingControl {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!isMouseOver(mouseX, mouseY) || button != 0) {
+        if (!isMouseOver(mouseX, mouseY) || (button != 0 && button != 1)) {
             return false;
         }
-        Screens.open(Minecraft.getInstance(), new ListEditScreen(parent, setting));
+        if (button == 1) {
+            setting.reset();
+        } else {
+            Screens.open(Minecraft.getInstance(), new ListEditScreen(parent, setting));
+        }
         return true;
     }
 }

@@ -35,6 +35,9 @@ public class HighlightModule extends Module {
         if (onlyWhenActive.get() && !mod.isActive()) {
             return null;
         }
+        if (!mod.clicker().canHighlightEntities(mc.player, mod)) {
+            return null;
+        }
         if (mc.hitResult instanceof EntityHitResult hit && mod.targetFilter().isValidTarget(mc, hit.getEntity())) {
             return Entities.whole(hit.getEntity());
         }

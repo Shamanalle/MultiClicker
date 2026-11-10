@@ -68,51 +68,51 @@ An auto clicker and AFK helper for Minecraft: it clicks attack, use and jump at 
 |---|---|
 | ⚔️ **Mob farm** | Hits on full charge with a small random delay, leaves passive mobs, pets and named mobs alone. Auto eat and anti-AFK on. |
 | ⛏️ **Mining** | Holds the attack key, auto tool picks the pickaxe, stops when the inventory is full. |
-| 🎣 **Fishing** | Auto fish reels in and casts again. Auto eat and anti-AFK on. |
+| 🎣 **Fishing** | Auto fish reels in and casts again, hotbar refill swaps in spare rods. Auto eat and anti-AFK on. |
 | 🌾 **Farming** | Auto farm harvests ripe crops around you and plants them again, hotbar refill brings more seeds. |
 
 ![Features](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/en/header_features.png)
 
 **🖱️ Auto clicker**
-- Three channels: attack, use and jump. Each one clicks or holds its key, with its own speed, pause, random delay and hotkey.
+- Three channels: attack, use and jump. Each one clicks or holds its key (always or only while you hold it yourself), with its own speed, pause, random delay and hotkey.
 - Speed in ticks or in clicks per second. Random delay: even, bell curve or natural.
-- Waits for full weapon charge (turn it off for 1.8-style PvP) and pauses while you eat, block or draw a bow.
+- Waits for full weapon charge (turn it off for 1.8-style PvP), optional *Weapon only* filter, and pauses while you eat, block or draw a bow.
 - Looting finishing blow: the killing hit is dealt with the best Looting weapon from the hotbar.
-- Start delay, attack and time limits. Works in the background when the game window is not focused.
+- Safe inventory mode for strict servers, start delay, attack and time limits. Works in the background when the game window is not focused.
 
 **🎯 Targets**
 - Players, hostile, neutral and passive mobs and other entities are switched separately.
 - Ignore babies, named mobs, pets and invisible mobs. For mining, blocks can be targets too.
 
 **❤️ Survival**
-- Safety: stop the mod or leave the server at low health, on any damage, or when a player comes near.
-- Offhand: a totem at low health, food when you're hungry, a torch with a pickaxe, otherwise a shield.
-- Auto eat: the best safe food from the hotbar. It never opens the chest, door or villager you look at.
+- Safety: stop the mod or leave the server at low health, on any damage, on a totem pop, or when a real player comes near (with an ignored-players list for friends).
+- Offhand: a totem at low health, fireworks while wearing elytra, food when you're hungry, a torch with a pickaxe, otherwise a shield.
+- Auto eat: the best safe food from the hotbar or inventory. It never opens the chest, door or villager you look at.
 - Auto potion: healing or regeneration at low health, fire resistance in fire or lava; drinks or throws.
 - Auto respawn with the death coordinates in the chat. Mending rotation: damaged Mending items take turns in the offhand.
 
 **⚙️ Automation**
-- Auto fish: reels in on a bite after the reaction time you set and casts again. Stops before the rod breaks. Shows whether the bobber is in open water, where treasure is caught.
-- Auto farm: wheat, carrots, potatoes, beetroots, nether wart, cocoa and sweet berries, harvested and planted again, with bone meal while nothing is ripe.
-- Hotbar refill: used-up stacks and broken tools are replaced from the inventory. A tool is swapped out before it breaks, so Mending tools are kept.
+- Auto fish: reels in on a bite after the reaction time you set and casts again. Stops before the rod breaks (or lets hotbar refill swap in a spare). Shows whether the bobber is in open water, where treasure is caught.
+- Auto farm: wheat, carrots, potatoes, beetroots, nether wart, cocoa and sweet berries harvested and planted again, tall sugar cane, bamboo and kelp trimmed above the root, plus bone meal while nothing is ripe.
+- Hotbar refill: used-up stacks and broken tools are replaced from the inventory. Held tools and offhand rods are swapped out before they break, so Mending tools are kept.
 - Anti-AFK (jump, sneak, swing, look around, step), auto walk and an inventory cleaner for your junk list.
 
 **⛏️ Mining**
-- A whitelist or blacklist of blocks the clicker may break, edited with item icons.
+- A whitelist or blacklist of blocks the clicker may break, edited with item icons, with pumpkin and melon stem protection on by default.
 - Auto tool picks the fastest tool for the block, counts Efficiency and skips nearly broken tools.
 - Stops when the inventory is full and protects the tool in hand.
 
 **🌙 Session**
 - Auto reconnect: joins the server again after a lost connection, loads its profile and turns the mod back on.
 - Session goal: kills, catches, harvest, blocks, experience… up to a number, with a progress bar; the mod can stop when it is reached.
-- Notifications with a chime: full inventory, tool about to break, no food, a player nearby, a fish caught. The important ones can also go to a Discord webhook.
+- Notifications with a chime (and optional taskbar flash): full inventory, tool about to break, no food, totem pop, a player nearby, a fish caught. The important ones can also go to a Discord webhook.
 
 **👀 HUD and menu**
 - Overview page: the state of the mod, the session, the goal and every module at a glance.
 - Status panel: profile, CPS, attacks, kills, damage, catches, harvest, session time, goal, ping, TPS, FPS and active modules. Drag it anywhere in the HUD editor, any scale.
 - Statistics for the session, each server and all time: kills by mob, exact damage and DPS, catches by kind, harvest, blocks, rates per hour, a live CPS graph, history of the last 20 sessions and CSV export.
 - The target about to be hit is outlined, filled or glowing, in your color.
-- A menu with search, foldable cards, tooltips with the default value, exact values and full keyboard control. Hotkey conflicts are pointed out. It fits any window size.
+- A menu with search, an active-only filter, foldable cards, undo (`Ctrl+Z`) for resets and presets, tooltips with the default value, exact values and full keyboard control. Hotkey conflicts are pointed out. It fits any window size.
 
 **🔗 Also:** a hotkey for any module, channel or profile (side mouse buttons too), profiles that load by themselves on a given server, a profile shared as one line of text. 13 languages.
 
@@ -181,51 +181,51 @@ workflow does that). On CurseForge the Russian part is already at the end of `cu
 |---|---|
 | ⚔️ **Моб-ферма** | Бьёт при полной зарядке со случайной задержкой, не трогает мирных мобов, питомцев и мобов с именем. Авто-еда и анти-АФК включены. |
 | ⛏️ **Копание** | Держит клавишу атаки, авто-инструмент берёт кирку, останавливается при полном инвентаре. |
-| 🎣 **Рыбалка** | Авто-рыбалка подсекает и забрасывает снова. Авто-еда и анти-АФК включены. |
+| 🎣 **Рыбалка** | Авто-рыбалка подсекает и забрасывает снова, пополнение хотбара меняет удочки. Авто-еда и анти-АФК включены. |
 | 🌾 **Ферма** | Автоферма собирает созревший урожай вокруг и сажает заново, пополнение хотбара подкладывает семена. |
 
 ![Возможности](https://raw.githubusercontent.com/Shamanalle/MultiClicker/main/docs/images/ru/header_features.png)
 
 **🖱️ Автокликер**
-- Три канала: атака, использование и прыжок. Каждый нажимает или удерживает свою клавишу, со своей скоростью, паузой, случайной задержкой и горячей клавишей.
+- Три канала: атака, использование и прыжок. Каждый нажимает или удерживает свою клавишу (постоянно или пока вы держите её сами), со своей скоростью, паузой, случайной задержкой и горячей клавишей.
 - Скорость в тиках или в кликах в секунду. Случайная задержка: равномерная, колокол или естественная.
-- Ждёт полной зарядки оружия (для PvP в стиле 1.8 можно выключить) и ставится на паузу, пока вы едите, закрываетесь щитом или натягиваете лук.
+- Ждёт полной зарядки оружия (для PvP в стиле 1.8 можно выключить), умеет бить только с оружием в руке и ставится на паузу, пока вы едите, закрываетесь щитом или натягиваете лук.
 - Добивание с Добычей: смертельный удар наносится оружием с лучшей Добычей из хотбара.
-- Задержка старта, лимиты атак и времени. Работает в фоне, когда окно игры не в фокусе.
+- Щадящий режим инвентаря для строгих серверов, задержка старта, лимиты атак и времени. Работает в фоне, когда окно игры не в фокусе.
 
 **🎯 Цели**
 - Игроки, враждебные, нейтральные и мирные мобы и прочие сущности включаются отдельно.
 - Можно не трогать детёнышей, мобов с именем, питомцев и невидимых. Для копания целью могут быть и блоки.
 
 **❤️ Выживание**
-- Безопасность: остановить мод или выйти с сервера при низком здоровье, при любом уроне или когда рядом игрок.
-- Вторая рука: тотем при низком здоровье, еда при голоде, факел с киркой, иначе щит.
-- Авто-еда: лучшая безопасная еда из хотбара. Никогда не открывает сундук, дверь или торговца, на которого вы смотрите.
+- Безопасность: остановить мод или выйти с сервера при низком здоровье, при любом уроне, при срабатывании тотема или когда рядом настоящий игрок (есть список игнорируемых друзей).
+- Вторая рука: тотем при низком здоровье, фейерверки с элитрами, еда при голоде, факел с киркой, иначе щит.
+- Авто-еда: лучшая безопасная еда из хотбара или инвентаря. Никогда не открывает сундук, дверь или торговца, на которого вы смотрите.
 - Авто-зелья: исцеление или регенерация при низком здоровье, огнестойкость в огне или лаве; пьёт или бросает.
 - Авто-возрождение с координатами смерти в чате. Чередование «Починки»: повреждённые предметы с «Починкой» по очереди встают во вторую руку.
 
 **⚙️ Автоматизация**
-- Авто-рыбалка: подсекает при поклёвке через заданное время реакции и забрасывает снова. Останавливается до поломки удочки. Показывает, в открытой ли воде поплавок: только там ловятся сокровища.
-- Автоферма: пшеница, морковь, картофель, свёкла, незерский нарост, какао и сладкие ягоды — собирает и сажает заново, а пока ничего не созрело, удобряет костной мукой.
-- Пополнение хотбара: закончившиеся стаки и сломанные инструменты заменяются из инвентаря. Инструмент меняется до поломки, так что инструменты с «Починкой» сохраняются.
+- Авто-рыбалка: подсекает при поклёвке через заданное время реакции и забрасывает снова. Останавливается до поломки удочки (или ждёт замены из хотбара). Показывает, в открытой ли воде поплавок: только там ловятся сокровища.
+- Автоферма: пшеница, морковь, картофель, свёкла, незерский нарост, какао и сладкие ягоды собираются и сажаются заново, тростник, бамбук и ламинария срезаются над корнем, а пока ничего не созрело — костная мука.
+- Пополнение хотбара: закончившиеся стаки и сломанные инструменты заменяются из инвентаря. Инструменты и удочки меняются до поломки, так что вещи с «Починкой» сохраняются.
 - Анти-АФК (прыжок, приседание, взмах, взгляд по сторонам, шаг), авто-ходьба и очистка инвентаря по списку мусора.
 
 **⛏️ Копание**
-- Белый или чёрный список блоков, которые кликер может ломать, с иконками предметов.
+- Белый или чёрный список блоков, которые кликер может ломать, с иконками предметов и защитой стеблей тыквы и арбуза по умолчанию.
 - Авто-инструмент берёт самый быстрый инструмент для блока с учётом Эффективности и пропускает почти сломанные.
 - Останавливается при полном инвентаре и бережёт инструмент в руке.
 
 **🌙 Сессия**
 - Авто-переподключение: после потери связи снова заходит на сервер, загружает его профиль и включает мод.
 - Цель сессии: убийства, улов, урожай, блоки, опыт… до заданного числа, с полосой прогресса; мод может остановиться, когда цель достигнута.
-- Уведомления со звуком: полный инвентарь, инструмент вот-вот сломается, нет еды, рядом игрок, поймана рыба. Важные можно отправлять и в Discord-вебхук.
+- Уведомления со звуком (и миганием окна на панели задач): полный инвентарь, инструмент вот-вот сломается, нет еды, сработал тотем, рядом игрок, поймана рыба. Важные можно отправлять и в Discord-вебхук.
 
 **👀 HUD и меню**
 - Страница обзора: состояние мода, сессия, цель и все модули на одном экране.
 - Панель состояния: профиль, кл/с, удары, убийства, урон, улов, урожай, время сессии, цель, пинг, TPS, FPS и активные модули. Перетаскивается куда угодно в редакторе HUD, любой размер.
 - Статистика за сессию, по серверам и за всё время: убийства по мобам, точный урон и DPS, улов по видам, урожай, блоки, скорость в час, живой график кл/с, история последних 20 сессий и экспорт в CSV.
 - Цель, которую сейчас ударят, обводится, заливается или светится вашим цветом.
-- Меню с поиском, сворачиваемыми карточками, подсказками со значением по умолчанию, вводом точных значений и полным управлением с клавиатуры. Подсказывает о конфликтах горячих клавиш. Подстраивается под любой размер окна.
+- Меню с поиском, фильтром активных модулей, сворачиваемыми карточками, отменой сброса (`Ctrl+Z`), подсказками со значением по умолчанию, вводом точных значений и полным управлением с клавиатуры. Подсказывает о конфликтах горячих клавиш. Подстраивается под любой размер окна.
 
 **🔗 Ещё:** горячая клавиша для любого модуля, канала и профиля (и боковые кнопки мыши), профили, которые сами загружаются на нужном сервере, профиль одной строкой текста, чтобы поделиться. 13 языков.
 
@@ -283,10 +283,10 @@ version>+26.1-26.3.jar` once per loader (Fabric with Quilt, NeoForge, Forge), an
 NeoForge 1.20.1. Modrinth refuses a file it already has, so the workflow adds a one-line marker file to each
 of these copies.
 
-**Version name:** `MultiClicker <mod version> for <versions> (<loader>)`, for example `MultiClicker 2.7.1 for 1.20.5–1.21.11 (Fabric)`
-or `MultiClicker 2.7.1 for 26.1–26.3 (Forge)`.
+**Version name:** `MultiClicker <mod version> for <versions> (<loader>)`, for example `MultiClicker 2.8.0 for 1.20.5–1.21.11 (Fabric)`
+or `MultiClicker 2.8.0 for 26.1–26.3 (Forge)`.
 
-**Version number:** `<mod version>+<Minecraft versions>-<loader>`, for example `2.7.1+1.20.5-1.21.11-fabric` or `2.7.1+26.1-26.3-forge`.
+**Version number:** `<mod version>+<Minecraft versions>-<loader>`, for example `2.8.0+1.20.5-1.21.11-fabric` or `2.8.0+26.1-26.3-forge`.
 
 **Release channel:** Release.
 

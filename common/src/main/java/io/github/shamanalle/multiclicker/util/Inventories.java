@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Containers;
 import io.github.shamanalle.multiclicker.compat.Slots;
 
@@ -25,6 +26,19 @@ public final class Inventories {
         return player != null && mc.gameMode != null
                 && player.containerMenu == player.inventoryMenu
                 && player.inventoryMenu.getCarried().isEmpty();
+    }
+
+    /**
+     * Like {@link #canClickInventory(Minecraft)}, and when server-safe inventory mode is enabled,
+     * also waits until the player is not pressing movement keys so strict anti-cheats do not flag
+     * backpack interactions while moving.
+     */
+    public static boolean canClickMainInventory(Minecraft mc) {
+        if (!canClickInventory(mc)) {
+            return false;
+        }
+        MultiClicker mod = MultiClicker.get();
+        return mod == null || !mod.clicker().safeInventory.get() || !Input.isPlayerMoving(mc);
     }
 
     /** Converts an inventory index (0-8 hotbar, 9-35 main) to the player menu slot id. */

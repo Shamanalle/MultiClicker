@@ -2,6 +2,64 @@
 
 All notable changes to **MultiClicker** will be documented in this file. In Russian: [CHANGELOG.ru.md](CHANGELOG.ru.md).
 
+## [2.8.0] - 2026-11-10
+### Added
+- **Only while key is held** on each clicker channel (attack, use and jump): while the mod is on, the channel
+  clicks or holds only as long as you hold its own key or mouse button yourself.
+- **Weapon only** in the clicker: creature attacks run only while holding a sword, axe, trident or mace, so
+  you do not punch mobs with food, blocks or torches in hand. Block mining still works.
+- **Safe inventory mode** in the clicker: inventory transfers wait until you stop moving and take at most one
+  click per tick, avoiding strict movement-inventory anti-cheat flags on servers.
+- **Tall crops** in auto farm: cuts the second block of grown sugar cane, bamboo and kelp so the root stays
+  planted and grows again.
+- **Line of sight** and **Only in view** in auto farm: skips crops hidden behind walls or outside your camera
+  view.
+- **Protect stems** in mining rules (on by default): prevents breaking pumpkin and melon stems with the
+  clicker.
+- **Ignored players** and **On totem used** in safety: list friends or alts that safety and nearby-player
+  notifications ignore (kept outside shared profiles), and optionally stop or disconnect as soon as a Totem of
+  Undying pops.
+- **Fireworks with elytra** in the offhand module: keeps firework rockets in the offhand while wearing elytra
+  (still yielding to an emergency totem).
+- **Eat from inventory** in auto eat (on by default): brings food from the main inventory when the hotbar has
+  none, putting the displaced item back afterwards if the hotbar was full.
+- **Totem used** notification (in-game and Discord webhook) and **Flash taskbar icon** when an alert fires
+  while the game window is unfocused.
+- **Active-only filter** in the menu header to show only enabled modules, and **Undo** (`↺ Undo` or
+  <kbd>Ctrl</kbd>+<kbd>Z</kbd>) after resetting a module or applying a preset.
+### Changed
+- The **Fishing** preset now turns on **Hotbar refill**, and hotbar refill also replaces nearly broken fishing
+  rods in the offhand and coordinates with auto fish so a spare rod is swapped in before auto fish stops.
+- Right-clicking anywhere on a setting row resets it to its default value (except hotkey rows, where right-click
+  still clears only the key chip itself).
+### Fixed
+- **Auto farm** now mines multi-tick blocks such as cocoa pods and melons continuously instead of restarting
+  block breaking every tick, and replants cocoa beans onto the jungle trunk it grew on rather than farmland
+  below.
+- **Clicker** in *Click* mode with *Entities and blocks* now mines blocks continuously instead of resetting
+  mining progress on every click, and in *Hold* mode lands repeated charged hits on creatures instead of
+  stopping after the first swing.
+- **Target highlight** no longer highlights creatures when the attack channel is off or when *Weapon only*
+  blocks the hit.
+- **Auto reconnect** loads the server's profile before arming the reconnect watcher so a disconnect right
+  after joining still reconnects, and waits for open screens (such as resource-pack prompts) to close before
+  turning the mod back on.
+- **Auto respawn** retries the respawn packet periodically if the first attempt is ignored by server lag or a
+  plugin.
+- **Statistics** no longer count active time or plot empty CPS bars while the singleplayer game is paused or a
+  menu is open.
+- **Auto potion** and **Anti-AFK** turn the camera in smooth mouse-quantized steps over several ticks instead
+  of snapping instantly, and wait one tick after aiming down before throwing a splash potion on 1.19 – 1.20.6.
+- **Safety** and **Notifications** ignore fake NPC entities (Citizens/ZNPCs tabless or version-2 UUID bots)
+  when checking for nearby players.
+- **Looting finishing blow** reads real item attack-damage attributes (including modded weapons) and accounts
+  for Protection enchantments on the target's armor.
+- **Auto fish** reserves at least 6 durability when *Protect rod* is on (hooking an entity costs 5 durability)
+  so a rod can no longer snap on an accidental entity hook.
+- Text selection with Shift+Click and double-click in search and number fields works again on Minecraft
+  1.21.9 – 26.3, mouse buttons 4+ no longer throw out-of-bounds checks on 26.3, and middle/side clicks no
+  longer trigger sidebar tabs or scrollbar jumps in the menu.
+
 ## [2.7.1] - 2026-11-10
 ### Fixed
 - On Minecraft 26.3 the menu buttons, switches, sliders and hotkey chips did not respond to left-clicks (or

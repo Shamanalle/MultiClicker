@@ -13,6 +13,7 @@ import net.minecraft.world.phys.HitResult;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Entities;
 import io.github.shamanalle.multiclicker.compat.Screens;
+import io.github.shamanalle.multiclicker.compat.Tools;
 import io.github.shamanalle.multiclicker.mixin.MinecraftAccessor;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
@@ -38,6 +39,7 @@ public class ClickerModule extends Module {
     public final ClickChannel attack;
     public final BoolSetting attackCooldown;
     public final EnumSetting<AttackTarget> attackTarget;
+    public final BoolSetting weaponOnly;
     public final BoolSetting pauseWhileUsing;
     public final BoolSetting lootingSwap;
 
@@ -47,6 +49,7 @@ public class ClickerModule extends Module {
     public final IntSetting startDelay;
     public final BoolSetting background;
     public final BoolSetting lockCamera;
+    public final BoolSetting safeInventory;
     public final IntSetting attackLimit;
     public final IntSetting timeLimit;
 
@@ -67,6 +70,7 @@ public class ClickerModule extends Module {
         attack = new ClickChannel(this, "attack", true, ClickChannel.Mode.CLICK, 1, 10);
         attackCooldown = register(new BoolSetting("attack_cooldown", true).visibleWhen(attack.enabled::get));
         attackTarget = register(new EnumSetting<>("attack_target", AttackTarget.ENTITIES).visibleWhen(attack.enabled::get));
+        weaponOnly = register(new BoolSetting("weapon_only", false).visibleWhen(attack.enabled::get));
         pauseWhileUsing = register(new BoolSetting("pause_while_using", true).visibleWhen(attack.enabled::get));
         lootingSwap = register(new BoolSetting("looting_swap", false).visibleWhen(attack.enabled::get));
 
@@ -76,6 +80,7 @@ public class ClickerModule extends Module {
         startDelay = register(new IntSetting("start_delay", 0, 0, 200, Unit.TICKS).zeroMeans("options.off"));
         background = register(new BoolSetting("background", true));
         lockCamera = register(new BoolSetting("lock_camera", false));
+        safeInventory = register(new BoolSetting("safe_inventory", false));
         attackLimit = register(new IntSetting("attack_limit", 0, 0, 5000, Unit.NONE).zeroMeans("multiclicker.value.unlimited"));
         timeLimit = register(new IntSetting("time_limit", 0, 0, 600, Unit.MINUTES).zeroMeans("multiclicker.value.unlimited"));
     }
@@ -219,11 +224,24 @@ public class ClickerModule extends Module {
         }
     }
 
+    /** Whether the attack channel is configured to hit entities with the currently held item. */
+    public boolean canHighlightEntities(LocalPlayer player, MultiClicker mod) {
+        if (!isEnabled() || !attack.enabled.get()) {
+            return false;
+        }
+        return !weaponOnly.get() || hasRequiredWeapon(player, mod);
+    }
+
+    private boolean hasRequiredWeapon(LocalPlayer player, MultiClicker mod) {
+        return Tools.isWeapon(player.getMainHandItem()) || mod.autoTool().hasWeaponToRestore(player);
+    }
+
     private void tickAttack(Minecraft mc, LocalPlayer player, MultiClicker mod, boolean eating) {
         HitResult hit = mc.hitResult;
         // The ender dragon is aimed at through its body parts.
         Entity target = hit instanceof EntityHitResult entityHit ? Entities.whole(entityHit.getEntity()) : null;
-        boolean validEntity = target != null && mod.targetFilter().isValidTarget(mc, target);
+        boolean weaponSatisfied = !weaponOnly.get() || hasRequiredWeapon(player, mod);
+        boolean validEntity = target != null && weaponSatisfied && mod.targetFilter().isValidTarget(mc, target);
         hintSkippedPlayer(mc, mod, target);
         boolean charged = player.getAttackStrengthScale(0.5F) >= 1.0F;
         boolean onBlock = target == null && hit instanceof BlockHitResult && hit.getType() == HitResult.Type.BLOCK;
@@ -255,7 +273,8 @@ public class ClickerModule extends Module {
                         && mod.mining().allowsBreaking(mc, ((BlockHitResult) hit).getBlockPos());
             } else {
                 // A swing into the air also uses up the charge, so it waits for it like a hit.
-                allowed = attackTarget.get() == AttackTarget.ANYTHING && (!attackCooldown.get() || charged);
+                allowed = weaponSatisfied && attackTarget.get() == AttackTarget.ANYTHING
+                        && (!attackCooldown.get() || charged);
             }
         }
         if (allowed && blocked) {
@@ -267,7 +286,15 @@ public class ClickerModule extends Module {
             return;
         }
 
-        if (attack.tick(mc.options.keyAttack, allowed, countDown)) {
+        boolean clicked;
+        if (onBlock) {
+            clicked = attack.tickContinuousBlock(mc.options.keyAttack, allowed);
+        } else if (target != null && attack.mode.get() == ClickChannel.Mode.HOLD) {
+            clicked = attack.tickEntityInHoldMode(mc.options.keyAttack, allowed, countDown);
+        } else {
+            clicked = attack.tick(mc.options.keyAttack, allowed, countDown);
+        }
+        if (clicked) {
             attackCount++;
             mod.stats().recordClick();
             if (validEntity) {
@@ -287,7 +314,9 @@ public class ClickerModule extends Module {
                                     Entity validTarget) {
         if (!swap.isActive()) {
             // Players drop their inventory whatever the weapon, so Looting does nothing on them.
-            boolean canStart = lootingSwap.get() && !paused && validTarget instanceof LivingEntity living
+            boolean canStart = lootingSwap.get() && !paused
+                    && attack.isTriggerSatisfied(mc.options.keyAttack)
+                    && validTarget instanceof LivingEntity living
                     && !(living instanceof Player) && swap.tryStart(mc, player, living);
             if (!canStart) {
                 return false;

@@ -79,7 +79,7 @@ public class AutoReconnectModule extends Module {
                 MultiClicker.get().notifications().reconnected(mc);
             }
             wasActive = MultiClicker.get().isActive();
-            if (resumeIn > 0 && --resumeIn == 0 && screen == null) {
+            if (resumeIn > 0 && screen == null && --resumeIn == 0) {
                 resumeIn = -1;
                 MultiClicker.get().setActive(true, null);
             }

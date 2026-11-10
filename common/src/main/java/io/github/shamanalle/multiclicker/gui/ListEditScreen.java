@@ -5,11 +5,14 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.shamanalle.multiclicker.compat.Canvas;
+import io.github.shamanalle.multiclicker.compat.Entities;
 import io.github.shamanalle.multiclicker.compat.Ids;
 import io.github.shamanalle.multiclicker.gui.widget.FlatButton;
 import io.github.shamanalle.multiclicker.setting.ListSetting;
@@ -50,14 +53,24 @@ public class ListEditScreen extends PanelScreen {
         super.init();
         int inner = panelW - 20;
         int addW = Math.max(54, font.width(Component.translatable("multiclicker.gui.list.add")) + 16);
-        input = field(panelX + 10, panelY + 38, inner - addW - 6, Component.translatable("multiclicker.gui.list.hint"));
-        input.setMaxLength(100);
+        String hintKey = setting.kind() == ListSetting.Kind.PLAYER
+                ? "multiclicker.gui.list.hint_player" : "multiclicker.gui.list.hint";
+        input = field(panelX + 10, panelY + 38, inner - addW - 6, Component.translatable(hintKey));
+        input.setMaxLength(setting.kind() == ListSetting.Kind.PLAYER ? 32 : 100);
         button(Component.translatable("multiclicker.gui.list.add"), FlatButton.Style.PRIMARY, this::addFromInput)
                 .bounds(panelX + panelW - 10 - addW, panelY + 38, addW, 17);
 
-        boolean items = setting.kind() == ListSetting.Kind.ITEM;
-        button(Component.translatable(items ? "multiclicker.gui.list.add_held" : "multiclicker.gui.list.add_looked"),
-                FlatButton.Style.NORMAL, items ? this::addHeldItem : this::addLookedAtBlock)
+        String quickKey = switch (setting.kind()) {
+            case ITEM -> "multiclicker.gui.list.add_held";
+            case BLOCK -> "multiclicker.gui.list.add_looked";
+            case PLAYER -> "multiclicker.gui.list.add_player";
+        };
+        Runnable quickAction = switch (setting.kind()) {
+            case ITEM -> this::addHeldItem;
+            case BLOCK -> this::addLookedAtBlock;
+            case PLAYER -> this::addLookedAtPlayer;
+        };
+        button(Component.translatable(quickKey), FlatButton.Style.NORMAL, quickAction)
                 .bounds(panelX + 10, panelY + 61, inner, 16);
 
         listX = panelX + 10;
@@ -74,7 +87,7 @@ public class ListEditScreen extends PanelScreen {
         if (raw.isBlank()) {
             return;
         }
-        String id = ListSetting.normalize(raw);
+        String id = setting.normalizeEntry(raw);
         if (!setting.add(raw)) {
             setStatus(Component.translatable("multiclicker.gui.list.duplicate", id), Theme.WARNING);
         } else if (!setting.isKnown(id)) {
@@ -101,6 +114,16 @@ public class ListEditScreen extends PanelScreen {
             return;
         }
         addId(Ids.blockId(minecraft.level.getBlockState(hit.getBlockPos()).getBlock()));
+    }
+
+    private void addLookedAtPlayer() {
+        if (!(minecraft.hitResult instanceof EntityHitResult hit)
+                || !(Entities.whole(hit.getEntity()) instanceof Player target)
+                || target == minecraft.player) {
+            setStatus(Component.translatable("multiclicker.gui.list.no_player"), Theme.WARNING);
+            return;
+        }
+        addId(setting.normalizeEntry(target.getName().getString()));
     }
 
     private void addId(String id) {
@@ -148,18 +171,21 @@ public class ListEditScreen extends PanelScreen {
         if (overRow) {
             g.fill(listX + 1, y, listX + listW - 1, y + ROW, Theme.ROW_HOVER);
         }
-        ItemStack icon = iconFor(id);
-        if (!icon.isEmpty()) {
-            g.item(icon, listX + 5, y + 2);
+        boolean hasIcon = setting.kind() != ListSetting.Kind.PLAYER;
+        if (hasIcon) {
+            ItemStack icon = iconFor(id);
+            if (!icon.isEmpty()) {
+                g.item(icon, listX + 5, y + 2);
+            }
         }
-        String text = Draw.ellipsize(font, known ? id : id + "  (?)", listW - 50);
-        Draw.text(g, font, text, listX + 26, y + 6, known ? Theme.TEXT : Theme.DANGER);
+        String text = Draw.ellipsize(font, known ? id : id + "  (?)", hasIcon ? listW - 50 : listW - 32);
+        Draw.text(g, font, text, hasIcon ? listX + 26 : listX + 8, y + 6, known ? Theme.TEXT : Theme.DANGER);
         boolean overRemove = overRow && mouseX >= listX + listW - 20;
         Draw.textCentered(g, font, "✕", listX + listW - 11, y + 6, overRemove ? Theme.DANGER : Theme.TEXT_MUTED);
     }
 
     private ItemStack iconFor(String id) {
-        if (!setting.isKnown(id)) {
+        if (setting.kind() == ListSetting.Kind.PLAYER || !setting.isKnown(id)) {
             return ItemStack.EMPTY;
         }
         try {

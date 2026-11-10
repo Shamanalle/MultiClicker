@@ -1,6 +1,7 @@
 package io.github.shamanalle.multiclicker.compat;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -11,6 +12,9 @@ import net.minecraft.world.item.enchantment.Enchantments;
  * objects before, so code outside this package never names them.
  */
 public final class Enchants {
+    private static final EquipmentSlot[] ARMOR_SLOTS = {
+            EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD
+    };
     private static final Enchants INSTANCE = new Enchants();
 
     private Enchants() {
@@ -40,5 +44,14 @@ public final class Enchants {
     /** Extra melee damage of the weapon's enchantments against this target. */
     public float damageBonus(ItemStack weapon, LivingEntity target) {
         return EnchantmentHelper.getDamageBonus(weapon, target.getMobType());
+    }
+
+    /** Share of post-armor melee damage absorbed by Protection on the target's worn armor (0..0.8). */
+    public float protectionReduction(LivingEntity target) {
+        int epf = 0;
+        for (EquipmentSlot slot : ARMOR_SLOTS) {
+            epf += EnchantmentHelper.getItemEnchantmentLevel(Enchantments.ALL_DAMAGE_PROTECTION, target.getItemBySlot(slot));
+        }
+        return Math.min(20, epf) * 0.04F;
     }
 }

@@ -80,7 +80,7 @@ public class HotbarRefillModule extends Module {
             remember(player);
             return;
         }
-        if (!Inventories.canClickInventory(mc) || mod.isConsuming() || mod.clicker().isSwappingWeapon()) {
+        if (!Inventories.canClickMainInventory(mc) || mod.isConsuming() || mod.clicker().isSwappingWeapon()) {
             // Another module has the hotbar; look again once it is done, against the hotbar from before.
             return;
         }
@@ -98,18 +98,37 @@ public class HotbarRefillModule extends Module {
         }
     }
 
+    /** Whether this module is active and has a spare tool ready in the main inventory. */
+    public boolean willReplaceTool(LocalPlayer player, ItemStack worn, int minDurability) {
+        return isRunning() && replaceTools.get()
+                && findSpareTool(player.getInventory(), worn, Math.max(toolDurability.get(), minDurability)) != -1;
+    }
+
     private boolean replaceWornTool(Minecraft mc, LocalPlayer player) {
+        AutoFishModule autoFish = MultiClicker.get().autoFish();
         int selected = Slots.selected(player.getInventory());
         ItemStack held = player.getInventory().getItem(selected);
-        if (!Inventories.isNearlyBroken(held, toolDurability.get())) {
-            return false;
+        int heldMin = Tools.kind(held) == Tools.FISHING_ROD && autoFish.isRunning()
+                ? Math.max(toolDurability.get(), autoFish.effectiveProtectRod(player)) : toolDurability.get();
+        if (Inventories.isNearlyBroken(held, heldMin)) {
+            int spare = findSpareTool(player.getInventory(), held, heldMin);
+            if (spare != -1) {
+                Inventories.swapWithHotbar(mc, spare, selected);
+                return true;
+            }
         }
-        int spare = findSpareTool(player.getInventory(), held);
-        if (spare == -1) {
-            return false;
+        if (autoFish.fishesWithOffhand(player)) {
+            ItemStack offhand = player.getOffhandItem();
+            int offhandMin = Math.max(toolDurability.get(), autoFish.effectiveProtectRod(player));
+            if (Inventories.isNearlyBroken(offhand, offhandMin)) {
+                int spare = findSpareTool(player.getInventory(), offhand, offhandMin);
+                if (spare != -1) {
+                    Inventories.swapWithOffhand(mc, spare);
+                    return true;
+                }
+            }
         }
-        Inventories.swapWithHotbar(mc, spare, selected);
-        return true;
+        return false;
     }
 
     private boolean refill(Minecraft mc, LocalPlayer player) {
@@ -124,7 +143,8 @@ public class HotbarRefillModule extends Module {
             if (now.isEmpty()) {
                 // The last item was used, or a tool broke. A whole stack that disappeared was moved or thrown.
                 boolean usedUp = before.getCount() == 1 || before.isDamageableItem();
-                int source = !usedUp ? -1 : before.isDamageableItem() ? findSpareTool(inventory, before) : findSame(inventory, before);
+                int source = !usedUp ? -1 : before.isDamageableItem()
+                        ? findSpareTool(inventory, before, toolDurability.get()) : findSame(inventory, before);
                 if (source != -1) {
                     Inventories.swapWithHotbar(mc, source, slot);
                     return true;
@@ -133,7 +153,14 @@ public class HotbarRefillModule extends Module {
                     && now.getCount() < before.getCount() && Stacks.sameItem(now, before)) {
                 int source = findSame(inventory, now);
                 if (source != -1) {
-                    Inventories.mergeInto(mc, source, slot);
+                    if (MultiClicker.get().clicker().safeInventory.get()) {
+                        if (inventory.getItem(source).getCount() <= now.getCount()) {
+                            continue;
+                        }
+                        Inventories.swapWithHotbar(mc, source, slot);
+                    } else {
+                        Inventories.mergeInto(mc, source, slot);
+                    }
                     return true;
                 }
             }
@@ -155,13 +182,13 @@ public class HotbarRefillModule extends Module {
      * The best replacement for a worn or broken tool in the main inventory: the same item with the
      * most durability left, otherwise a tool of the same kind, the most durable (best material) first.
      */
-    private int findSpareTool(Inventory inventory, ItemStack tool) {
+    private int findSpareTool(Inventory inventory, ItemStack tool, int minDurability) {
         int kind = Tools.kind(tool);
         int best = -1;
         int bestScore = Integer.MIN_VALUE;
         for (int slot = Inventories.HOTBAR_SIZE; slot < Inventories.MAIN_SIZE; slot++) {
             ItemStack stack = inventory.getItem(slot);
-            if (stack.isEmpty() || Inventories.isNearlyBroken(stack, toolDurability.get())) {
+            if (stack.isEmpty() || Inventories.isNearlyBroken(stack, minDurability)) {
                 continue;
             }
             int score;

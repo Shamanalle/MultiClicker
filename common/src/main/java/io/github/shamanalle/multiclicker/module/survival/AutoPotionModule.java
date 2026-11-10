@@ -13,17 +13,21 @@ import io.github.shamanalle.multiclicker.setting.IntSetting;
 import io.github.shamanalle.multiclicker.setting.Unit;
 import io.github.shamanalle.multiclicker.util.Inventories;
 import io.github.shamanalle.multiclicker.util.ItemUse;
+import io.github.shamanalle.multiclicker.util.Rotations;
 
 import java.util.function.Predicate;
 
 /**
  * Drinks or throws a potion from the hotbar: healing or regeneration at low health, fire
- * resistance when burning. Splash potions are thrown at the feet: the view turns down for a
- * moment so the server sees where the potion goes.
+ * resistance when burning. Splash potions are thrown at the feet: the view turns down smoothly
+ * so the server sees human-paced pitch packets before the throw.
  */
 public class AutoPotionModule extends Module {
     private static final int RETRY_COOLDOWN = 20;
     private static final int HEAL_COOLDOWN = 40;
+    private static final float THROW_PITCH = 89.5F;
+    private static final float THROW_READY_PITCH = 86.0F;
+    private static final float PITCH_STEP = 45.0F;
 
     public final IntSetting health = add(new IntSetting("health", 40, 0, 95, Unit.PERCENT).zeroMeans("options.off"));
     public final BoolSetting fire = add(new BoolSetting("fire", true));
@@ -33,6 +37,8 @@ public class AutoPotionModule extends Module {
     private int cooldown;
     private int slot = -1;
     private boolean throwing;
+    private boolean restoringPitch;
+    private int aimedTicks;
     private boolean healing;
     private float savedPitch;
 
@@ -42,7 +48,7 @@ public class AutoPotionModule extends Module {
 
     /** True while a potion is being drunk or thrown; the clicker and auto eat wait. */
     public boolean isBusy() {
-        return slot != -1 && isRunning();
+        return slot != -1 && !restoringPitch && isRunning();
     }
 
     public boolean holdsUseKey() {
@@ -51,15 +57,37 @@ public class AutoPotionModule extends Module {
 
     @Override
     public void stop(Minecraft mc) {
-        if (slot != -1) {
-            done(mc, false);
+        if (use.isActive()) {
+            use.finish(mc);
         }
+        if ((throwing || restoringPitch) && mc.player != null) {
+            mc.player.setXRot(savedPitch);
+        }
+        slot = -1;
+        throwing = false;
+        restoringPitch = false;
+        aimedTicks = 0;
         cooldown = 0;
     }
 
     @Override
     public void tick(Minecraft mc) {
         LocalPlayer player = mc.player;
+        if (restoringPitch) {
+            float next = Rotations.clampPitch(Rotations.stepToward(mc, player.getXRot(), savedPitch, PITCH_STEP));
+            player.setXRot(next);
+            if (Math.abs(next - savedPitch) <= 0.05F) {
+                player.setXRot(savedPitch);
+                slot = -1;
+                throwing = false;
+                restoringPitch = false;
+                aimedTicks = 0;
+            }
+            if (cooldown > 0) {
+                cooldown--;
+            }
+            return;
+        }
         if (slot != -1) {
             tickUse(mc, player);
             return;
@@ -88,10 +116,10 @@ public class AutoPotionModule extends Module {
         }
         slot = found;
         throwing = Potions.isSplash(player.getInventory().getItem(found));
+        aimedTicks = 0;
         if (throwing) {
-            // Look down this tick; the throw follows on the next one, once the server has the new pitch.
             savedPitch = player.getXRot();
-            player.setXRot(90.0F);
+            tickUse(mc, player);
         } else {
             use.begin(player, slot, false, Potions::isDrinkable);
             tickUse(mc, player);
@@ -99,8 +127,16 @@ public class AutoPotionModule extends Module {
     }
 
     private void tickUse(Minecraft mc, LocalPlayer player) {
-        if (!use.isActive()) {
-            use.begin(player, slot, true, Potions::isSplash);
+        if (throwing) {
+            float next = Rotations.clampPitch(Rotations.stepToward(mc, player.getXRot(), THROW_PITCH, PITCH_STEP));
+            player.setXRot(next);
+            if (!use.isActive()) {
+                // Step smoothly down and let vanilla send one downward rotation packet before throwing.
+                if (next < THROW_READY_PITCH || aimedTicks++ == 0) {
+                    return;
+                }
+                use.begin(player, slot, true, Potions::isSplash);
+            }
         }
         ItemUse.Result result = use.tick(mc, player);
         if (result != ItemUse.Result.RUNNING) {
@@ -112,12 +148,14 @@ public class AutoPotionModule extends Module {
         if (use.isActive()) {
             use.finish(mc);
         }
-        if (throwing && mc.player != null) {
-            mc.player.setXRot(savedPitch);
-        }
-        slot = -1;
-        throwing = false;
         cooldown = !used ? RETRY_COOLDOWN : healing ? HEAL_COOLDOWN : 2;
+        if (throwing && mc.player != null) {
+            restoringPitch = true;
+        } else {
+            slot = -1;
+            throwing = false;
+            aimedTicks = 0;
+        }
     }
 
     /** The best hotbar slot with a potion of this kind: a splash potion acts at once. */

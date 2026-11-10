@@ -10,6 +10,7 @@ import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Enchants;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Slots;
+import io.github.shamanalle.multiclicker.compat.Tools;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
@@ -85,6 +86,12 @@ public class AutoToolModule extends Module {
      */
     public boolean giveWeaponBack(LocalPlayer player) {
         return isToolSelected() && previousSlot != -1 && restore(player);
+    }
+
+    /** True while a mining tool was temporarily chosen in place of a weapon in {@code previousSlot}. */
+    public boolean hasWeaponToRestore(LocalPlayer player) {
+        return isToolSelected() && previousSlot >= 0 && previousSlot < Inventories.HOTBAR_SIZE
+                && Tools.isWeapon(player.getInventory().getItem(previousSlot));
     }
 
     /** Whether the held tool, too worn for mining, is swapped for another one for this block. */

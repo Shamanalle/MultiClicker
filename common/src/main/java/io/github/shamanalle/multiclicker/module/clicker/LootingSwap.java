@@ -178,9 +178,10 @@ final class LootingSwap {
                                 Enchants enchantments) {
         // Built from parts: the client never receives the attack damage attribute with the held
         // item's modifiers (only the server applies them), so the attribute value alone is wrong.
-        double base = player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE) + Stacks.attackDamage(weapon)
+        double baseWithPotions = player.getAttributeBaseValue(Attributes.ATTACK_DAMAGE)
                 + Lookups.strength(player) * 3.0 - Lookups.weakness(player) * 4.0;
-        float damage = (float) Math.max(0, base) + enchantments.damageBonus(weapon, target);
+        double modified = Stacks.attackDamage(weapon, baseWithPotions);
+        float damage = (float) Math.max(0, modified) + enchantments.damageBonus(weapon, target);
 
         float armor = target.getArmorValue();
         float toughness = (float) target.getAttributeValue(Attributes.ARMOR_TOUGHNESS);
@@ -189,6 +190,7 @@ final class LootingSwap {
         damage *= 1.0F - effectiveArmor / 25.0F;
 
         damage *= Math.max(0.0F, 1.0F - Lookups.resistance(target) * 0.2F);
+        damage *= 1.0F - enchantments.protectionReduction(target);
         return damage;
     }
 }

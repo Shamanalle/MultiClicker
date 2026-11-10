@@ -14,12 +14,16 @@ import net.minecraft.network.chat.Component;
  * methods, whose signatures changed in Minecraft 1.21.9.
  */
 public abstract class ModScreen extends Screen {
+    private MouseButtonEvent activeEvent;
+    private boolean activeDoubleClick;
+
     protected ModScreen(Component title) {
         super(title);
     }
 
-    private static MouseButtonEvent event(double mouseX, double mouseY, int button) {
-        return new MouseButtonEvent(mouseX, mouseY, new MouseButtonInfo(button, 0));
+    private MouseButtonEvent event(double mouseX, double mouseY, int button) {
+        int modifiers = activeEvent != null ? activeEvent.modifiers() : 0;
+        return new MouseButtonEvent(mouseX, mouseY, new MouseButtonInfo(button, modifiers));
     }
 
     protected void draw(Canvas g, int mouseX, int mouseY, float partialTick) {
@@ -32,7 +36,7 @@ public abstract class ModScreen extends Screen {
     }
 
     protected boolean clicked(double mouseX, double mouseY, int button) {
-        return super.mouseClicked(event(mouseX, mouseY, button), false);
+        return super.mouseClicked(event(mouseX, mouseY, button), activeDoubleClick);
     }
 
     protected boolean dragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
@@ -62,17 +66,38 @@ public abstract class ModScreen extends Screen {
 
     @Override
     public final boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        return clicked(event.x(), event.y(), event.button());
+        MouseButtonEvent prevEvent = activeEvent;
+        boolean prevDoubleClick = activeDoubleClick;
+        activeEvent = event;
+        activeDoubleClick = doubleClick;
+        try {
+            return clicked(event.x(), event.y(), event.button());
+        } finally {
+            activeEvent = prevEvent;
+            activeDoubleClick = prevDoubleClick;
+        }
     }
 
     @Override
     public final boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
-        return dragged(event.x(), event.y(), event.button(), dragX, dragY);
+        MouseButtonEvent prevEvent = activeEvent;
+        activeEvent = event;
+        try {
+            return dragged(event.x(), event.y(), event.button(), dragX, dragY);
+        } finally {
+            activeEvent = prevEvent;
+        }
     }
 
     @Override
     public final boolean mouseReleased(MouseButtonEvent event) {
-        return released(event.x(), event.y(), event.button());
+        MouseButtonEvent prevEvent = activeEvent;
+        activeEvent = event;
+        try {
+            return released(event.x(), event.y(), event.button());
+        } finally {
+            activeEvent = prevEvent;
+        }
     }
 
     @Override
@@ -86,5 +111,15 @@ public abstract class ModScreen extends Screen {
             return super.charTyped(event);
         }
         return typed((char) event.codepoint(), event.modifiers());
+    }
+
+    /** Dispatches a mouse click in MultiClicker's button convention (0 = left, 1 = right, 2 = middle). */
+    public final boolean simulateClick(double mouseX, double mouseY, int button) {
+        return clicked(mouseX, mouseY, button);
+    }
+
+    /** Dispatches a mouse release in MultiClicker's button convention (0 = left, 1 = right, 2 = middle). */
+    public final boolean simulateRelease(double mouseX, double mouseY, int button) {
+        return released(mouseX, mouseY, button);
     }
 }

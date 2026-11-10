@@ -49,7 +49,7 @@ Pick a ready-made setup under **Profiles → Presets**, then press <kbd>I</kbd>:
 |:--|:--|
 | **Mob farm** | Attacks on full charge with a small random delay. Passive mobs, pets and named mobs are left alone. Auto eat and anti-AFK are on. |
 | **Mining** | The attack key is held, blocks are broken, auto tool picks the pickaxe, the clicker stops when the inventory is full. Auto eat is on. |
-| **Fishing** | The clicker is off, auto fish reels in and casts again. Auto eat and anti-AFK are on. |
+| **Fishing** | The clicker is off, auto fish reels in and casts again, hotbar refill swaps in spare rods. Auto eat and anti-AFK are on. |
 | **Farming** | The clicker is off, auto farm harvests ripe crops around you and plants them again, hotbar refill brings more seeds. Auto eat is on. |
 | **AFK in place** | The clicker is off. Anti-AFK only sneaks, swings and switches the hotbar slot, so you never leave the spot. |
 
@@ -63,19 +63,22 @@ or share it with others as a line of text.
 Every option has a tooltip in the menu. Right-click a setting to reset it.
 
 ### Auto clicker
-- **Three channels: attack (LMB), use (RMB) and jump.** Each one can *click* or *hold* the key and has
-  its own speed, hold time, pause, random delay and hotkey.
+- **Three channels: attack (LMB), use (RMB) and jump.** Each one can *click* or *hold* the key (always or
+  *only while you hold it yourself*) and has its own speed, hold time, pause, random delay and hotkey.
 - **Speed in ticks or in clicks per second.** Set an interval in ticks, or a rate such as 12 CPS: the
   fractions of a tick carry over, so the rate is kept on average.
 - **Random delay of your choice.** *Even* (any value up to the maximum), *bell curve* (a steady rhythm
   around the middle) or *natural* (mostly short, now and then a longer pause, like a person).
 - **Wait for full charge.** Attacks only when the weapon is charged, for full damage. Turn it off for
   1.8-style PvP.
-- **Targets.** Only allowed creatures, creatures and blocks (mining), or anything, even into the air.
+- **Targets and Weapon only.** Only allowed creatures, creatures and blocks (mining), or anything, even into
+  the air. *Weapon only* limits creature hits to swords, axes, tridents and maces while still allowing mining.
 - **Pause while using items.** No attacks while you eat, drink, block or draw a bow. Turned off, a raised shield is
   lowered for a moment to land the hit.
 - **Looting finishing blow.** Predicts whether the next hit kills a mob. If so, it switches to the hotbar
   weapon with the best Looting, waits for it to charge, hits and switches back.
+- **Safe inventory mode.** Waits until you stand still and performs at most one inventory click per tick for
+  strict multiplayer servers.
 - **Start delay**, **attack limit** and **time limit**: the mod turns itself off when they run out.
 - **Work in background.** The game keeps running when its window loses focus.
 - **Lock camera.** Mouse movement doesn't turn the camera while the mod is on.
@@ -89,14 +92,15 @@ the crosshair rests on one, a notification says once where to turn them on.
 
 ### Survival
 - **Safety.** Stops the mod, or leaves the server, when your health drops to a threshold, when you
-  take any damage, or when another player comes within a set distance.
-- **Offhand.** Keeps one item in the offhand, by priority: a totem at low health, food when
-  you're hungry, a torch while you hold a pickaxe, otherwise a shield.
+  take any damage, when a Totem of Undying pops, or when another real player comes within a set distance
+  (with an *Ignored players* list for friends and alts).
+- **Offhand.** Keeps one item in the offhand, by priority: a totem at low health, firework rockets while
+  wearing elytra, food when you're hungry, a torch while you hold a pickaxe, otherwise a shield.
   It can also rotate Mending items: a damaged one stays in the offhand until it is repaired, then the next
   takes its place, so the experience of a farm repairs them all.
-- **Auto eat.** Eats the best safe food from the hotbar, then returns to the previous slot. It can skip harmful
-  food (rotten flesh, pufferfish, suspicious stew…) and golden food. It never opens the chest, door or
-  villager you look at.
+- **Auto eat.** Eats the best safe food from the hotbar (and brings food from the main inventory when the
+  hotbar has none), then returns to the previous slot. It can skip harmful food (rotten flesh, pufferfish,
+  suspicious stew…) and golden food. It never opens the chest, door or villager you look at.
 - **Auto potion.** Drinks or throws potions from the hotbar: healing or regeneration at low health, fire
   resistance when you burn or stand in lava. Splash potions can come first.
 - **Auto respawn.** On death stops the mod, writes the death coordinates to the chat and respawns a second
@@ -104,24 +108,28 @@ the crosshair rests on one, a notification says once where to turn them on.
 
 ### Automation
 - **Auto fish.** Reels in on a bite after a reaction time you set, casts again, recasts if nothing
-  bites for too long, stops when the rod is about to break or after a number of catches. The rod can
-  be in either hand. The HUD shows whether the bobber is in open water, the only place treasure is caught.
+  bites for too long, stops when the rod is about to break (unless hotbar refill has a spare ready) or
+  after a number of catches. The rod can be in either hand. The HUD shows whether the bobber is in open
+  water, the only place treasure is caught.
 - **Anti-AFK.** Jump, sneak, swing, look around, step or switch the hotbar slot for a moment, at random
   intervals between a minimum and a maximum. Each action can be turned off. Sneak, swing and the slot
   switch keep you on the spot; the slot switch also counts on servers that ignore swings and head turns.
 - **Auto walk.** Walks forward, optionally sprinting and jumping over obstacles.
 - **Auto farm.** Harvests ripe wheat, carrots, potatoes, beetroots, nether wart, cocoa and sweet berries
-  around you (or only under the crosshair) and plants them again from the offhand, the hotbar or the
+  around you (or only under the crosshair, within line of sight, or inside your field of view), cuts the
+  second block of tall sugar cane, bamboo and kelp, and replants crops from the offhand, the hotbar or the
   inventory. While nothing is ripe it can use bone meal on the growing crops.
 - **Hotbar refill.** When the last item of a hotbar stack is used up, or a tool breaks, the same item
   comes in from the inventory; a stack can also be topped up before it runs out. The tool or weapon in
-  your hand is swapped for a spare before it breaks, so a tool with Mending is kept.
+  your hand (and a fishing rod in the offhand) is swapped for a spare before it breaks, so a tool with
+  Mending is kept.
 - **Inventory cleaner.** Throws out the items from your junk list, one stack at a time. It never
   touches the hotbar unless you allow it.
 
 ### Mining
 - **Mining rules.** A whitelist or blacklist of blocks the clicker may break, edited in a list editor
-  with item icons. It can stop when the inventory is full and protect the held tool from breaking.
+  with item icons. It protects pumpkin and melon stems by default, can stop when the inventory is full,
+  and protects the held tool from breaking.
 - **Auto tool.** Picks the fastest hotbar tool for the block, taking Efficiency into account, skips
   nearly broken tools and switches back afterwards.
 
@@ -131,11 +139,12 @@ the crosshair rests on one, a notification says once where to turn them on.
   from elsewhere, the safety disconnect or leaving by hand.
 - **Session goal.** Kills, catches, harvest, mined blocks, experience and more, up to a number you set: a
   progress bar in the HUD, a notification when it is reached, and the mod can turn itself off.
-- **Notifications.** A message above the hotbar or in the chat, with a chime, when something needs your
-  attention while the mod works: the inventory is full, the tool in hand is about to break, the last item
-  in hand is used up, auto eat finds no food, a player comes near, a fish is caught, or the mod stopped by
-  itself and why. Each one can be turned off. The important ones can also go to a **Discord webhook**, so
-  you know what happens while you are away.
+- **Notifications.** A message above the hotbar or in the chat, with a chime (and an optional taskbar flash
+  when the window is unfocused), when something needs your attention while the mod works: the inventory is
+  full, the tool in hand is about to break, the last item in hand is used up, auto eat finds no food, a
+  totem pops, a player comes near, a fish is caught, or the mod stopped by itself and why. Each one can be
+  turned off. The important ones can also go to a **Discord webhook**, so you know what happens while you
+  are away.
 
 ### Interface
 - **Overview.** The first page of the menu: whether the mod is on, the session, the goal, every module as a
@@ -146,10 +155,11 @@ the crosshair rests on one, a notification says once where to turn them on.
   corner, or drag it anywhere in the HUD editor: it snaps to the edges and the middle of the screen.
 - **Target highlight.** The creature about to be hit is outlined, filled or glowing, in a color you
   pick.
-- **Menu.** Categories, module cards that fold away, search (also by English names), tooltips with the
-  default value and a list editor with item icons. Click a number to type an exact value; changed settings
-  are marked with a dot and a whole module can be reset with ↺. Every setting can be reached from the
-  keyboard. Fits the window size; on small screens the sidebar turns into icons.
+- **Menu.** Categories, an *Active only* filter, module cards that fold away, search (also by English
+  names), tooltips with the default value and a list editor with item icons. Click a number to type an
+  exact value; changed settings are marked with a dot, a whole module can be reset with ↺, and resetting a
+  module or applying a preset can be undone (`↺ Undo` or <kbd>Ctrl</kbd>+<kbd>Z</kbd>). Every setting can
+  be reached from the keyboard. Fits the window size; on small screens the sidebar turns into icons.
 - **Feedback.** Accent color, a sound and a message above the hotbar when the mod turns on or off.
 - **Statistics.** What the mod did, kept between games: for the session, for each server and for all
   time, plus the last 20 sessions. Clicks, kills by mob, damage and DPS, catches by kind and item, harvest,

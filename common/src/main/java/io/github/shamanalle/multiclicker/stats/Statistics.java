@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.DamageEvents;
 import io.github.shamanalle.multiclicker.compat.Ids;
+import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.util.ServerStats;
 
 import java.nio.file.Path;
@@ -44,6 +45,7 @@ public final class Statistics {
     /** Entity id -> time we last hit it. */
     private final Int2LongMap attacked = new Int2LongOpenHashMap();
     private boolean running;
+    private boolean paused;
     private long startedAt;
     private long lastTickAt;
     private long secondStart;
@@ -83,6 +85,7 @@ public final class Statistics {
         fought = false;
         lastXp = mc.player != null ? mc.player.totalExperience : -1;
         wasDead = false;
+        paused = false;
         saveCountdown = SAVE_INTERVAL;
         running = true;
         record(Stat.SESSIONS, 1);
@@ -98,8 +101,11 @@ public final class Statistics {
         if (!running) {
             return null;
         }
-        accrueTime(System.currentTimeMillis());
+        if (!paused) {
+            accrueTime(System.currentTimeMillis());
+        }
         running = false;
+        paused = false;
         damage.clear();
         fish.clear();
         SessionRecord record = new SessionRecord(startedAt, serverAddress, session.copy());
@@ -136,23 +142,36 @@ public final class Statistics {
         if (!running || mc.level == null || mc.player == null) {
             return;
         }
-        accrueTime(now);
-        if (now - secondStart > 5000) {
-            secondStart = now - 1000; // the game hung: skip the gap instead of filling it with zeros
-        }
-        while (now - secondStart >= 1000) {
-            timeline.second(secondClicks, (float) MultiClicker.get().clicker().targetCps());
-            if (fought) {
-                record(Stat.COMBAT_TIME, 1000);
+        boolean nowPaused = mc.isPaused() || Screens.current(mc) != null;
+        if (nowPaused) {
+            long elapsed = now - lastTickAt;
+            lastTickAt = now;
+            if (elapsed > 0) {
+                secondStart += elapsed;
             }
-            secondClicks = 0;
-            fought = false;
-            secondStart += 1000;
+            paused = true;
+        } else {
+            paused = false;
+            accrueTime(now);
+            if (now - secondStart > 5000) {
+                secondStart = now - 1000; // the game hung: skip the gap instead of filling it with zeros
+            }
+            while (now - secondStart >= 1000) {
+                timeline.second(secondClicks, (float) MultiClicker.get().clicker().targetCps());
+                if (fought) {
+                    record(Stat.COMBAT_TIME, 1000);
+                }
+                secondClicks = 0;
+                fought = false;
+                secondStart += 1000;
+            }
         }
-        tickPlayer(mc.player);
-        tickKills(mc, now);
-        damage.tick(mc.level);
-        fish.tick(mc);
+        if (!mc.isPaused()) {
+            tickPlayer(mc.player);
+            tickKills(mc, now);
+            damage.tick(mc.level);
+            fish.tick(mc);
+        }
         if (--saveCountdown <= 0) {
             saveCountdown = SAVE_INTERVAL;
             if (dirty) {
@@ -201,7 +220,7 @@ public final class Statistics {
     }
 
     private int minute() {
-        return (int) ((System.currentTimeMillis() - startedAt) / 60_000);
+        return (int) (session.get(Stat.ACTIVE_TIME) / 60_000);
     }
 
     private void record(Stat stat, long amount) {
@@ -353,9 +372,13 @@ public final class Statistics {
         return (int) session.get(Stat.KILLS);
     }
 
-    /** Time since the mod was turned on; the length of the last session once it is off. */
+    /** Active time of the current session (paused while a menu is open), or of the last session once off. */
     public long elapsedMillis() {
-        return running ? System.currentTimeMillis() - startedAt : session.get(Stat.ACTIVE_TIME);
+        long active = session.get(Stat.ACTIVE_TIME);
+        if (running && !paused) {
+            active += Math.max(0L, System.currentTimeMillis() - lastTickAt);
+        }
+        return active;
     }
 
     /** When the current or last session started, in epoch milliseconds; 0 before the first. */

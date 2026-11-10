@@ -39,7 +39,9 @@ public class ProfilesScreen extends PanelScreen {
     private List<String> profiles = List.of();
     private EditBox nameField;
     private FlatButton saveButton;
-    /** Width of the header buttons (Copy and Back), so the loaded profile's name stays clear of them. */
+    private FlatButton undoButton;
+    /** Width of the header buttons, so the loaded profile's name stays clear of them. */
+    private int baseHeaderButtonsW;
     private int headerButtonsW;
     private int listX;
     private int listY;
@@ -89,14 +91,19 @@ public class ProfilesScreen extends PanelScreen {
                     () -> applyPreset(preset)).bounds(x, y, presetW, 18);
         }
 
-        // Back and Copy (the current settings) sit in the header, so the list keeps its room on small screens.
+        // Back, Copy (the current settings) and Undo sit in the header, so the list keeps its room on small screens.
         int backW = Math.max(46, font.width(I18n.get("gui.back")) + 16);
         int copyW = Math.max(46, font.width(I18n.get("multiclicker.gui.profiles.copy_current")) + 16);
-        headerButtonsW = backW + copyW + 4;
+        int undoW = Math.max(44, font.width("↺ " + I18n.get("multiclicker.gui.undo")) + 12);
+        baseHeaderButtonsW = backW + copyW + 4;
         button(Component.translatable("gui.back"), FlatButton.Style.NORMAL, this::onClose)
                 .bounds(panelX + panelW - 8 - backW, panelY + 7, backW, 16);
         button(Component.translatable("multiclicker.gui.profiles.copy_current"), FlatButton.Style.NORMAL, this::exportCurrent)
                 .bounds(panelX + panelW - 8 - backW - 4 - copyW, panelY + 7, copyW, 16);
+        undoButton = button(Component.literal("↺ ").append(Component.translatable("multiclicker.gui.undo")),
+                FlatButton.Style.NORMAL, this::undoPreset)
+                .bounds(panelX + panelW - 8 - backW - 4 - copyW - 4 - undoW, panelY + 7, undoW, 16);
+        updateUndoButton();
 
         int profilesTop = panelY + 48 + ((presets.length + columns - 1) / columns) * 22 + 18;
         int buttonW = Mth.clamp(Math.max(font.width(I18n.get("multiclicker.gui.profiles.overwrite")),
@@ -123,16 +130,33 @@ public class ProfilesScreen extends PanelScreen {
         saveButton.style = exists ? FlatButton.Style.DANGER : FlatButton.Style.PRIMARY;
     }
 
+    private void updateUndoButton() {
+        undoButton.visible = mod.config().canUndo();
+        headerButtonsW = baseHeaderButtonsW + (undoButton.visible ? undoButton.width + 4 : 0);
+    }
+
     private void refresh() {
         profiles = mod.config().profiles();
         updateSaveButton();
+        updateUndoButton();
         mod.saveConfig();
     }
 
     private void applyPreset(Preset preset) {
-        mod.restartModules(minecraft, () -> preset.apply(mod));
+        mod.restartModules(minecraft, () -> mod.config().runUndoable(() -> preset.apply(mod)));
         mod.saveConfig();
+        updateUndoButton();
         setStatus(Component.translatable("multiclicker.gui.profiles.preset_applied", preset.title()), Theme.SUCCESS);
+    }
+
+    private void undoPreset() {
+        if (!mod.config().canUndo()) {
+            return;
+        }
+        mod.restartModules(minecraft, mod.config()::undo);
+        mod.saveConfig();
+        updateUndoButton();
+        setStatus(Component.translatable("multiclicker.gui.undone"), Theme.SUCCESS);
     }
 
     private void saveProfile() {
@@ -224,7 +248,9 @@ public class ProfilesScreen extends PanelScreen {
                         tooltip = preset.description();
                     }
                 }
-                if (button.label.getString().equals(I18n.get("multiclicker.gui.profiles.import"))) {
+                if (button == undoButton) {
+                    tooltip = Component.translatable("multiclicker.gui.undo.desc");
+                } else if (button.label.getString().equals(I18n.get("multiclicker.gui.profiles.import"))) {
                     tooltip = Component.translatable("multiclicker.gui.profiles.import.desc");
                 } else if (button.label.getString().equals(I18n.get("multiclicker.gui.profiles.copy_current"))) {
                     tooltip = Component.translatable("multiclicker.gui.profiles.copy_current.desc");
@@ -428,6 +454,10 @@ public class ProfilesScreen extends PanelScreen {
     @Override
     protected boolean pressed(int keyCode, int scanCode, int modifiers) {
         if (capture.keyPressed(keyCode)) {
+            return true;
+        }
+        if (keyCode == InputConstants.KEY_Z && Keys.controlDown() && !nameField.isFocused() && mod.config().canUndo()) {
+            undoPreset();
             return true;
         }
         if ((keyCode == InputConstants.KEY_RETURN || keyCode == InputConstants.KEY_NUMPADENTER) && nameField.isFocused()) {

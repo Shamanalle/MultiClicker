@@ -2,6 +2,7 @@ package io.github.shamanalle.multiclicker.module.survival;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import io.github.shamanalle.multiclicker.MultiClicker;
@@ -38,6 +39,7 @@ public class OffhandModule extends Module {
             .zeroMeans("options.off"));
     public final IntSetting foodHunger = add(new IntSetting("food_hunger", 0, 0, 19, Unit.HUNGER)
             .zeroMeans("options.off"));
+    public final BoolSetting fireworksWithElytra = add(new BoolSetting("fireworks_elytra", false));
     public final BoolSetting torchWithPickaxe = add(new BoolSetting("torch_with_pickaxe", false));
     public final BoolSetting mending = add(new BoolSetting("mending", false));
     public final BoolSetting shield = add(new BoolSetting("shield", false));
@@ -47,6 +49,7 @@ public class OffhandModule extends Module {
     private enum Want {
         TOTEM(stack -> stack.is(Items.TOTEM_OF_UNDYING)),
         FOOD(stack -> AutoEatModule.isAcceptableFood(stack, true, true)),
+        FIREWORKS(stack -> stack.is(Items.FIREWORK_ROCKET)),
         TORCH(stack -> stack.is(Items.TORCH) || stack.is(Items.SOUL_TORCH)),
         MENDING(stack -> stack.isDamaged() && Enchants.of(Minecraft.getInstance()).mending(stack) > 0),
         SHIELD(stack -> stack.is(Items.SHIELD));
@@ -98,6 +101,9 @@ public class OffhandModule extends Module {
             // Auto eat eats from the hotbar: leave the food there for it.
             int slot = find(player, want, want == Want.FOOD && mod.autoEat().isEnabled());
             if (slot != -1) {
+                if (want != Want.TOTEM && slot >= Inventories.HOTBAR_SIZE && !Inventories.canClickMainInventory(mc)) {
+                    return;
+                }
                 Inventories.swapWithOffhand(mc, slot);
                 cooldown = SWAP_COOLDOWN;
                 return;
@@ -112,6 +118,7 @@ public class OffhandModule extends Module {
                     || offhand.is(Items.TOTEM_OF_UNDYING) && health <= totemHealth.get() + TOTEM_HYSTERESIS);
             case FOOD -> foodHunger.get() > 0 && !MultiClicker.get().isConsuming()
                     && (hunger <= foodHunger.get() || Want.FOOD.matcher.test(offhand) && hunger < FULL_HUNGER);
+            case FIREWORKS -> fireworksWithElytra.get() && player.getItemBySlot(EquipmentSlot.CHEST).is(Items.ELYTRA);
             // Keep the torch while auto tool briefly holds a shovel or an axe during a mining session.
             case TORCH -> torchWithPickaxe.get() && (Tools.kind(player.getMainHandItem()) == Tools.PICKAXE
                     || Want.TORCH.matcher.test(offhand) && MultiClicker.get().autoTool().isToolSelected());

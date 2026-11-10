@@ -25,6 +25,7 @@ public class FlatButton {
     public int width;
     public int height;
     public boolean active = true;
+    public boolean visible = true;
 
     public FlatButton(Component label, Style style, Runnable action) {
         this.label = label;
@@ -41,10 +42,13 @@ public class FlatButton {
     }
 
     public boolean isMouseOver(double mouseX, double mouseY) {
-        return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
+        return visible && mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
     }
 
     public void render(Canvas g, Font font, int mouseX, int mouseY, float delta) {
+        if (!visible) {
+            return;
+        }
         float hovered = hover.update(active && isMouseOver(mouseX, mouseY) ? 1 : 0, delta, 20);
         int base = switch (style) {
             case NORMAL -> Theme.CONTROL;
@@ -60,7 +64,7 @@ public class FlatButton {
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!active || button != 0 || !isMouseOver(mouseX, mouseY)) {
+        if (!visible || !active || button != 0 || !isMouseOver(mouseX, mouseY)) {
             return false;
         }
         Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));

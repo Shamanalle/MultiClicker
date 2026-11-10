@@ -52,6 +52,7 @@ public enum Preset {
             case FISHING -> {
                 clicker.attack.enabled.set(false);
                 mod.autoFish().enabledSetting().set(true);
+                mod.hotbarRefill().enabledSetting().set(true);
                 mod.autoEat().enabledSetting().set(true);
                 mod.antiAfk().enabledSetting().set(true);
             }

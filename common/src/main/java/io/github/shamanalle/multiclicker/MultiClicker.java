@@ -42,6 +42,7 @@ import io.github.shamanalle.multiclicker.setting.BoolSetting;
 import io.github.shamanalle.multiclicker.setting.KeySetting;
 import io.github.shamanalle.multiclicker.setting.Setting;
 import io.github.shamanalle.multiclicker.stats.SessionRecord;
+import io.github.shamanalle.multiclicker.stats.Stat;
 import io.github.shamanalle.multiclicker.stats.Statistics;
 import io.github.shamanalle.multiclicker.util.Hotkeys;
 import io.github.shamanalle.multiclicker.util.ServerStats;
@@ -120,8 +121,11 @@ public final class MultiClicker {
                 setting.onChange(() -> {
                     saveCountdown = SAVE_DELAY;
                     // A setting the player changed by hand: the settings no longer match the profile.
-                    if (!setting.isGlobal() && !config.isApplying()) {
-                        config.clearActiveProfile();
+                    if (!config.isApplying()) {
+                        config.clearUndo();
+                        if (!setting.isGlobal()) {
+                            config.clearActiveProfile();
+                        }
                     }
                 });
             }
@@ -265,11 +269,11 @@ public final class MultiClicker {
         for (InputConstants.Key key : Hotkeys.drain(mc)) {
             onHotkey(mc, key);
         }
-        autoReconnect.watch(mc);
         if (mc.player != null && mc.getConnection() != profileConnection) {
             profileConnection = mc.getConnection();
             loadServerProfile(mc);
         }
+        autoReconnect.watch(mc);
         if (!ui.welcomeShown.get() && mc.player != null && Screens.current(mc) == null) {
             showWelcome(mc);
         }
@@ -468,6 +472,16 @@ public final class MultiClicker {
         }
         profileConnection = null;
         ServerStats.reset();
+    }
+
+    /** A Totem of Undying saved the player: record it and notify active survival/session modules. */
+    public void onTotemUsed(Minecraft mc) {
+        stats.count(Stat.TOTEMS);
+        if (active) {
+            boolean stopping = safety.willStopOnTotem(mc);
+            notifications.totemUsed(mc, stopping);
+            safety.onTotemUsed(mc);
+        }
     }
 
     /** Called when the game closes: never leave the player's vanilla options modified. */

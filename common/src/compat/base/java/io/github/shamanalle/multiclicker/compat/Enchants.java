@@ -5,6 +5,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -17,6 +18,10 @@ import org.jetbrains.annotations.Nullable;
  * objects before, so code outside this package never names them.
  */
 public final class Enchants {
+    private static final EquipmentSlot[] ARMOR_SLOTS = {
+            EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD
+    };
+
     @Nullable
     private final Registry<Enchantment> registry;
 
@@ -59,6 +64,15 @@ public final class Enchants {
             bonus += 2.5F * level(Enchantments.BANE_OF_ARTHROPODS, weapon);
         }
         return bonus;
+    }
+
+    /** Share of post-armor melee damage absorbed by Protection on the target's worn armor (0..0.8). */
+    public float protectionReduction(LivingEntity target) {
+        int epf = 0;
+        for (EquipmentSlot slot : ARMOR_SLOTS) {
+            epf += level(Enchantments.PROTECTION, target.getItemBySlot(slot));
+        }
+        return Math.min(20, epf) * 0.04F;
     }
 
     private int level(ResourceKey<Enchantment> key, ItemStack stack) {

@@ -8,7 +8,9 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Entities;
+import io.github.shamanalle.multiclicker.compat.Keys;
 import io.github.shamanalle.multiclicker.compat.Messages;
 import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.compat.Sounds;
@@ -25,6 +27,7 @@ import io.github.shamanalle.multiclicker.stats.Stat;
 import io.github.shamanalle.multiclicker.stats.StatFormat;
 import io.github.shamanalle.multiclicker.stats.Statistics;
 import io.github.shamanalle.multiclicker.util.Inventories;
+import io.github.shamanalle.multiclicker.util.Players;
 import io.github.shamanalle.multiclicker.util.ServerStats;
 import io.github.shamanalle.multiclicker.util.Webhook;
 import net.minecraft.client.resources.language.I18n;
@@ -58,12 +61,14 @@ public class NotificationsModule extends Module {
 
     public final EnumSetting<Where> where = add(new EnumSetting<>("where", Where.HOTBAR));
     public final BoolSetting sound = add(new BoolSetting("sound", true));
+    public final BoolSetting flashWindow = add(new BoolSetting("flash_window", false));
     public final BoolSetting stopped = add(new BoolSetting("stopped", true));
     public final BoolSetting inventoryFull = add(new BoolSetting("inventory_full", true));
     public final IntSetting toolDurability = add(new IntSetting("tool_durability", 10, 0, 100, Unit.NONE)
             .zeroMeans("options.off"));
     public final BoolSetting ranOut = add(new BoolSetting("ran_out", true));
     public final BoolSetting noFood = add(new BoolSetting("no_food", true));
+    public final BoolSetting totem = add(new BoolSetting("totem", true));
     public final BoolSetting fishCaught = add(new BoolSetting("fish_caught", false));
     public final BoolSetting sessionSummary = add(new BoolSetting("session_summary", true));
     public final IntSetting playerRadius = add(new IntSetting("player_radius", 0, 0, 64, Unit.BLOCKS)
@@ -74,6 +79,7 @@ public class NotificationsModule extends Module {
     public final BoolSetting webhookStopped = add(webhookEvent("webhook_stopped", true));
     public final BoolSetting webhookDisconnect = add(webhookEvent("webhook_disconnect", true));
     public final BoolSetting webhookDeath = add(webhookEvent("webhook_death", true));
+    public final BoolSetting webhookTotem = add(webhookEvent("webhook_totem", true));
     public final BoolSetting webhookPlayer = add(webhookEvent("webhook_player", true));
     public final BoolSetting webhookInventory = add(webhookEvent("webhook_inventory", false));
     public final BoolSetting webhookGoal = add(webhookEvent("webhook_goal", true));
@@ -184,8 +190,10 @@ public class NotificationsModule extends Module {
         if (radius <= 0) {
             return;
         }
+        MultiClicker mod = MultiClicker.get();
         for (Player other : mc.level.players()) {
-            if (other != player && !other.isSpectator() && other.distanceTo(player) <= radius) {
+            if (Players.isRealPlayer(mc, other) && !mod.safety().isIgnoredPlayer(other)
+                    && other.distanceTo(player) <= radius) {
                 Component message = Component.translatable("multiclicker.notify.player_nearby",
                         other.getName(), Math.round(other.distanceTo(player)));
                 if (send(mc, "player:" + other.getUUID(), REPEAT_LASTING_TICKS, message)) {
@@ -217,6 +225,17 @@ public class NotificationsModule extends Module {
         send(mc, "players_skipped", Integer.MAX_VALUE, Component.translatable("multiclicker.notify.players_skipped"));
     }
 
+    /** A Totem of Undying saved the player while the mod was active. */
+    public void totemUsed(Minecraft mc, boolean stopping) {
+        if (stopping) {
+            return;
+        }
+        post(mc, webhookTotem, Component.translatable("multiclicker.webhook.totem"), Component.empty(), Webhook.WARNING);
+        if (totem.get()) {
+            send(mc, "totem", 20, Component.translatable("multiclicker.notify.totem"));
+        }
+    }
+
     /** Auto fish reeled something in. */
     public void fishCaught(Minecraft mc, int catches) {
         if (fishCaught.get()) {
@@ -233,6 +252,7 @@ public class NotificationsModule extends Module {
         if (ticks - deathPostedAt > SETTLE_TICKS) {
             post(mc, webhookStopped, Component.translatable("multiclicker.webhook.stopped"), reason, Webhook.DANGER);
         }
+        attention(mc);
         if (!isEnabled() || !stopped.get() || mc.player == null) {
             return false;
         }
@@ -282,6 +302,7 @@ public class NotificationsModule extends Module {
     /** The player died while the mod was working. */
     private void died(Minecraft mc, LocalPlayer player) {
         deathPostedAt = ticks;
+        attention(mc);
         post(mc, webhookDeath, Component.translatable("multiclicker.webhook.death"), deathPlace(player), Webhook.DANGER);
     }
 
@@ -293,6 +314,7 @@ public class NotificationsModule extends Module {
 
     /** The connection to the server was lost; auto reconnect may try again. */
     public void disconnected(Minecraft mc, Component reason, boolean reconnecting) {
+        attention(mc);
         Component text = reconnecting
                 ? reason.copy().append("\n").append(Component.translatable("multiclicker.webhook.reconnecting"))
                 : reason;
@@ -311,6 +333,7 @@ public class NotificationsModule extends Module {
      */
     public void goalReached(Minecraft mc, Component goal, boolean stopping) {
         post(mc, webhookGoal, Component.translatable("multiclicker.webhook.goal"), goal, Webhook.SUCCESS);
+        attention(mc);
         if (stopping || mc.player == null) {
             return;
         }
@@ -357,7 +380,16 @@ public class NotificationsModule extends Module {
         }
         lastShown.put(key, ticks);
         show(mc, message, sound.get());
+        if (!"players_skipped".equals(key)) {
+            attention(mc);
+        }
         return true;
+    }
+
+    private void attention(Minecraft mc) {
+        if (isEnabled() && flashWindow.get()) {
+            Keys.requestAttention(mc);
+        }
     }
 
     private void show(Minecraft mc, Component message, boolean withSound) {

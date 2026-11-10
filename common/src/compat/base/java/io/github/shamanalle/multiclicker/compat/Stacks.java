@@ -30,14 +30,28 @@ public final class Stacks {
 
     /** Attack damage the item adds in the main hand. */
     public static double attackDamage(ItemStack stack) {
-        double[] total = {0};
+        return attackDamage(stack, 0.0);
+    }
+
+    /**
+     * Total attack damage when holding {@code stack} in the main hand on top of {@code baseDamage},
+     * applying additive, base-multiplied and total-multiplied attribute modifiers in vanilla order.
+     */
+    public static double attackDamage(ItemStack stack, double baseDamage) {
+        double[] add = {baseDamage};
+        double[] multBase = {0.0};
+        double[] multTotal = {1.0};
         stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY)
                 .forEach(EquipmentSlot.MAINHAND, (attribute, modifier) -> {
-                    if (attribute.value() == Attributes.ATTACK_DAMAGE.value()
-                            && modifier.operation() == AttributeModifier.Operation.ADD_VALUE) {
-                        total[0] += modifier.amount();
+                    if (attribute.value() != Attributes.ATTACK_DAMAGE.value()) {
+                        return;
+                    }
+                    switch (modifier.operation()) {
+                        case ADD_VALUE -> add[0] += modifier.amount();
+                        case ADD_MULTIPLIED_BASE -> multBase[0] += modifier.amount();
+                        case ADD_MULTIPLIED_TOTAL -> multTotal[0] *= 1.0 + modifier.amount();
                     }
                 });
-        return total[0];
+        return (add[0] + add[0] * multBase[0]) * multTotal[0];
     }
 }

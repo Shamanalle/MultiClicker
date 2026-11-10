@@ -31,6 +31,7 @@ class ConfigManagerTest {
     static final class TestModule extends Module {
         final BoolSetting flag = add(new BoolSetting("flag", false));
         final ListSetting items = add(new ListSetting("items", ListSetting.Kind.ITEM, List.of()));
+        final ListSetting ignoredPlayers = add(new ListSetting("ignored_players", ListSetting.Kind.PLAYER, List.of()).global());
         final EnumSetting<Jitter> jitterType = add(new EnumSetting<>("attack_jitter_type", Jitter.NATURAL));
 
         TestModule() {
@@ -200,5 +201,73 @@ class ConfigManagerTest {
         assertEquals("play.example.net", ConfigManager.normalizeServer(" Play.Example.NET:25565 "));
         assertEquals("play.example.net:25566", ConfigManager.normalizeServer("play.example.net:25566"));
         assertEquals("play.example.net", ConfigManager.normalizeServer("play.example.net."));
+    }
+
+    @Test
+    void playerListsNormalizeWithoutNamespaceAndValidateUsernames() {
+        assertTrue(module.ignoredPlayers.add("  Steve "));
+        assertFalse(module.ignoredPlayers.add("STEVE"), "duplicate case-insensitive player was added");
+        assertTrue(module.ignoredPlayers.add(".Bedrock_Friend"));
+        assertEquals(List.of("steve", ".bedrock_friend"), module.ignoredPlayers.get());
+        assertTrue(module.ignoredPlayers.containsPlayer("Steve"));
+        assertTrue(module.ignoredPlayers.containsPlayer("  .BEDROCK_FRIEND "));
+        assertFalse(module.ignoredPlayers.containsPlayer("Alex"));
+        assertTrue(module.ignoredPlayers.isKnown("steve"));
+        assertTrue(module.ignoredPlayers.isKnown(".bedrock_friend"));
+        assertFalse(module.ignoredPlayers.isKnown("bad name"));
+        assertFalse(module.ignoredPlayers.isKnown("minecraft:steve"));
+        assertFalse(module.ignoredPlayers.isKnown("seventeen_chars_x"));
+    }
+
+    @Test
+    void globalPlayerListsAreNeverOverwrittenOrInjectedByProfiles() throws IOException {
+        module.ignoredPlayers.add("MyAlt");
+        config.saveProfile("Clean");
+
+        JsonObject malicious = JsonParser.parseString(
+                "{\"version\": 3, \"modules\": {\"clicker\": {\"flag\": true, \"ignored_players\": [\"attacker\"]}}}")
+                .getAsJsonObject();
+        String imported = config.importProfile(ProfileCodec.encode("Stranger", malicious), "Stranger");
+        String saved = Files.readString(dir.resolve("multiclicker/profiles/" + imported + ".json"));
+        assertFalse(saved.contains("attacker"), "an imported profile kept global ignored_players");
+
+        assertTrue(config.loadProfile(imported));
+        assertTrue(module.flag.get());
+        assertEquals(List.of("myalt"), module.ignoredPlayers.get());
+    }
+
+    @Test
+    void undoRestoresSettingsAndActiveProfileUntilManualEdit() {
+        module.settings().forEach(setting -> setting.onChange(() -> {
+            if (!config.isApplying()) {
+                config.clearUndo();
+            }
+        }));
+        module.flag.set(true);
+        module.items.add("diamond");
+        config.saveProfile("BeforeReset");
+        assertFalse(config.canUndo());
+
+        config.runUndoable(() -> {
+            module.settings().stream().filter(s -> !s.isGlobal()).forEach(io.github.shamanalle.multiclicker.setting.Setting::reset);
+            config.clearActiveProfile();
+        });
+        assertFalse(module.flag.get());
+        assertTrue(module.items.get().isEmpty());
+        assertNull(config.activeProfile());
+        assertTrue(config.canUndo());
+
+        assertTrue(config.undo());
+        assertFalse(config.canUndo());
+        assertFalse(config.undo());
+        assertTrue(module.flag.get());
+        assertEquals(List.of("minecraft:diamond"), module.items.get());
+        assertEquals("BeforeReset", config.activeProfile());
+
+        // A manual edit after a bulk reset invalidates undo so later edits are never clobbered.
+        config.runUndoable(() -> module.flag.set(false));
+        assertTrue(config.canUndo());
+        module.items.add("emerald");
+        assertFalse(config.canUndo());
     }
 }
