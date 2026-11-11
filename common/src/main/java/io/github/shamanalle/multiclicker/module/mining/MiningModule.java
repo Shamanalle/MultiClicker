@@ -2,7 +2,9 @@ package io.github.shamanalle.multiclicker.module.mining;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.AttachedStemBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.module.Category;
@@ -35,8 +37,8 @@ public class MiningModule extends Module {
     }
 
     public static boolean isStem(BlockState state) {
-        return state.is(Blocks.MELON_STEM) || state.is(Blocks.PUMPKIN_STEM)
-                || state.is(Blocks.ATTACHED_MELON_STEM) || state.is(Blocks.ATTACHED_PUMPKIN_STEM);
+        Block block = state.getBlock();
+        return block instanceof StemBlock || block instanceof AttachedStemBlock;
     }
 
     public boolean allowsBreaking(Minecraft mc, BlockPos pos) {
