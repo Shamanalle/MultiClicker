@@ -13,6 +13,7 @@ import io.github.shamanalle.multiclicker.compat.Lookups;
 import io.github.shamanalle.multiclicker.module.Category;
 import io.github.shamanalle.multiclicker.module.Module;
 import io.github.shamanalle.multiclicker.setting.BoolSetting;
+import io.github.shamanalle.multiclicker.util.Players;
 
 /** Decides which entities the attack clicker (and the target highlight) may target. */
 public class TargetFilterModule extends Module {
@@ -67,8 +68,8 @@ public class TargetFilterModule extends Module {
         if (entity instanceof LivingEntity living && living.isDeadOrDying()) {
             return false;
         }
-        // A player in creative mode takes no damage, but the hit still uses up the charge.
-        if (entity instanceof Player other && other.isCreative()) {
+        // A player in creative mode takes no damage, and fake NPCs/anti-cheat bots are never valid targets.
+        if (entity instanceof Player other && (other.isCreative() || !Players.isRealPlayer(mc, other))) {
             return false;
         }
         if (!isEnabled()) {

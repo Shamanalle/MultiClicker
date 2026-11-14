@@ -19,20 +19,28 @@ public abstract class MultiPlayerGameModeMixin {
     @Unique
     @Nullable
     private BlockState multiclicker$breaking;
+    @Unique
+    private boolean multiclicker$tallCrop;
 
     @Inject(method = "destroyBlock", at = @At("HEAD"))
     private void multiclicker$noteBlock(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
         Minecraft mc = Minecraft.getInstance();
+        MultiClicker mod = MultiClicker.get();
         multiclicker$breaking = mc.level == null ? null : mc.level.getBlockState(pos);
+        multiclicker$tallCrop = multiclicker$breaking != null && mod != null
+                && mod.autoFarm().isRunning() && mod.autoFarm().tallCrops.get()
+                && AutoFarmModule.isHarvestableTallCrop(mc.level, pos, multiclicker$breaking);
     }
 
-    /** Counts the blocks broken while the mod is on; ripe crops count as harvested instead. */
+    /** Counts the blocks broken while the mod is on; ripe and auto-farmed tall crops count as harvested instead. */
     @Inject(method = "destroyBlock", at = @At("RETURN"))
     private void multiclicker$countBlock(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
         BlockState state = multiclicker$breaking;
+        boolean tallCrop = multiclicker$tallCrop;
         multiclicker$breaking = null;
+        multiclicker$tallCrop = false;
         MultiClicker mod = MultiClicker.get();
-        if (mod != null && state != null && cir.getReturnValueZ() && !AutoFarmModule.isRipe(state)) {
+        if (mod != null && state != null && cir.getReturnValueZ() && !tallCrop && !AutoFarmModule.isRipe(state)) {
             mod.stats().onBlockBroken(state.getBlock());
         }
     }

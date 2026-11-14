@@ -4,9 +4,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Containers;
 import io.github.shamanalle.multiclicker.compat.Slots;
+import io.github.shamanalle.multiclicker.compat.Tools;
 
 /** Inventory helpers that go through vanilla container clicks, so the server stays in sync. */
 public final class Inventories {
@@ -38,7 +40,47 @@ public final class Inventories {
             return false;
         }
         MultiClicker mod = MultiClicker.get();
-        return mod == null || !mod.clicker().safeInventory.get() || !Input.isPlayerMoving(mc);
+        return mod == null || !mod.clicker().safeInventory.get() || !Input.isMovementActive(mc);
+    }
+
+    /**
+     * Returns {@code true} when a module may safely send main-inventory clicks this tick; when
+     * {@code safeInventory} is only blocked by {@code AutoWalk}, pauses {@code AutoWalk} so the
+     * click can run on the next stationary tick.
+     */
+    public static boolean requestMainInventoryClick(Minecraft mc) {
+        if (!canClickInventory(mc)) {
+            return false;
+        }
+        if (canClickMainInventory(mc)) {
+            return true;
+        }
+        MultiClicker mod = MultiClicker.get();
+        if (mod != null) {
+            mod.autoWalk().pauseForInventory(mc);
+        }
+        return false;
+    }
+
+    /** Picks a hotbar slot that can temporarily hold an item swapped from the main inventory. */
+    public static int chooseBorrowSlot(Inventory inventory) {
+        int selected = Slots.selected(inventory);
+        MultiClicker mod = MultiClicker.get();
+        for (int i = 0; i < HOTBAR_SIZE; i++) {
+            if (i == selected || (mod != null && mod.isSlotBorrowed(i))) {
+                continue;
+            }
+            ItemStack stack = inventory.getItem(i);
+            if (!Tools.isWeapon(stack) && !stack.is(Items.TOTEM_OF_UNDYING)) {
+                return i;
+            }
+        }
+        for (int i = 0; i < HOTBAR_SIZE; i++) {
+            if (i != selected && (mod == null || !mod.isSlotBorrowed(i))) {
+                return i;
+            }
+        }
+        return (selected + 1) % HOTBAR_SIZE;
     }
 
     /** Converts an inventory index (0-8 hotbar, 9-35 main) to the player menu slot id. */

@@ -39,6 +39,11 @@ public final class KeyCapture {
 
     /** Handles a key press while waiting; returns whether it was used. */
     public boolean keyPressed(int keyCode) {
+        return keyPressed(keyCode, 0);
+    }
+
+    /** Handles a key press (including platform scan codes) while waiting; returns whether it was used. */
+    public boolean keyPressed(int keyCode, int scanCode) {
         if (onKey == null) {
             swallowChar = false;
             return false;
@@ -46,7 +51,10 @@ public final class KeyCapture {
         swallowChar = true;
         if (keyCode != InputConstants.KEY_ESCAPE) {
             boolean clear = keyCode == InputConstants.KEY_BACKSPACE || keyCode == InputConstants.KEY_DELETE;
-            onKey.accept(clear ? InputConstants.UNKNOWN : Keys.keyboard(keyCode));
+            InputConstants.Key bound = clear ? InputConstants.UNKNOWN : Keys.keyboard(keyCode, scanCode);
+            if (clear || !bound.equals(InputConstants.UNKNOWN)) {
+                onKey.accept(bound);
+            }
         }
         cancel();
         return true;

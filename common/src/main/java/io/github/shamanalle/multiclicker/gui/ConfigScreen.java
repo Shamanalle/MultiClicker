@@ -296,6 +296,32 @@ public class ConfigScreen extends ModScreen {
         }
     }
 
+    private void rebuildPreservingScroll() {
+        float previousScroll = scroll;
+        float previousTarget = scrollTarget;
+        Setting<?> previousFocused = focused;
+        rebuild();
+        scroll = previousScroll;
+        scrollTarget = previousTarget;
+        if (previousFocused != null && !hasVisibleSetting(previousFocused)) {
+            focused = null;
+        }
+    }
+
+    private boolean hasVisibleSetting(Setting<?> target) {
+        for (Card card : cards) {
+            if (!isExpanded(card)) {
+                continue;
+            }
+            for (Row row : card.rows) {
+                if (row.setting == target && target.isVisible()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private void addRows(Module module, List<Row> rows, @Nullable String filter) {
         List<Setting<?>> groupStarts = module instanceof ClickerModule clicker ? clicker.groupStarts() : List.of();
         for (Setting<?> setting : module.settings()) {
@@ -1103,6 +1129,7 @@ public class ConfigScreen extends ModScreen {
                 }
             }
         }));
+        mod.config().clearActiveProfile();
         mod.saveConfig();
     }
 
@@ -1110,7 +1137,7 @@ public class ConfigScreen extends ModScreen {
         if (mod.config().canUndo()) {
             mod.restartModules(minecraft, mod.config()::undo);
             mod.saveConfig();
-            rebuild();
+            rebuildPreservingScroll();
             playClick();
         }
     }
@@ -1299,8 +1326,15 @@ public class ConfigScreen extends ModScreen {
             Widgets.focus(search, true);
             if (button == 1) {
                 search.setValue("");
+                return true;
             }
-            super.clicked(mouseX, mouseY, button);
+            if (button == 0) {
+                double clampedX = Mth.clamp(mouseX, Widgets.x(search), Widgets.x(search) + Math.max(0, search.getWidth() - 1));
+                double clampedY = Mth.clamp(mouseY, Widgets.y(search), Widgets.y(search) + Math.max(0, search.getHeight() - 1));
+                super.clicked(clampedX, clampedY, button);
+                setFocused(search);
+                Widgets.focus(search, true);
+            }
             return true;
         }
         Widgets.focus(search, false);
@@ -1387,6 +1421,9 @@ public class ConfigScreen extends ModScreen {
                             enabled.toggle();
                         } else {
                             enabled.reset();
+                        }
+                        if (activeOnly && !enabled.get()) {
+                            rebuildPreservingScroll();
                         }
                     } else if (button == 0 && query.isEmpty() && hasBody(card)) {
                         EXPANDED.put(card.module.id(), !isExpanded(card));
@@ -1492,7 +1529,7 @@ public class ConfigScreen extends ModScreen {
 
     @Override
     protected boolean pressed(int keyCode, int scanCode, int modifiers) {
-        if (capture.keyPressed(keyCode)) {
+        if (capture.keyPressed(keyCode, scanCode)) {
             // Also takes Escape, which would otherwise close the menu.
             return true;
         }
@@ -1509,13 +1546,14 @@ public class ConfigScreen extends ModScreen {
         if (keyCode == InputConstants.KEY_TAB && !search.isFocused()) {
             // Tab and Shift+Tab step through the overview and the categories.
             int pages = Category.values().length + 1;
-            int current = category == null || !query.isEmpty() && category == null ? 0 : category.ordinal() + 1;
+            int current = category == null || !query.isEmpty() ? 0 : category.ordinal() + 1;
             int next = Math.floorMod(current + (Keys.shiftDown() ? -1 : 1), pages);
             showCategory(next == 0 ? null : Category.values()[next - 1]);
             playClick();
             return true;
         }
         if (keyCode == InputConstants.KEY_F && Keys.controlDown()) {
+            focused = null;
             setFocused(search);
             Widgets.focus(search, true);
             return true;

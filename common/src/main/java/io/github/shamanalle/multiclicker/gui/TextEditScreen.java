@@ -17,9 +17,9 @@ public class TextEditScreen extends PanelScreen {
     private FlatButton save;
     @Nullable
     private FlatButton test;
-    /** Written by the test request's thread, read while drawing. */
-    private volatile Component status = Component.empty();
-    private volatile int statusColor = Theme.TEXT_MUTED;
+    /** Updated and read exclusively on the client thread. */
+    private Component status = Component.empty();
+    private int statusColor = Theme.TEXT_MUTED;
     private boolean testing;
 
     public TextEditScreen(Screen parent, StringSetting setting) {
@@ -91,17 +91,20 @@ public class TextEditScreen extends PanelScreen {
             return;
         }
         testing = true;
+        String tested = input.getValue().strip();
         validate();
         setStatus(Component.translatable("multiclicker.gui.text.testing"), Theme.TEXT_MUTED);
-        tester.apply(input.getValue().strip()).whenComplete((result, error) -> {
+        tester.apply(tested).whenComplete((result, error) -> minecraft.execute(() -> {
             testing = false;
-            if (error != null || result == null) {
-                setStatus(Component.translatable("multiclicker.gui.text.test_failed"), Theme.DANGER);
-            } else {
-                setStatus(result, Theme.TEXT);
+            if (input == null || tested.equals(input.getValue().strip())) {
+                if (error != null || result == null) {
+                    setStatus(Component.translatable("multiclicker.gui.text.test_failed"), Theme.DANGER);
+                } else {
+                    setStatus(result, Theme.TEXT);
+                }
             }
-            minecraft.execute(this::validate);
-        });
+            validate();
+        }));
     }
 
     private void saveAndClose() {

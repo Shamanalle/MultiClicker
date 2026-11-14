@@ -171,6 +171,11 @@ public final class MultiClicker {
         return autoEat.isBusy() || autoPotion.isBusy();
     }
 
+    /** True while an automation module owns a temporary hotbar/backpack swap for {@code slot}. */
+    public boolean isSlotBorrowed(int slot) {
+        return slot >= 0 && (autoEat.ownsSlot(slot) || autoFarm.ownsSlot(slot));
+    }
+
     /** True while a meal or a potion holds the use key down; the use clicker must not release it. */
     public boolean holdsUseKeyForItem() {
         return autoEat.holdsUseKey() || autoPotion.holdsUseKey();
@@ -269,8 +274,14 @@ public final class MultiClicker {
         for (InputConstants.Key key : Hotkeys.drain(mc)) {
             onHotkey(mc, key);
         }
+        if (mc.player == null || mc.level == null) {
+            autoEat.clearBorrowedState();
+            autoFarm.clearBorrowedState();
+        }
         if (mc.player != null && mc.getConnection() != profileConnection) {
             profileConnection = mc.getConnection();
+            autoEat.clearBorrowedState();
+            autoFarm.clearBorrowedState();
             loadServerProfile(mc);
         }
         autoReconnect.watch(mc);
@@ -289,6 +300,14 @@ public final class MultiClicker {
                 if (module.isEnabled()) {
                     tickModule(mc, module);
                 }
+            }
+        }
+        if (mc.player != null && mc.level != null) {
+            if (!autoEat.isRunning()) {
+                autoEat.flushPendingReturn(mc);
+            }
+            if (!autoFarm.isRunning()) {
+                autoFarm.flushPendingReturn(mc);
             }
         }
         autoRespawn.watch(mc);
@@ -364,9 +383,11 @@ public final class MultiClicker {
         restartModules(mc, () -> loaded[0] = config.loadProfile(name));
         saveConfig();
         if (mc.player != null) {
+            Component text = loaded[0]
+                    ? Component.translatable(messageKey, Component.literal(name).withStyle(ChatFormatting.WHITE))
+                    : Component.translatable("multiclicker.gui.profiles.error");
             Messages.overlay(mc.player, Component.literal("MultiClicker: ").withStyle(ChatFormatting.GOLD)
-                    .append(Component.translatable(loaded[0] ? messageKey : "multiclicker.gui.profiles.error",
-                            Component.literal(name).withStyle(ChatFormatting.WHITE)).withStyle(ChatFormatting.YELLOW)));
+                    .append(text.copy().withStyle(ChatFormatting.YELLOW)));
         }
         return loaded[0];
     }

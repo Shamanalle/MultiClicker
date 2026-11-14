@@ -18,6 +18,7 @@ public final class Tools {
     public static final int SHOVEL = 3;
     public static final int HOE = 4;
     public static final int FISHING_ROD = 5;
+    public static final int SPEAR = 6;
 
     private static final List<TagKey<Item>> KINDS = List.of(ItemTags.SWORDS, ItemTags.AXES, ItemTags.PICKAXES,
             ItemTags.SHOVELS, ItemTags.HOES);
@@ -44,7 +45,7 @@ public final class Tools {
             return false;
         }
         int k = kind(stack);
-        return k == SWORD || k == AXE
+        return k == SWORD || k == AXE || k == SPEAR
                 || stack.getItem() instanceof TridentItem
                 || "minecraft:mace".equals(Ids.itemId(stack.getItem()));
     }

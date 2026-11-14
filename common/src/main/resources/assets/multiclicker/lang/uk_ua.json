@@ -141,7 +141,7 @@
   "multiclicker.module.offhand": "Друга рука",
   "multiclicker.module.offhand.desc": "Тримає в другій руці найпотрібніший предмет",
   "multiclicker.module.offhand.totem_health": "Тотем за здоров’я",
-  "multiclicker.module.offhand.totem_health.desc": "Найвищий пріоритет. Кладе тотем безсмертя в другу руку, коли здоров’я не вище порогу. 100% — тримати завжди.",
+  "multiclicker.module.offhand.totem_health.desc": "Найвищий пріоритет. Кладе тотем безсмертя в другу руку, коли здоров’я не вище порогу. 100%% — тримати завжди.",
   "multiclicker.module.offhand.food_hunger": "Їжа за ситості",
   "multiclicker.module.offhand.food_hunger.desc": "Кладе найкращу безпечну їжу в другу руку, коли ситість не вище значення, — доки не наїстеся. Якщо ввімкнено автоїжу, їжа береться лише з рюкзака: їжа на панелі швидкого доступу лишається для автоїжі.",
   "multiclicker.module.offhand.fireworks_elytra": "Феєрверки з елітрами",

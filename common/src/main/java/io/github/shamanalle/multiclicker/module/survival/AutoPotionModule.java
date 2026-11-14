@@ -74,17 +74,19 @@ public class AutoPotionModule extends Module {
     public void tick(Minecraft mc) {
         LocalPlayer player = mc.player;
         if (restoringPitch) {
+            if (cooldown > 0) {
+                cooldown--;
+            }
+            if (Screens.current(mc) != null) {
+                return;
+            }
             float next = Rotations.clampPitch(Rotations.stepToward(mc, player.getXRot(), savedPitch, PITCH_STEP));
             player.setXRot(next);
-            if (Math.abs(next - savedPitch) <= 0.05F) {
-                player.setXRot(savedPitch);
+            if (Math.abs(next - savedPitch) <= Math.max(0.05F, Rotations.gcdStep(mc))) {
                 slot = -1;
                 throwing = false;
                 restoringPitch = false;
                 aimedTicks = 0;
-            }
-            if (cooldown > 0) {
-                cooldown--;
             }
             return;
         }
@@ -158,21 +160,26 @@ public class AutoPotionModule extends Module {
         }
     }
 
-    /** The best hotbar slot with a potion of this kind: a splash potion acts at once. */
+    /** The best hotbar slot with a potion of this kind: splash acts at once, or acts as fallback when drinkables run out. */
     private int find(LocalPlayer player, Predicate<ItemStack> effect) {
         int drinkable = -1;
+        int splashSlot = -1;
         for (int i = 0; i < Inventories.HOTBAR_SIZE; i++) {
             ItemStack stack = player.getInventory().getItem(i);
             if (!effect.test(stack)) {
                 continue;
             }
-            if (splash.get() && Potions.isSplash(stack)) {
-                return i;
-            }
-            if (drinkable == -1 && Potions.isDrinkable(stack)) {
+            if (Potions.isSplash(stack)) {
+                if (splash.get()) {
+                    return i;
+                }
+                if (splashSlot == -1) {
+                    splashSlot = i;
+                }
+            } else if (drinkable == -1 && Potions.isDrinkable(stack)) {
                 drinkable = i;
             }
         }
-        return drinkable;
+        return drinkable != -1 ? drinkable : splashSlot;
     }
 }

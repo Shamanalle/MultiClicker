@@ -141,7 +141,7 @@
   "multiclicker.module.offhand": "オフハンド",
   "multiclicker.module.offhand.desc": "オフハンドに最も役立つアイテムを持たせる",
   "multiclicker.module.offhand.totem_health": "体力でトーテム",
-  "multiclicker.module.offhand.totem_health.desc": "最優先。体力がこの値以下のとき、不死のトーテムをオフハンドに持たせます。100%：常に持たせます。",
+  "multiclicker.module.offhand.totem_health.desc": "最優先。体力がこの値以下のとき、不死のトーテムをオフハンドに持たせます。100%%：常に持たせます。",
   "multiclicker.module.offhand.food_hunger": "満腹度で食料",
   "multiclicker.module.offhand.food_hunger.desc": "満腹度がこの値以下のとき、満腹になるまで最良の安全な食料をオフハンドに持たせます。自動食事がオンの場合は、食料をインベントリからのみ取り、ホットバーの食料は自動食事用に残します。",
   "multiclicker.module.offhand.fireworks_elytra": "エリトラ時に花火",

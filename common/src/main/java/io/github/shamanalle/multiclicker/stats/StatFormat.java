@@ -20,7 +20,15 @@ public final class StatFormat {
             value /= 1000;
             index++;
         }
-        return (abs < 10 ? String.format(Locale.ROOT, "%.1f", value) : Long.toString(Math.round(value))) + suffixes[index];
+        if (abs >= 10 && Math.round(abs) >= 1000 && index < suffixes.length - 1) {
+            abs /= 1000;
+            value /= 1000;
+            index++;
+        }
+        if (abs < 10 && Math.round(abs * 10) < 100) {
+            return String.format(Locale.ROOT, "%.1f", value) + suffixes[index];
+        }
+        return Long.toString(Math.round(value)) + suffixes[index];
     }
 
     /** The value of a counter as shown: time as a duration, damage in health points. */

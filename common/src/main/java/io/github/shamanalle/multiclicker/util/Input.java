@@ -34,7 +34,9 @@ public final class Input {
     /** Registers one press (like a mouse click) that vanilla consumes this tick. */
     public static void click(KeyMapping mapping) {
         KeyMappingAccessor accessor = (KeyMappingAccessor) mapping;
-        accessor.multiclicker$setClickCount(accessor.multiclicker$getClickCount() + 1);
+        if (accessor.multiclicker$getClickCount() == 0) {
+            accessor.multiclicker$setClickCount(1);
+        }
         hold(mapping);
     }
 
@@ -59,7 +61,9 @@ public final class Input {
 
     /** Lets go of a key for now even if the player holds it; {@link #release} gives it back. */
     public static void forceUp(KeyMapping mapping) {
-        ((KeyMappingAccessor) mapping).multiclicker$setDown(false);
+        KeyMappingAccessor accessor = (KeyMappingAccessor) mapping;
+        accessor.multiclicker$setDown(false);
+        accessor.multiclicker$setClickCount(0);
     }
 
     private static boolean isToggleMode(KeyMapping mapping) {
@@ -81,6 +85,17 @@ public final class Input {
         return isPhysicallyDown(mc.options.keyUp) || isPhysicallyDown(mc.options.keyDown)
                 || isPhysicallyDown(mc.options.keyLeft) || isPhysicallyDown(mc.options.keyRight)
                 || isPhysicallyDown(mc.options.keyJump);
+    }
+
+    /** True while any physical or module-driven movement key is active. */
+    public static boolean isMovementActive(Minecraft mc) {
+        return isMovingKeyDown(mc.options.keyUp) || isMovingKeyDown(mc.options.keyDown)
+                || isMovingKeyDown(mc.options.keyLeft) || isMovingKeyDown(mc.options.keyRight)
+                || isMovingKeyDown(mc.options.keyJump);
+    }
+
+    private static boolean isMovingKeyDown(KeyMapping mapping) {
+        return mapping.isDown() || isPhysicallyDown(mapping);
     }
 
     /**

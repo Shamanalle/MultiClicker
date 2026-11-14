@@ -76,6 +76,10 @@ class StatsLogicTest {
         assertEquals("12k", StatFormat.compact(12_345));
         assertEquals("3.4M", StatFormat.compact(3_400_000));
         assertEquals("2.5", StatFormat.compact(2.5));
+        assertEquals("10k", StatFormat.compact(9_950));
+        assertEquals("10k", StatFormat.compact(9_999));
+        assertEquals("1.0M", StatFormat.compact(999_500));
+        assertEquals("1.0G", StatFormat.compact(999_949_999));
     }
 
     @Test

@@ -12,7 +12,7 @@ displayURL = "https://github.com/Shamanalle/MultiClicker"
 logoFile = "assets/multiclicker/icon.png"
 ${display_test}
 description = '''
-Configurable auto clicker with helpers for AFK farms, mining and fishing: attack/use/jump channels, target filter, auto eat, smart offhand, auto fish, anti-AFK, HUD and a modern settings menu.
+Configurable client-side auto clicker with helpers for AFK farms, mining and fishing: attack/use/jump channels, target filter, safety stop, smart offhand, auto eat, auto potion, auto farm, auto fish, hotbar refill, inventory cleaner, auto walk, anti-AFK, auto reconnect, goals, HUD, profiles and statistics.
 '''
 
 ${mixins}

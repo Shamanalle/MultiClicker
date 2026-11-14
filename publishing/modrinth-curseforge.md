@@ -86,7 +86,7 @@ An auto clicker and AFK helper for Minecraft: it clicks attack, use and jump at 
 
 **❤️ Survival**
 - Safety: stop the mod or leave the server at low health, on any damage, on a totem pop, or when a real player comes near (with an ignored-players list for friends).
-- Offhand: a totem at low health, fireworks while wearing elytra, food when you're hungry, a torch with a pickaxe, otherwise a shield.
+- Offhand: a totem at low health, food when you're hungry, fireworks while wearing elytra, a torch with a pickaxe, damaged Mending items, otherwise a shield.
 - Auto eat: the best safe food from the hotbar or inventory. It never opens the chest, door or villager you look at.
 - Auto potion: healing or regeneration at low health, fire resistance in fire or lava; drinks or throws.
 - Auto respawn with the death coordinates in the chat. Mending rotation: damaged Mending items take turns in the offhand.
@@ -199,7 +199,7 @@ workflow does that). On CurseForge the Russian part is already at the end of `cu
 
 **❤️ Выживание**
 - Безопасность: остановить мод или выйти с сервера при низком здоровье, при любом уроне, при срабатывании тотема или когда рядом настоящий игрок (есть список игнорируемых друзей).
-- Вторая рука: тотем при низком здоровье, фейерверки с элитрами, еда при голоде, факел с киркой, иначе щит.
+- Вторая рука: тотем при низком здоровье, еда при голоде, фейерверки с элитрами, факел с киркой, повреждённые предметы с «Починкой», иначе щит.
 - Авто-еда: лучшая безопасная еда из хотбара или инвентаря. Никогда не открывает сундук, дверь или торговца, на которого вы смотрите.
 - Авто-зелья: исцеление или регенерация при низком здоровье, огнестойкость в огне или лаве; пьёт или бросает.
 - Авто-возрождение с координатами смерти в чате. Чередование «Починки»: повреждённые предметы с «Починкой» по очереди встают во вторую руку.

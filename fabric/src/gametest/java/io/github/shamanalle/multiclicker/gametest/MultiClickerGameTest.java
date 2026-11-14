@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CocoaBlock;
 import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.shamanalle.multiclicker.MultiClicker;
@@ -82,6 +84,24 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             client.options.renderDistance().set(4);
             client.options.simulationDistance().set(5);
         });
+        // Title screen (mc.level == null): StatsScreen with loot entries must render without crashing.
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.stats().start(mc);
+            mod.stats().session().add(Counters.Group.LOOT, "minecraft:diamond", 1);
+            Screens.open(mc, new StatsScreen(Screens.current(mc)));
+        });
+        context.waitTicks(3);
+        check(context.computeOnClient(mc -> Screens.current(mc) instanceof StatsScreen),
+                "stats screen did not stay open on the title screen");
+        context.runOnClient(mc -> {
+            if (Screens.current(mc) instanceof StatsScreen statsScreen) {
+                statsScreen.onClose();
+            }
+            MultiClicker.get().stats().stop();
+            MultiClicker.get().stats().reset();
+        });
+        context.waitTicks(2);
         menuScreenshots(context, "title");
 
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
@@ -111,6 +131,8 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             scenario(context, server, "cocoa replanting, tall crops and line of sight", this::cocoaTallCropsAndLineOfSight);
             scenario(context, server, "click mining, stem protection and weapon-only filter", this::clickMiningStemProtectionAndWeaponOnly);
             scenario(context, server, "auto eat from inventory and fireworks with elytra", this::inventoryEatAndElytraFireworks);
+            scenario(context, server, "borrowed slots, offhand eating and broken elytra", this::borrowedSlotsOffhandEatAndBrokenElytra);
+            scenario(context, server, "potion fallback, bamboo cutting and berry harvest", this::potionFallbackBambooAndBerries);
             scenario(context, server, "menu mouse clicks, active filter, row reset and undo", this::guiClicksAndUndo);
             scenario(context, server, "hud and highlight", this::hudScreenshots);
 
@@ -807,6 +829,179 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         });
         waitUntil(context, "firework rockets to be placed in the offhand", 40,
                 mc -> mc.player.getOffhandItem().is(Items.FIREWORK_ROCKET));
+    }
+
+    private void borrowedSlotsOffhandEatAndBrokenElytra(ClientGameTestContext context, TestServerContext server) {
+        // 1) AutoEat borrowing hotbar slot 1 must protect the pickaxe while it temporarily sits in slot 20.
+        give(server, 0, new ItemStack(Items.IRON_SWORD));
+        give(server, 1, new ItemStack(Items.DIAMOND_PICKAXE));
+        for (int s = 2; s < 9; s++) {
+            give(server, s, new ItemStack(Items.STICK));
+        }
+        give(server, 20, new ItemStack(Items.BREAD, 4));
+        server.runOnServer(s -> {
+            player(s).getFoodData().setFoodLevel(6);
+            player(s).getFoodData().setSaturation(0.0F);
+        });
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.clicker().attack.enabled.set(false);
+            mod.inventoryCleaner().enabledSetting().set(true);
+            mod.inventoryCleaner().keepHotbar.set(true);
+            mod.inventoryCleaner().items.add("minecraft:diamond_pickaxe");
+            mod.inventoryCleaner().delay.set(0);
+            mod.autoEat().enabledSetting().set(true);
+            mod.autoEat().fromInventory.set(true);
+            mod.autoEat().hunger.set(14);
+        });
+        context.waitTicks(3);
+        activate(context);
+        waitUntil(context, "auto eat from inventory to finish eating", 120,
+                mc -> mc.player.getFoodData().getFoodLevel() > 6 && !MultiClicker.get().autoEat().isBusy());
+        context.waitTicks(5);
+        check(context.computeOnClient(mc -> mc.player.getInventory().getItem(1).is(Items.DIAMOND_PICKAXE)),
+                "inventory cleaner discarded the temporarily borrowed pickaxe");
+
+        // 2) Offhand food is eaten directly without switching off the sword or taking hotbar bread.
+        deactivate(context);
+        server.runOnServer(s -> {
+            player(s).getInventory().clearContent();
+            player(s).setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.COOKED_BEEF, 4));
+            player(s).getFoodData().setFoodLevel(6);
+            player(s).getFoodData().setSaturation(0.0F);
+        });
+        give(server, 0, new ItemStack(Items.IRON_SWORD));
+        give(server, 4, new ItemStack(Items.BREAD, 4));
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.inventoryCleaner().enabledSetting().set(false);
+            mod.autoEat().enabledSetting().set(true);
+            mod.autoEat().hunger.set(14);
+            Slots.select(mc.player.getInventory(), 0);
+        });
+        context.waitTicks(3);
+        activate(context);
+        waitUntil(context, "auto eat to eat directly from offhand", 120,
+                mc -> mc.player.getFoodData().getFoodLevel() > 6 && !MultiClicker.get().autoEat().isBusy());
+        check(context.computeOnClient(mc -> mc.player.getOffhandItem().getCount() < 4),
+                "cooked beef in offhand was not consumed");
+        check(context.computeOnClient(mc -> mc.player.getInventory().getItem(4).getCount() == 4),
+                "hotbar bread was consumed instead of better offhand food");
+        check(context.computeOnClient(mc -> Slots.selected(mc.player.getInventory()) == 0),
+                "main hand slot changed while eating from offhand");
+
+        // 3) Broken elytra (1 durability left) must not equip fireworks ahead of shield.
+        deactivate(context);
+        server.runOnServer(s -> {
+            player(s).getInventory().clearContent();
+            player(s).getFoodData().setFoodLevel(20);
+            ItemStack elytra = new ItemStack(Items.ELYTRA);
+            elytra.setDamageValue(elytra.getMaxDamage() - 1);
+            player(s).setItemSlot(EquipmentSlot.CHEST, elytra);
+        });
+        give(server, 15, new ItemStack(Items.FIREWORK_ROCKET, 8));
+        give(server, 16, new ItemStack(Items.SHIELD));
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.autoEat().enabledSetting().set(false);
+            mod.offhand().enabledSetting().set(true);
+            mod.offhand().totemHealth.set(0);
+            mod.offhand().fireworksWithElytra.set(true);
+            mod.offhand().shield.set(true);
+        });
+        context.waitTicks(3);
+        activate(context);
+        waitUntil(context, "offhand to prefer shield over fireworks with broken elytra", 40,
+                mc -> mc.player.getOffhandItem().is(Items.SHIELD));
+        check(context.computeOnClient(mc -> !mc.player.getOffhandItem().is(Items.FIREWORK_ROCKET)),
+                "firework rockets were equipped despite broken elytra");
+    }
+
+    private void potionFallbackBambooAndBerries(ClientGameTestContext context, TestServerContext server) {
+        // 1) AutoPotion falls back to splash healing when splash=false and no drinkable healing exists, restoring pitch.
+        server.runCommand("tp @a 0.5 -60 0.5 0 0");
+        give(server, 0, new ItemStack(Items.IRON_SWORD));
+        server.runCommand("item replace entity @p hotbar.2 with minecraft:splash_potion[minecraft:potion_contents={potion:\"minecraft:strong_healing\"}]");
+        server.runOnServer(s -> player(s).setHealth(6.0F));
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.clicker().attack.enabled.set(false);
+            mod.autoPotion().enabledSetting().set(true);
+            mod.autoPotion().health.set(60);
+            mod.autoPotion().splash.set(false);
+            Slots.select(mc.player.getInventory(), 0);
+        });
+        context.waitTicks(3);
+        activate(context);
+        waitUntil(context, "auto potion splash fallback to heal and finish", 80,
+                mc -> mc.player.getHealth() > 6.0F
+                        && mc.player.getInventory().getItem(2).isEmpty()
+                        && !MultiClicker.get().autoPotion().isBusy());
+        check(context.computeOnClient(mc -> Math.abs(mc.player.getXRot()) < 1.0F),
+                "player pitch was not smoothly restored after throwing splash potion");
+        check(context.computeOnClient(mc -> Slots.selected(mc.player.getInventory()) == 0),
+                "selected sword slot was not restored after throwing splash potion");
+
+        // 2) AutoFarm harvests upper bamboo segments while preserving the bottom root block.
+        deactivate(context);
+        server.runOnServer(s -> {
+            player(s).setHealth(20.0F);
+            player(s).getFoodData().setFoodLevel(20);
+            player(s).getInventory().clearContent();
+        });
+        give(server, 0, new ItemStack(Items.IRON_SWORD));
+        server.runCommand("setblock 0 -61 2 minecraft:grass_block");
+        server.runCommand("fill 0 -60 1 0 -58 2 minecraft:air");
+        server.runCommand("fill 0 -60 2 0 -58 2 minecraft:bamboo");
+        server.runCommand("tp @a 0.5 -60 0.5 0 0");
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.autoPotion().enabledSetting().set(false);
+            mod.autoFarm().enabledSetting().set(true);
+            mod.autoFarm().tallCrops.set(true);
+            mod.autoFarm().boneMeal.set(false);
+            mod.autoFarm().delay.set(0);
+            Slots.select(mc.player.getInventory(), 0);
+        });
+        context.waitTicks(3);
+        activate(context);
+        waitUntil(context, "upper bamboo segments to be cut", 80,
+                mc -> mc.level.getBlockState(new BlockPos(0, -59, 2)).isAir()
+                        && mc.level.getBlockState(new BlockPos(0, -58, 2)).isAir());
+        context.waitTicks(10);
+        check(context.computeOnClient(mc -> mc.level.getBlockState(new BlockPos(0, -60, 2)).is(Blocks.BAMBOO)),
+                "bottom bamboo root block was broken");
+
+        // 3) Sweet berry bush at age 2 harvests berries with MAIN_HAND swap instead of applying held bone meal or offhand dirt.
+        deactivate(context);
+        server.runCommand("fill 0 -60 2 0 -58 2 minecraft:air");
+        server.runCommand("kill @e[type=minecraft:item]");
+        server.runOnServer(s -> {
+            player(s).getInventory().clearContent();
+            player(s).setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.DIRT));
+        });
+        give(server, 0, new ItemStack(Items.BONE_MEAL, 8));
+        give(server, 1, new ItemStack(Items.IRON_SWORD));
+        server.runCommand("setblock 0 -60 2 minecraft:sweet_berry_bush[age=2]");
+        server.runCommand("tp @a 0.5 -60 0.5 0 20");
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.autoFarm().boneMeal.set(false);
+            mod.autoFarm().delay.set(2);
+            Slots.select(mc.player.getInventory(), 0);
+        });
+        context.waitTicks(3);
+        activate(context);
+        waitUntil(context, "sweet berry bush at age 2 to be harvested down to age 1", 40,
+                mc -> mc.level.getBlockState(new BlockPos(0, -60, 2)).is(Blocks.SWEET_BERRY_BUSH)
+                        && mc.level.getBlockState(new BlockPos(0, -60, 2)).getValue(SweetBerryBushBlock.AGE) == 1);
+        check(context.computeOnClient(mc -> mc.player.getInventory().getItem(0).is(Items.BONE_MEAL)
+                        && mc.player.getInventory().getItem(0).getCount() == 8),
+                "bone meal was spent instead of harvesting sweet berries");
+        check(context.computeOnClient(mc -> Slots.selected(mc.player.getInventory()) == 0),
+                "selected slot was not restored after harvesting sweet berries");
+        check(context.computeOnClient(mc -> mc.player.getOffhandItem().is(Items.DIRT)),
+                "offhand dirt block changed while harvesting sweet berries");
     }
 
     private void guiClicksAndUndo(ClientGameTestContext context, TestServerContext server) {

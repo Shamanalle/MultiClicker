@@ -141,7 +141,7 @@
   "multiclicker.module.offhand": "İkinci el",
   "multiclicker.module.offhand.desc": "İkinci elde en gerekli eşyayı tutar",
   "multiclicker.module.offhand.totem_health": "Sağlığa göre totem",
-  "multiclicker.module.offhand.totem_health.desc": "En yüksek öncelik. Sağlık bu seviyede veya altındayken ikinci ele Ölümsüzlük Totemi koyar. %100 — her zaman tut.",
+  "multiclicker.module.offhand.totem_health.desc": "En yüksek öncelik. Sağlık bu seviyede veya altındayken ikinci ele Ölümsüzlük Totemi koyar. %%100 — her zaman tut.",
   "multiclicker.module.offhand.food_hunger": "Açlığa göre yiyecek",
   "multiclicker.module.offhand.food_hunger.desc": "Açlık çubuğu bu değerde veya altındayken, doyana kadar ikinci ele en iyi güvenli yiyeceği koyar. Otomatik yeme açıksa yiyecek yalnızca çantadan alınır: araç çubuğundaki yiyecek otomatik yemeye kalır.",
   "multiclicker.module.offhand.fireworks_elytra": "Elitra ile havai fişek",

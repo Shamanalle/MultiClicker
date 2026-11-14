@@ -99,7 +99,12 @@ public class ListSetting extends Setting<List<String>> {
     }
 
     private static boolean isValidPlayerName(String name) {
-        if (name.isEmpty() || name.length() > 16) {
+        if (name.isEmpty()) {
+            return false;
+        }
+        // Floodgate / Geyser prefixes Bedrock usernames with '.' (up to 1 + 16 characters).
+        int maxLength = name.charAt(0) == '.' ? 17 : 16;
+        if (name.length() > maxLength) {
             return false;
         }
         for (int i = 0; i < name.length(); i++) {

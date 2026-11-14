@@ -94,8 +94,8 @@ the crosshair rests on one, a notification says once where to turn them on.
 - **Safety.** Stops the mod, or leaves the server, when your health drops to a threshold, when you
   take any damage, when a Totem of Undying pops, or when another real player comes within a set distance
   (with an *Ignored players* list for friends and alts).
-- **Offhand.** Keeps one item in the offhand, by priority: a totem at low health, firework rockets while
-  wearing elytra, food when you're hungry, a torch while you hold a pickaxe, otherwise a shield.
+- **Offhand.** Keeps one item in the offhand, by priority: a totem at low health, food when you're hungry,
+  firework rockets while wearing elytra, a torch while you hold a pickaxe, Mending items, otherwise a shield.
   It can also rotate Mending items: a damaged one stays in the offhand until it is repaired, then the next
   takes its place, so the experience of a farm repairs them all.
 - **Auto eat.** Eats the best safe food from the hotbar (and brings food from the main inventory when the

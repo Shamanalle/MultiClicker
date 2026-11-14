@@ -206,10 +206,23 @@ public class HudEditScreen extends ModScreen {
         int dy = keyCode == InputConstants.KEY_UP ? -step : keyCode == InputConstants.KEY_DOWN ? step : 0;
         if (dx != 0 || dy != 0) {
             int[] b = hud.lastBounds();
+            int prevX = hud.posX.get();
+            int prevY = hud.posY.get();
+            int basePosX = prevX != HudModule.IN_CORNER ? prevX
+                    : Math.round(Math.max(0, Math.min(1, b[0] / (float) Math.max(1, width - b[2]))) * 1000);
+            int basePosY = prevY != HudModule.IN_CORNER ? prevY
+                    : Math.round(Math.max(0, Math.min(1, b[1] / (float) Math.max(1, height - b[3]))) * 1000);
             hud.moveTo(b[0] + dx, b[1] + dy, width, height, b[2], b[3]);
+            // On high-resolution screens, +/-1px can round back to the same permille coordinate.
+            if (dx != 0 && hud.posX.get() == basePosX) {
+                hud.posX.set(Math.max(0, Math.min(1000, basePosX + Integer.signum(dx))));
+            }
+            if (dy != 0 && hud.posY.get() == basePosY) {
+                hud.posY.set(Math.max(0, Math.min(1000, basePosY + Integer.signum(dy))));
+            }
             return true;
         }
-        if (keyCode == InputConstants.KEY_R) {
+        if (keyCode == InputConstants.KEY_R && !Keys.controlDown()) {
             hud.placeInCorner();
             return true;
         }

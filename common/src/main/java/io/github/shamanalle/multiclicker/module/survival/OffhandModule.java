@@ -21,7 +21,7 @@ import java.util.function.Predicate;
 
 /**
  * Keeps the most useful item in the offhand, by priority:
- * totem (low health) &gt; food (hungry) &gt; torch (holding a pickaxe) &gt; a damaged Mending item &gt; shield.
+ * totem (low health) &gt; food (hungry) &gt; fireworks (elytra) &gt; torch (holding a pickaxe) &gt; a damaged Mending item &gt; shield.
  * Mending items take turns: a repaired one is swapped for the next damaged one, so experience
  * from a farm repairs the whole inventory.
  *
@@ -101,7 +101,7 @@ public class OffhandModule extends Module {
             // Auto eat eats from the hotbar: leave the food there for it.
             int slot = find(player, want, want == Want.FOOD && mod.autoEat().isEnabled());
             if (slot != -1) {
-                if (want != Want.TOTEM && slot >= Inventories.HOTBAR_SIZE && !Inventories.canClickMainInventory(mc)) {
+                if (want != Want.TOTEM && !Inventories.requestMainInventoryClick(mc)) {
                     return;
                 }
                 Inventories.swapWithOffhand(mc, slot);
@@ -118,7 +118,7 @@ public class OffhandModule extends Module {
                     || offhand.is(Items.TOTEM_OF_UNDYING) && health <= totemHealth.get() + TOTEM_HYSTERESIS);
             case FOOD -> foodHunger.get() > 0 && !MultiClicker.get().isConsuming()
                     && (hunger <= foodHunger.get() || Want.FOOD.matcher.test(offhand) && hunger < FULL_HUNGER);
-            case FIREWORKS -> fireworksWithElytra.get() && player.getItemBySlot(EquipmentSlot.CHEST).is(Items.ELYTRA);
+            case FIREWORKS -> fireworksWithElytra.get() && hasUsableElytra(player);
             // Keep the torch while auto tool briefly holds a shovel or an axe during a mining session.
             case TORCH -> torchWithPickaxe.get() && (Tools.kind(player.getMainHandItem()) == Tools.PICKAXE
                     || Want.TORCH.matcher.test(offhand) && MultiClicker.get().autoTool().isToolSelected());
@@ -127,17 +127,24 @@ public class OffhandModule extends Module {
         };
     }
 
+    private static boolean hasUsableElytra(LocalPlayer player) {
+        ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+        return chest.is(Items.ELYTRA) && Inventories.remainingDurability(chest) > 1;
+    }
+
     /**
      * Finds a matching stack, preferring the main inventory over the hotbar and never taking the
-     * item the player is holding. Food picks the most nourishing stack.
+     * item the player is holding or a slot borrowed by another module. Food picks the most nourishing stack.
      */
     private static int find(LocalPlayer player, Want want, boolean skipHotbar) {
+        MultiClicker mod = MultiClicker.get();
         int selected = Slots.selected(player.getInventory());
         int best = -1;
         float bestScore = -1;
         for (int i = 0; i < Inventories.MAIN_SIZE; i++) {
             int slot = (i + Inventories.HOTBAR_SIZE) % Inventories.MAIN_SIZE; // 9..35, then 0..8
-            if (slot == selected || skipHotbar && slot < Inventories.HOTBAR_SIZE) {
+            if (slot == selected || skipHotbar && slot < Inventories.HOTBAR_SIZE
+                    || mod != null && mod.isSlotBorrowed(slot)) {
                 continue;
             }
             ItemStack stack = player.getInventory().getItem(slot);

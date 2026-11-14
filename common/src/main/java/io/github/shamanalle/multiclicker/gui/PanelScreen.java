@@ -4,6 +4,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+import org.jetbrains.annotations.Nullable;
 import io.github.shamanalle.multiclicker.compat.Canvas;
 import io.github.shamanalle.multiclicker.compat.ModScreen;
 import io.github.shamanalle.multiclicker.compat.Screens;
@@ -17,6 +19,7 @@ import java.util.List;
 public abstract class PanelScreen extends ModScreen {
     protected final Screen parent;
     protected final List<FlatButton> buttons = new ArrayList<>();
+    protected final List<EditBox> fields = new ArrayList<>();
     protected int panelX;
     protected int panelY;
     protected int panelW;
@@ -35,6 +38,7 @@ public abstract class PanelScreen extends ModScreen {
     @Override
     protected void init() {
         buttons.clear();
+        fields.clear();
         panelW = Math.min(width - 24, preferredWidth());
         panelH = Math.min(height - 24, preferredHeight());
         panelX = (width - panelW) / 2;
@@ -53,7 +57,19 @@ public abstract class PanelScreen extends ModScreen {
         box.setBordered(false);
         box.setTextColor(Theme.TEXT);
         Widgets.hint(box, hint.copy().withStyle(ChatFormatting.DARK_GRAY));
+        fields.add(box);
         return addRenderableWidget(box);
+    }
+
+    protected void clearFieldFocus(@Nullable EditBox keep) {
+        for (EditBox box : fields) {
+            if (box != keep) {
+                Widgets.focus(box, false);
+            }
+        }
+        if (keep == null) {
+            setFocused(null);
+        }
     }
 
     protected void drawFieldBackground(Canvas g, EditBox box) {
@@ -85,13 +101,33 @@ public abstract class PanelScreen extends ModScreen {
     protected boolean clicked(double mouseX, double mouseY, int button) {
         for (FlatButton flatButton : List.copyOf(buttons)) {
             if (flatButton.mouseClicked(mouseX, mouseY, button)) {
-                setFocused(null);
+                clearFieldFocus(null);
                 return true;
+            }
+        }
+        for (EditBox box : fields) {
+            int bx = Widgets.x(box) - 6;
+            int by = Widgets.y(box) - 4;
+            int bw = box.getWidth() + 12;
+            int bh = 17;
+            if (box.visible && mouseX >= bx && mouseX < bx + bw && mouseY >= by && mouseY < by + bh) {
+                if (button == 0) {
+                    clearFieldFocus(box);
+                    double clampedX = Mth.clamp(mouseX, Widgets.x(box), Widgets.x(box) + Math.max(0, box.getWidth() - 1));
+                    double clampedY = Mth.clamp(mouseY, Widgets.y(box), Widgets.y(box) + Math.max(0, box.getHeight() - 1));
+                    boolean handled = super.clicked(clampedX, clampedY, button);
+                    if (handled) {
+                        setFocused(box);
+                        Widgets.focus(box, true);
+                    }
+                    return handled;
+                }
+                break;
             }
         }
         boolean handled = super.clicked(mouseX, mouseY, button);
         if (!handled) {
-            setFocused(null);
+            clearFieldFocus(null);
         }
         return handled;
     }

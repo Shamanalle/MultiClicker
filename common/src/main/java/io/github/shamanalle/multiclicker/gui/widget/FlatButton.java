@@ -2,10 +2,9 @@ package io.github.shamanalle.multiclicker.gui.widget;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 import io.github.shamanalle.multiclicker.compat.Canvas;
+import io.github.shamanalle.multiclicker.compat.Sounds;
 import io.github.shamanalle.multiclicker.gui.Anim;
 import io.github.shamanalle.multiclicker.gui.Draw;
 import io.github.shamanalle.multiclicker.gui.Theme;
@@ -67,7 +66,7 @@ public class FlatButton {
         if (!visible || !active || button != 0 || !isMouseOver(mouseX, mouseY)) {
             return false;
         }
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        Minecraft.getInstance().getSoundManager().play(Sounds.click(1.0F, 0.35F));
         action.run();
         return true;
     }

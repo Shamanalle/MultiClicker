@@ -23,6 +23,7 @@ import io.github.shamanalle.multiclicker.setting.IntSetting;
 import io.github.shamanalle.multiclicker.setting.Setting;
 import io.github.shamanalle.multiclicker.setting.Unit;
 import io.github.shamanalle.multiclicker.util.Input;
+import io.github.shamanalle.multiclicker.util.Players;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,6 +65,8 @@ public class ClickerModule extends Module {
     private boolean shieldLowered;
     /** Set by the attack channel this tick: the use key must stay up. */
     private boolean lowerShieldNow;
+    /** Prevents physically held attack from immediately mining the block behind a slain mob. */
+    private boolean suppressBlockAfterEntity;
 
     public ClickerModule() {
         super("clicker", Category.CLICKER, false, true);
@@ -119,6 +122,11 @@ public class ClickerModule extends Module {
         return isRunning() && use.isHolding();
     }
 
+    /** True while the jump channel actively holds the jump key (so AutoWalk does not release it). */
+    public boolean isHoldingJump() {
+        return isRunning() && jump.enabled.get() && jump.isHolding();
+    }
+
     @Override
     public void start(Minecraft mc) {
         startDelayLeft = startDelay.get();
@@ -163,6 +171,7 @@ public class ClickerModule extends Module {
     }
 
     private void resetChannels(Minecraft mc) {
+        suppressBlockAfterEntity = false;
         raiseShield(mc);
         attack.reset(mc.options.keyAttack);
         use.reset(mc.options.keyUse);
@@ -211,7 +220,9 @@ public class ClickerModule extends Module {
             use.handOver();
         } else if (use.enabled.get()) {
             boolean allowed = !eating && !mod.autoFish().controlsUseKey();
-            if (use.tick(mc.options.keyUse, allowed, true)) {
+            boolean preserveActiveUse = use.mode.get() == ClickChannel.Mode.CLICK
+                    && use.onlyWhileHeld.get() && Input.isPhysicallyDown(mc.options.keyUse) && player.isUsingItem();
+            if (use.tick(mc.options.keyUse, allowed, true, preserveActiveUse)) {
                 mod.stats().recordClick();
             }
         } else {
@@ -253,24 +264,36 @@ public class ClickerModule extends Module {
         boolean inUse = player.isUsingItem();
         boolean shieldInTheWay = inUse && !pauseWhileUsing.get() && player.getUseItem().is(Items.SHIELD);
         boolean blocked = inUse || ((MinecraftAccessor) mc).multiclicker$getMissTime() > 0;
-        boolean paused = eating || inUse && !shieldInTheWay;
+        boolean paused = eating || mod.autoFarm().isBreakingBlock() || inUse && !shieldInTheWay;
+
+        if (!Input.isPhysicallyDown(mc.options.keyAttack) || (target == null && !onBlock)) {
+            suppressBlockAfterEntity = false;
+        }
+
+        boolean restoredWeapon = !paused && validEntity && mod.autoTool().giveWeaponBack(player);
+        if (restoredWeapon) {
+            // Re-evaluate charge after restoring from a mining tool so LootingSwap saves the weapon slot.
+            charged = player.getAttackStrengthScale(0.5F) >= 1.0F;
+        }
 
         if (tickLootingSwap(mc, player, mod, eating, paused, blocked, shieldInTheWay, countDown,
                 validEntity ? target : null)) {
+            if (validEntity) {
+                suppressBlockAfterEntity = true;
+            }
             return;
         }
 
         boolean allowed = !paused;
+        boolean miningProtected = false;
+        boolean postKillBlockHold = false;
         if (allowed) {
             if (target != null) {
-                allowed = validEntity && (!attackCooldown.get() || charged);
-                if (validEntity && mod.autoTool().giveWeaponBack(player)) {
-                    // A mining tool is in hand: the weapon comes back first and its charge starts over.
-                    allowed = false;
-                }
+                allowed = validEntity && !restoredWeapon && (!attackCooldown.get() || charged);
             } else if (onBlock) {
-                allowed = attackTarget.get() != AttackTarget.ENTITIES
-                        && mod.mining().allowsBreaking(mc, ((BlockHitResult) hit).getBlockPos());
+                miningProtected = !mod.mining().allowsBreaking(mc, ((BlockHitResult) hit).getBlockPos());
+                postKillBlockHold = suppressBlockAfterEntity && attackTarget.get() == AttackTarget.ENTITIES;
+                allowed = attackTarget.get() != AttackTarget.ENTITIES && !miningProtected;
             } else {
                 // A swing into the air also uses up the charge, so it waits for it like a hit.
                 allowed = weaponSatisfied && attackTarget.get() == AttackTarget.ANYTHING
@@ -288,7 +311,7 @@ public class ClickerModule extends Module {
 
         boolean clicked;
         if (onBlock) {
-            clicked = attack.tickContinuousBlock(mc.options.keyAttack, allowed);
+            clicked = attack.tickContinuousBlock(mc.options.keyAttack, allowed, miningProtected || postKillBlockHold || paused);
         } else if (target != null && attack.mode.get() == ClickChannel.Mode.HOLD) {
             clicked = attack.tickEntityInHoldMode(mc.options.keyAttack, allowed, countDown);
         } else {
@@ -298,6 +321,7 @@ public class ClickerModule extends Module {
             attackCount++;
             mod.stats().recordClick();
             if (validEntity) {
+                suppressBlockAfterEntity = true;
                 mod.stats().recordAttack(target);
             }
         }
@@ -344,7 +368,8 @@ public class ClickerModule extends Module {
      * crosshair has rested on a player for a second, says why (once per start of the mod).
      */
     private void hintSkippedPlayer(Minecraft mc, MultiClicker mod, Entity target) {
-        if (target instanceof Player other && !other.isCreative() && mod.targetFilter().skipsPlayers()) {
+        if (target instanceof Player other && !other.isCreative() && Players.isRealPlayer(mc, other)
+                && mod.targetFilter().skipsPlayers()) {
             if (++skippedPlayerTicks == SKIPPED_PLAYER_HINT_TICKS) {
                 mod.notifications().playersSkipped(mc);
             }

@@ -13,7 +13,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
  */
 public final class Enchants {
     private static final EquipmentSlot[] ARMOR_SLOTS = {
-            EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD
+            EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD, EquipmentSlot.BODY
     };
     private static final Enchants INSTANCE = new Enchants();
 

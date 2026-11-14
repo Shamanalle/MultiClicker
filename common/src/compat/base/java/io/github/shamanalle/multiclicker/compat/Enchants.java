@@ -19,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public final class Enchants {
     private static final EquipmentSlot[] ARMOR_SLOTS = {
-            EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD
+            EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD, EquipmentSlot.BODY
     };
 
     @Nullable
@@ -62,6 +62,9 @@ public final class Enchants {
         }
         if (Lookups.isMobOfTag(target, EntityTypeTags.SENSITIVE_TO_BANE_OF_ARTHROPODS)) {
             bonus += 2.5F * level(Enchantments.BANE_OF_ARTHROPODS, weapon);
+        }
+        if (Lookups.isMobOfTag(target, EntityTypeTags.SENSITIVE_TO_IMPALING)) {
+            bonus += 2.5F * level(Enchantments.IMPALING, weapon);
         }
         return bonus;
     }

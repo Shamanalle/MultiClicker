@@ -141,7 +141,7 @@
   "multiclicker.module.offhand": "Main secondaire",
   "multiclicker.module.offhand.desc": "Garde l'objet le plus utile dans la main secondaire",
   "multiclicker.module.offhand.totem_health": "Totem selon la vie",
-  "multiclicker.module.offhand.totem_health.desc": "Priorité maximale. Met un totem d'immortalité dans la main secondaire quand la vie est à ce niveau ou en dessous. 100 % : toujours en garder un.",
+  "multiclicker.module.offhand.totem_health.desc": "Priorité maximale. Met un totem d'immortalité dans la main secondaire quand la vie est à ce niveau ou en dessous. 100 %% : toujours en garder un.",
   "multiclicker.module.offhand.food_hunger": "Nourriture selon la faim",
   "multiclicker.module.offhand.food_hunger.desc": "Met la meilleure nourriture sûre dans la main secondaire quand la barre de faim est à cette valeur ou en dessous, jusqu'à satiété. Avec l'alimentation auto active, la nourriture n'est prise que dans le sac : celle de la barre d'action reste pour l'alimentation auto.",
   "multiclicker.module.offhand.fireworks_elytra": "Fusées avec élytres",

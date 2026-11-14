@@ -387,10 +387,9 @@ public class ProfilesScreen extends PanelScreen {
     }
 
     private void handleProfileClick(String name, double mouseX, int button) {
+        clearFieldFocus(null);
         RowLayout row = layout(name);
         if (mouseX >= row.chipX() && mouseX < row.chipX() + row.chipW()) {
-            setFocused(null);
-            Widgets.focus(nameField, false);
             if (button == 1) {
                 mod.config().setProfileKey(name, "");
                 refresh();
@@ -453,7 +452,7 @@ public class ProfilesScreen extends PanelScreen {
 
     @Override
     protected boolean pressed(int keyCode, int scanCode, int modifiers) {
-        if (capture.keyPressed(keyCode)) {
+        if (capture.keyPressed(keyCode, scanCode)) {
             return true;
         }
         if (keyCode == InputConstants.KEY_Z && Keys.controlDown() && !nameField.isFocused() && mod.config().canUndo()) {

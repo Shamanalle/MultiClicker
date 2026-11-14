@@ -13,23 +13,30 @@ public final class Keys {
     }
 
     public static boolean isKeyDown(Minecraft mc, int key) {
-        return InputConstants.isKeyDown(mc.getWindow(), key);
+        return key >= GLFW.GLFW_KEY_SPACE && key <= GLFW.GLFW_KEY_LAST
+                && InputConstants.isKeyDown(mc.getWindow(), key);
     }
 
     public static boolean isMouseDown(Minecraft mc, int button) {
-        return GLFW.glfwGetMouseButton(mc.getWindow().handle(), button) == GLFW.GLFW_PRESS;
+        return button >= 0 && button <= GLFW.GLFW_MOUSE_BUTTON_LAST
+                && GLFW.glfwGetMouseButton(mc.getWindow().handle(), button) == GLFW.GLFW_PRESS;
     }
 
     /** Whether the player physically holds the key or mouse button (simulated presses do not count). */
     public static boolean isDown(Minecraft mc, InputConstants.Key key) {
         return switch (key.getType()) {
-            case MOUSE -> switch (key.getValue()) {
-                case InputConstants.MOUSE_BUTTON_LEFT -> mc.mouseHandler.isLeftPressed();
-                case InputConstants.MOUSE_BUTTON_RIGHT -> mc.mouseHandler.isRightPressed();
-                case InputConstants.MOUSE_BUTTON_MIDDLE -> mc.mouseHandler.isMiddlePressed();
-                default -> isMouseDown(mc, key.getValue());
-            };
-            case KEYSYM -> key.getValue() != InputConstants.UNKNOWN.getValue() && isKeyDown(mc, key.getValue());
+            case MOUSE -> {
+                if (Screens.current(mc) != null || Screens.hasOverlay(mc) || !mc.isWindowActive()) {
+                    yield false;
+                }
+                yield switch (key.getValue()) {
+                    case InputConstants.MOUSE_BUTTON_LEFT -> mc.mouseHandler.isLeftPressed();
+                    case InputConstants.MOUSE_BUTTON_RIGHT -> mc.mouseHandler.isRightPressed();
+                    case InputConstants.MOUSE_BUTTON_MIDDLE -> mc.mouseHandler.isMiddlePressed();
+                    default -> isMouseDown(mc, key.getValue());
+                };
+            }
+            case KEYSYM -> isKeyDown(mc, key.getValue());
             case SCANCODE -> false;
         };
     }
@@ -52,6 +59,14 @@ public final class Keys {
         return InputConstants.Type.KEYSYM.getOrCreate(keyCode);
     }
 
+    /** A keyboard key by key code, falling back to platform scan code when unknown. */
+    public static InputConstants.Key keyboard(int keyCode, int scanCode) {
+        if (keyCode == InputConstants.UNKNOWN.getValue()) {
+            return scanCode > 0 ? InputConstants.Type.SCANCODE.getOrCreate(scanCode) : InputConstants.UNKNOWN;
+        }
+        return InputConstants.Type.KEYSYM.getOrCreate(keyCode);
+    }
+
     /** A mouse button (0 = left, 1 = right, 2 = middle, 3+ = side buttons). */
     public static InputConstants.Key mouse(int button) {
         return InputConstants.Type.MOUSE.getOrCreate(button);
@@ -64,7 +79,7 @@ public final class Keys {
         }
         try {
             return InputConstants.getKey(name);
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             return InputConstants.UNKNOWN;
         }
     }

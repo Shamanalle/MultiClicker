@@ -141,7 +141,7 @@
   "multiclicker.module.offhand": "Offhand",
   "multiclicker.module.offhand.desc": "Keeps the most useful item in the offhand",
   "multiclicker.module.offhand.totem_health": "Totem at health",
-  "multiclicker.module.offhand.totem_health.desc": "Highest priority. Puts a Totem of Undying in the offhand at or below this health. 100% — always keep one there.",
+  "multiclicker.module.offhand.totem_health.desc": "Highest priority. Puts a Totem of Undying in the offhand at or below this health. 100%% — always keep one there.",
   "multiclicker.module.offhand.food_hunger": "Food at hunger",
   "multiclicker.module.offhand.food_hunger.desc": "Puts the best safe food in the offhand when the hunger bar is at or below this value, until you are full. With auto eat on, food is only taken from the backpack: the hotbar food stays for auto eat.",
   "multiclicker.module.offhand.fireworks_elytra": "Fireworks with elytra",

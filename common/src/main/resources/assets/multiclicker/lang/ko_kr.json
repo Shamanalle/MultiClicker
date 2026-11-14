@@ -141,7 +141,7 @@
   "multiclicker.module.offhand": "보조 손",
   "multiclicker.module.offhand.desc": "보조 손에 가장 필요한 아이템을 듭니다",
   "multiclicker.module.offhand.totem_health": "체력에 따라 토템",
-  "multiclicker.module.offhand.totem_health.desc": "최우선. 체력이 이 값 이하일 때 불사의 토템을 보조 손에 듭니다. 100% — 항상 듭니다.",
+  "multiclicker.module.offhand.totem_health.desc": "최우선. 체력이 이 값 이하일 때 불사의 토템을 보조 손에 듭니다. 100%% — 항상 듭니다.",
   "multiclicker.module.offhand.food_hunger": "허기에 따라 음식",
   "multiclicker.module.offhand.food_hunger.desc": "허기 막대가 이 값 이하일 때 배부를 때까지 가장 좋은 안전한 음식을 보조 손에 듭니다. 자동 먹기가 켜져 있으면 음식은 보관함에서만 가져오고, 단축 바의 음식은 자동 먹기용으로 남깁니다.",
   "multiclicker.module.offhand.fireworks_elytra": "겉날개 착용 시 폭죽",

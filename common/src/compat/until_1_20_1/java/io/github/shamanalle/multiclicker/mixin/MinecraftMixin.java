@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import io.github.shamanalle.multiclicker.MultiClicker;
 
@@ -14,7 +15,7 @@ import io.github.shamanalle.multiclicker.MultiClicker;
 public abstract class MinecraftMixin {
     /**
      * Vanilla only keeps breaking a block while the mouse is grabbed, which is never the case
-     * when the game window is in the background. Let a simulated held attack key mine anyway,
+     * when the game window is in the background. Let a simulated held attack key (or AutoFarm) mine anyway,
      * so AFK mining works with the window unfocused. A redirect: Forge for 1.20.1 has no MixinExtras.
      */
     @Redirect(method = "handleKeybinds",
@@ -24,7 +25,16 @@ public abstract class MinecraftMixin {
             return true;
         }
         MultiClicker mod = MultiClicker.get();
-        return mod != null && mod.clicker().isHoldingAttack();
+        return mod != null && (mod.clicker().isHoldingAttack() || mod.autoFarm().isBreakingBlock());
+    }
+
+    /** Vanilla resets block breaking at the end of handleKeybinds when physical LMB is up; keep AutoFarm's break alive. */
+    @Inject(method = "continueAttack", at = @At("HEAD"), cancellable = true)
+    private void multiclicker$keepAutoFarmBreaking(boolean leftClick, CallbackInfo ci) {
+        MultiClicker mod = MultiClicker.get();
+        if (!leftClick && mod != null && mod.autoFarm().isBreakingBlock()) {
+            ci.cancel();
+        }
     }
 
     @Inject(method = "shouldEntityAppearGlowing", at = @At("HEAD"), cancellable = true)

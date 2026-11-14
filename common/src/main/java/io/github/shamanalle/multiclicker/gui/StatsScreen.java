@@ -4,6 +4,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -688,8 +689,8 @@ public class StatsScreen extends PanelScreen {
         return switch (group) {
             case MOBS -> Component.translatable("entity." + id.replace(':', '.'));
             case LOOT -> {
-                ItemStack stack = new ItemStack(Ids.item(id));
-                yield stack.is(Items.AIR) ? Component.literal(id) : stack.getHoverName();
+                Item item = Ids.item(id);
+                yield item == Items.AIR ? Component.literal(id) : Component.translatable(item.getDescriptionId());
             }
             case BLOCKS -> {
                 Block block = Ids.block(id);
@@ -702,8 +703,20 @@ public class StatsScreen extends PanelScreen {
         if (group == Counters.Group.MOBS) {
             return ItemStack.EMPTY;
         }
-        return icons.computeIfAbsent(group.key() + "/" + id, key -> group == Counters.Group.LOOT
-                ? new ItemStack(Ids.item(id)) : new ItemStack(Ids.block(id).asItem()));
+        String key = group.key() + "/" + id;
+        ItemStack cached = icons.get(key);
+        if (cached != null) {
+            return cached;
+        }
+        try {
+            ItemStack stack = group == Counters.Group.LOOT
+                    ? new ItemStack(Ids.item(id)) : new ItemStack(Ids.block(id).asItem());
+            icons.put(key, stack);
+            return stack;
+        } catch (RuntimeException e) {
+            // In 26.1+ constructing ItemStack before joining a world throws before components are bound.
+            return ItemStack.EMPTY;
+        }
     }
 
     // --- Input ----------------------------------------------------------------------------------

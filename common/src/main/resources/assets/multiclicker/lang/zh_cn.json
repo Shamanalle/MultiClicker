@@ -141,7 +141,7 @@
   "multiclicker.module.offhand": "副手",
   "multiclicker.module.offhand.desc": "在副手中放置最需要的物品",
   "multiclicker.module.offhand.totem_health": "按生命值放图腾",
-  "multiclicker.module.offhand.totem_health.desc": "最高优先级。生命值不高于该值时，把不死图腾放到副手。100%——始终放一个。",
+  "multiclicker.module.offhand.totem_health.desc": "最高优先级。生命值不高于该值时，把不死图腾放到副手。100%%——始终放一个。",
   "multiclicker.module.offhand.food_hunger": "按饥饿值放食物",
   "multiclicker.module.offhand.food_hunger.desc": "饥饿值不高于该值时，把最好的安全食物放到副手，直到吃饱。开启自动进食时只从背包取食物：快捷栏中的食物留给自动进食。",
   "multiclicker.module.offhand.fireworks_elytra": "鞘翅配烟花",

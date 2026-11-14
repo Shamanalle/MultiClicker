@@ -41,14 +41,21 @@ public class InventoryCleanerModule extends Module {
             return;
         }
         LocalPlayer player = mc.player;
+        MultiClicker mod = MultiClicker.get();
         // Never while a screen is open: the player may be sorting the inventory by hand.
-        if (Screens.current(mc) != null || player.isCreative() || items.get().isEmpty() || !Inventories.canClickMainInventory(mc)) {
+        if (Screens.current(mc) != null || player.isCreative() || items.get().isEmpty()) {
             return;
         }
         int first = keepHotbar.get() ? Inventories.HOTBAR_SIZE : 0;
         for (int slot = first; slot < Inventories.MAIN_SIZE; slot++) {
+            if (mod != null && mod.isSlotBorrowed(slot)) {
+                continue;
+            }
             ItemStack stack = player.getInventory().getItem(slot);
             if (!stack.isEmpty() && items.contains(stack.getItem())) {
+                if (!Inventories.requestMainInventoryClick(mc)) {
+                    return;
+                }
                 MultiClicker.get().stats().count(Stat.DROPPED, stack.getCount());
                 Inventories.dropStack(mc, slot);
                 cooldown = delay.get();

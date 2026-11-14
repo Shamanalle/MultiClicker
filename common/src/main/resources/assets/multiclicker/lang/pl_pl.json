@@ -141,7 +141,7 @@
   "multiclicker.module.offhand": "Druga ręka",
   "multiclicker.module.offhand.desc": "Trzyma w drugiej ręce najbardziej potrzebny przedmiot",
   "multiclicker.module.offhand.totem_health": "Totem przy zdrowiu",
-  "multiclicker.module.offhand.totem_health.desc": "Najwyższy priorytet. Wkłada totem nieśmiertelności do drugiej ręki, gdy zdrowie jest na tym poziomie lub niżej. 100% — trzymaj zawsze.",
+  "multiclicker.module.offhand.totem_health.desc": "Najwyższy priorytet. Wkłada totem nieśmiertelności do drugiej ręki, gdy zdrowie jest na tym poziomie lub niżej. 100%% — trzymaj zawsze.",
   "multiclicker.module.offhand.food_hunger": "Jedzenie przy głodzie",
   "multiclicker.module.offhand.food_hunger.desc": "Wkłada najlepsze bezpieczne jedzenie do drugiej ręki, gdy pasek głodu jest na tej wartości lub niżej, aż się najesz. Przy włączonym autojedzeniu jedzenie jest brane tylko z plecaka: jedzenie z paska szybkiego wyboru zostaje dla autojedzenia.",
   "multiclicker.module.offhand.fireworks_elytra": "Fajerwerki z elytrami",

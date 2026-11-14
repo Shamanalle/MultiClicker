@@ -18,12 +18,17 @@ public final class Keys {
     public static boolean isDown(Minecraft mc, InputConstants.Key key) {
         int code = key.getValue();
         return switch (key.getType()) {
-            case MOUSE -> switch (code) {
-                case InputConstants.MOUSE_BUTTON_LEFT -> mc.mouseHandler.isLeftPressed();
-                case InputConstants.MOUSE_BUTTON_RIGHT -> mc.mouseHandler.isRightPressed();
-                case InputConstants.MOUSE_BUTTON_MIDDLE -> mc.mouseHandler.isMiddlePressed();
-                default -> code > 0 && code <= 32 && (SDLMouse.SDL_GetMouseState(null, null) & (1 << (code - 1))) != 0;
-            };
+            case MOUSE -> {
+                if (Screens.current(mc) != null || Screens.hasOverlay(mc) || !mc.isWindowActive()) {
+                    yield false;
+                }
+                yield switch (code) {
+                    case InputConstants.MOUSE_BUTTON_LEFT -> mc.mouseHandler.isLeftPressed();
+                    case InputConstants.MOUSE_BUTTON_RIGHT -> mc.mouseHandler.isRightPressed();
+                    case InputConstants.MOUSE_BUTTON_MIDDLE -> mc.mouseHandler.isMiddlePressed();
+                    default -> code > 0 && code <= 32 && (SDLMouse.SDL_GetMouseState(null, null) & (1 << (code - 1))) != 0;
+                };
+            }
             case KEYBOARD -> code > 0 && code < MAX_SDL_SCANCODE && InputConstants.isKeyDown(code);
         };
     }
@@ -44,6 +49,15 @@ public final class Keys {
         return InputConstants.Type.KEYBOARD.getOrCreate(keyCode);
     }
 
+    /** A keyboard key by key code, falling back to scan code when missing. */
+    public static InputConstants.Key keyboard(int keyCode, int scanCode) {
+        if (keyCode > 0 && keyCode < MAX_SDL_SCANCODE) {
+            return InputConstants.Type.KEYBOARD.getOrCreate(keyCode);
+        }
+        return scanCode > 0 && scanCode < MAX_SDL_SCANCODE
+                ? InputConstants.Type.KEYBOARD.getOrCreate(scanCode) : InputConstants.UNKNOWN;
+    }
+
     /** A mouse button (0 = left, 1 = right, 2 = middle, 3+ = side buttons). */
     public static InputConstants.Key mouse(int button) {
         int sdlButton = switch (button) {
@@ -62,7 +76,7 @@ public final class Keys {
         }
         try {
             return InputConstants.getKey(name);
-        } catch (IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             return InputConstants.UNKNOWN;
         }
     }

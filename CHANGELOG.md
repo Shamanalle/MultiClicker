@@ -2,6 +2,42 @@
 
 All notable changes to **MultiClicker** will be documented in this file. In Russian: [CHANGELOG.ru.md](CHANGELOG.ru.md).
 
+## [2.8.1] - 2026-11-14
+### Changed
+- **Auto walk & safe inventory coordination:** when a module needs a main-inventory swap while **Auto walk** is
+  moving, **Auto walk** briefly pauses for two ticks so the click happens while stationary and resumes automatically;
+  **Anti-AFK** also skips `JUMP`, `SNEAK` and `STEP` actions while **Auto walk** is running, and **Auto walk** no
+  longer releases external sprinting or `Clicker.jump`.
+- **Weapon & enchant support:** **Looting swap** and weapon checks now recognize `ItemTags.SPEARS` on
+  Minecraft 1.21.11+, account for `Impaling` bonus damage on aquatic mobs, and check `EquipmentSlot.BODY`.
+
+### Fixed
+- **Main menu crash in Statistics on Minecraft 26.1 – 26.3:** resolved `Components not bound yet` crash when opening
+  the Statistics screen from the main menu with recorded loot or blocks in `stats.json`.
+- **Camera snap & stuck mouse buttons:** cleared accumulated mouse deltas when disabling camera lock on
+  Minecraft 1.19 – 1.20.4, reset pressed mouse states on focus transitions, added GLFW/SDL key bounds checks,
+  supported scancode keybinds in `KeyCapture`, and avoided `StringIndexOutOfBoundsException` on malformed key names.
+- **Auto farm harvesting & replanting:** prevented vanilla `continueAttack` from aborting multi-tick bamboo and
+  cocoa breaking on tick 1, fixed Sweet Berry Bush harvesting with bone meal in hand or crouching on Minecraft
+  1.20.5+, kept pending replants across the item pickup delay, used closest-point AABB reach checks, matched `-1..+2`
+  Y range for growing crops, and prevented double-counting tall sugar cane/bamboo/kelp in statistics.
+- **Borrowed inventory slot coordination:** prevented **Hotbar refill**, **Inventory cleaner** and **Offhand** from
+  overwriting or dropping slots temporarily borrowed by **Auto eat** or **Auto farm**, and flushed deferred returns
+  even after the module finishes or stops.
+- **Survival & automation edge cases:** **Auto eat** now eats food held in the offhand as well as the hotbar; **Auto
+  potion** falls back to splash potions when `splash` is off and no drinkable potion is available; **Offhand** skips
+  firework rockets when elytra only has 1 durability remaining and honors `safeInventory` for all non-totem swaps;
+  **Target filter** and **Clicker** ignore fake/NPC players not in the live connection list; **Auto fish** clamps
+  `protectRod` max to 63, resets the open-water warning on start, and accounts for hook ground hits.
+- **Clicker & Looting swap fixes:** preserved active item use during manual `Use` clicks, avoided `Anti-AFK` jump
+  resetting, protected stems/tools against held `onlyWhileHeld` attacks, blocked attack hold leaking onto blocks
+  after a mob dies, and prevented **Looting swap** during `hurtTime`/shield blocking or on low-durability axes.
+- **Hotbar refill & UI polish:** updated consumption tracking on partial drops, picked the largest refill stack,
+  clamped durability thresholds per item max damage, removed unintended text drop shadows in Minecraft 26.1+, fixed
+  `EditBox` focus/padding clicks across all screens, improved `HudEditScreen` high-DPI arrow nudging, `StatFormat`
+  rounding, Floodgate `.PlayerName` (17-char) validation, GCD final rotation steps, thread-safe webhook testing,
+  escaped `100%%` across all 13 language files, and updated documentation.
+
 ## [2.8.0] - 2026-11-10
 ### Added
 - **Only while key is held** on each clicker channel (attack, use and jump): while the mod is on, the channel

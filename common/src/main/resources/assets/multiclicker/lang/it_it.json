@@ -141,7 +141,7 @@
   "multiclicker.module.offhand": "Mano secondaria",
   "multiclicker.module.offhand.desc": "Tiene l'oggetto più utile nella mano secondaria",
   "multiclicker.module.offhand.totem_health": "Totem in base alla salute",
-  "multiclicker.module.offhand.totem_health.desc": "Priorità massima. Mette un totem dell'immortalità nella mano secondaria quando la salute è a questo livello o sotto. 100%: tenerne sempre uno.",
+  "multiclicker.module.offhand.totem_health.desc": "Priorità massima. Mette un totem dell'immortalità nella mano secondaria quando la salute è a questo livello o sotto. 100%%: tenerne sempre uno.",
   "multiclicker.module.offhand.food_hunger": "Cibo in base alla fame",
   "multiclicker.module.offhand.food_hunger.desc": "Mette il miglior cibo sicuro nella mano secondaria quando la barra della fame è a questo valore o sotto, finché non sei sazio. Con l'alimentazione automatica attiva, il cibo viene preso solo dallo zaino: quello nella barra rapida resta per l'alimentazione automatica.",
   "multiclicker.module.offhand.fireworks_elytra": "Razzi con elitre",

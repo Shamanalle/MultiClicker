@@ -1,5 +1,6 @@
 package io.github.shamanalle.multiclicker.gui.widget;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.resources.language.I18n;
 import io.github.shamanalle.multiclicker.compat.Canvas;
@@ -28,6 +29,17 @@ public class KeyControl extends SettingControl {
     @Override
     public int width(Font font) {
         return Math.max(Draw.chipWidth(font, label()), Draw.chipWidth(font, I18n.get("multiclicker.key.press")));
+    }
+
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        Font font = Minecraft.getInstance().font;
+        if (font == null) {
+            return super.isMouseOver(mouseX, mouseY);
+        }
+        int chipW = Draw.chipWidth(font, label());
+        int chipX = x + width - chipW;
+        return mouseX >= chipX - 2 && mouseX < x + width + 2 && mouseY >= y - 3 && mouseY < y + height + 3;
     }
 
     @Override

@@ -78,13 +78,14 @@ public class AntiAfkModule extends Module {
         if (Screens.current(mc) != null || Input.isPlayerMoving(mc)) {
             return;
         }
+        boolean autoWalking = MultiClicker.get().autoWalk().isRunning();
         List<Action> pool = new ArrayList<>();
-        if (jump.get()) pool.add(Action.JUMP);
-        if (sneak.get()) pool.add(Action.SNEAK);
+        // Movement and stance actions would fight auto walk or interfere with safe inventory pauses.
+        if (jump.get() && !autoWalking) pool.add(Action.JUMP);
+        if (sneak.get() && !autoWalking) pool.add(Action.SNEAK);
         if (swing.get()) pool.add(Action.SWING);
         if (rotate.get()) pool.add(Action.ROTATE);
-        // Stepping back and forth would fight auto walk, which already keeps the player active.
-        if (step.get() && !MultiClicker.get().autoWalk().isRunning()) pool.add(Action.STEP);
+        if (step.get() && !autoWalking) pool.add(Action.STEP);
         if (switchSlot.get() && canSwitchSlot(mc.player)) pool.add(Action.SWITCH_SLOT);
         if (!pool.isEmpty()) {
             current = pool.get(RANDOM.nextInt(pool.size()));

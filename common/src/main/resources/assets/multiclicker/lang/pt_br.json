@@ -141,7 +141,7 @@
   "multiclicker.module.offhand": "Mão secundária",
   "multiclicker.module.offhand.desc": "Mantém o item mais útil na mão secundária",
   "multiclicker.module.offhand.totem_health": "Totem pela vida",
-  "multiclicker.module.offhand.totem_health.desc": "Prioridade máxima. Coloca um Totem da Imortalidade na mão secundária quando a vida está neste nível ou abaixo. 100%: manter sempre um.",
+  "multiclicker.module.offhand.totem_health.desc": "Prioridade máxima. Coloca um Totem da Imortalidade na mão secundária quando a vida está neste nível ou abaixo. 100%%: manter sempre um.",
   "multiclicker.module.offhand.food_hunger": "Comida pela fome",
   "multiclicker.module.offhand.food_hunger.desc": "Coloca a melhor comida segura na mão secundária quando a barra de fome está neste valor ou abaixo, até você ficar satisfeito. Com a comida automática ligada, a comida só é pega da mochila: a da barra rápida fica para a comida automática.",
   "multiclicker.module.offhand.fireworks_elytra": "Fogos com élitros",

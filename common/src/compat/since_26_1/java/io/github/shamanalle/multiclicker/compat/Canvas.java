@@ -31,11 +31,11 @@ public final class Canvas {
     }
 
     public void text(Font font, String text, int x, int y, int color) {
-        graphics.text(font, text, x, y, color);
+        graphics.text(font, text, x, y, color, false);
     }
 
     public void text(Font font, Component text, int x, int y, int color) {
-        graphics.text(font, text, x, y, color);
+        graphics.text(font, text, x, y, color, false);
     }
 
     public void item(ItemStack stack, int x, int y) {

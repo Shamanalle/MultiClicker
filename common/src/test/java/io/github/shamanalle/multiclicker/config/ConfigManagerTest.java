@@ -217,6 +217,10 @@ class ConfigManagerTest {
         assertFalse(module.ignoredPlayers.isKnown("bad name"));
         assertFalse(module.ignoredPlayers.isKnown("minecraft:steve"));
         assertFalse(module.ignoredPlayers.isKnown("seventeen_chars_x"));
+        assertTrue(module.ignoredPlayers.isKnown(".bedrockplayer123"));
+        assertTrue(module.ignoredPlayers.add(".BedrockPlayer123"));
+        assertTrue(module.ignoredPlayers.containsPlayer(".BedrockPlayer123"));
+        assertFalse(module.ignoredPlayers.isKnown(".eighteen_chars_xx"));
     }
 
     @Test

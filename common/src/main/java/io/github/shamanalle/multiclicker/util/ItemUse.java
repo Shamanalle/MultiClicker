@@ -24,6 +24,8 @@ public final class ItemUse {
 
     private int previousSlot = -1;
     private int slot = -1;
+    private InteractionHand hand = InteractionHand.MAIN_HAND;
+    private boolean active;
     private int timer;
     private boolean startedUsing;
     private boolean holdingUse;
@@ -33,7 +35,7 @@ public final class ItemUse {
     private ItemStack startStack = ItemStack.EMPTY;
 
     public boolean isActive() {
-        return slot != -1;
+        return active;
     }
 
     /** True while the use key is held down for the item; the use clicker must not release it then. */
@@ -51,29 +53,51 @@ public final class ItemUse {
         int selected = Slots.selected(player.getInventory());
         previousSlot = hotbarSlot != selected ? selected : -1;
         slot = hotbarSlot;
+        hand = InteractionHand.MAIN_HAND;
+        active = true;
         this.instant = instant;
         stillValid = valid;
         timer = 0;
         startedUsing = false;
+        holdingUse = false;
         startStack = player.getInventory().getItem(hotbarSlot).copy();
         Inventories.selectSlot(player, hotbarSlot);
     }
 
+    /** Begins using the stack already held in the player's offhand without touching hotbar selection. */
+    public void beginOffhand(LocalPlayer player, boolean instant, Predicate<ItemStack> valid) {
+        previousSlot = -1;
+        slot = -1;
+        hand = InteractionHand.OFF_HAND;
+        active = true;
+        this.instant = instant;
+        stillValid = valid;
+        timer = 0;
+        startedUsing = false;
+        holdingUse = false;
+        startStack = player.getOffhandItem().copy();
+    }
+
     public Result tick(Minecraft mc, LocalPlayer player) {
         timer++;
-        if (Screens.current(mc) != null || timer > TIMEOUT || Slots.selected(player.getInventory()) != slot
-                || !stillValid.test(player.getMainHandItem()) && !startedUsing) {
+        ItemStack activeStack = hand == InteractionHand.OFF_HAND ? player.getOffhandItem() : player.getMainHandItem();
+        if (Screens.current(mc) != null || timer > TIMEOUT
+                || (hand == InteractionHand.MAIN_HAND && Slots.selected(player.getInventory()) != slot)
+                || !stillValid.test(activeStack) && !startedUsing) {
             finish(mc);
             return Result.FAILED;
         }
         if (!player.isUsingItem()) {
             if (startedUsing) {
-                boolean used = wasUsed(player.getInventory().getItem(slot));
+                ItemStack current = hand == InteractionHand.OFF_HAND
+                        ? player.getOffhandItem() : player.getInventory().getItem(slot);
+                boolean used = wasUsed(current);
                 finish(mc);
                 return used ? Result.USED : Result.FAILED;
             }
-            // Retry every few ticks: the first attempt can fail while a block is still being broken.
-            if (timer % START_RETRY != 1 || !Input.useItem(mc, InteractionHand.MAIN_HAND)) {
+            // Retry right away on ticks 1-2 and every few ticks after: the first attempt can fail while mining.
+            boolean retryNow = timer <= 2 || timer % START_RETRY == 1;
+            if (!retryNow || !Input.useItem(mc, hand)) {
                 return Result.RUNNING;
             }
             if (instant) {
@@ -100,8 +124,10 @@ public final class ItemUse {
         if (mc.player != null && previousSlot != -1 && Slots.selected(mc.player.getInventory()) == slot) {
             Inventories.selectSlot(mc.player, previousSlot);
         }
+        active = false;
         previousSlot = -1;
         slot = -1;
+        hand = InteractionHand.MAIN_HAND;
     }
 
     /** Whether the use went through: the use clicker may have used the same item. */

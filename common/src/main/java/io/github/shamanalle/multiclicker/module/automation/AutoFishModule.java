@@ -10,6 +10,7 @@ import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import io.github.shamanalle.multiclicker.MultiClicker;
+import io.github.shamanalle.multiclicker.compat.Entities;
 import io.github.shamanalle.multiclicker.compat.Messages;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.mixin.FishingHookAccessor;
@@ -43,7 +44,7 @@ public class AutoFishModule extends Module {
             .visibleWhen(autoCast::get));
     public final IntSetting timeout = add(new IntSetting("timeout", 60, 0, 180, Unit.SECONDS).zeroMeans("options.off")
             .visibleWhen(autoCast::get));
-    public final IntSetting protectRod = add(new IntSetting("protect_rod", 5, 0, 64, Unit.NONE).zeroMeans("options.off"));
+    public final IntSetting protectRod = add(new IntSetting("protect_rod", 5, 0, 63, Unit.NONE).zeroMeans("options.off"));
     public final BoolSetting openWater = add(new BoolSetting("open_water", true));
     public final IntSetting catchLimit = add(new IntSetting("catch_limit", 0, 0, 1000, Unit.NONE)
             .zeroMeans("multiclicker.value.unlimited"));
@@ -85,6 +86,7 @@ public class AutoFishModule extends Module {
         castGrace = 0;
         catches = 0;
         inOpenWater = null;
+        openWaterWarned = false;
     }
 
     @Override
@@ -99,11 +101,16 @@ public class AutoFishModule extends Module {
         state = State.WAITING;
     }
 
-    /** Durability threshold for the rod: reeling in a hooked entity costs 5 durability in vanilla. */
+    /** Durability threshold for the rod: hooking entities costs 5 durability and hitting blocks costs 2 in vanilla. */
     public int effectiveProtectRod(LocalPlayer player) {
         int min = protectRod.get();
-        if (min > 0 && player.fishing != null && player.fishing.getHookedIn() != null) {
-            return Math.max(min, 5);
+        if (min > 0 && player.fishing != null) {
+            if (player.fishing.getHookedIn() != null) {
+                return Math.max(min, 5);
+            }
+            if (Entities.onGround(player.fishing)) {
+                return Math.max(min, 2);
+            }
         }
         return min;
     }
@@ -143,7 +150,9 @@ public class AutoFishModule extends Module {
                     timer = reaction.get() + randomDelay();
                 } else if (autoCast.get() && timeout.get() > 0 && waitTicks > timeout.get() * 20) {
                     // Nothing bites (hook stuck or in a bad spot): pull it in and try again.
-                    useRod(mc, player);
+                    if (!useRod(mc, player)) {
+                        return;
+                    }
                     state = State.RECASTING;
                     timer = recastDelay.get();
                 }
@@ -173,7 +182,9 @@ public class AutoFishModule extends Module {
                     return;
                 }
                 if (player.fishing == null && autoCast.get()) {
-                    useRod(mc, player);
+                    if (!useRod(mc, player)) {
+                        return;
+                    }
                     castGrace = CAST_GRACE;
                     inOpenWater = null;
                     openWaterWarned = false;

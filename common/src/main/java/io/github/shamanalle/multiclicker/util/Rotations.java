@@ -15,16 +15,23 @@ public final class Rotations {
      */
     public static float stepToward(Minecraft mc, float current, float target, float maxStep) {
         float diff = target - current;
-        if (Math.abs(diff) <= 0.01F) {
-            return target;
+        if (Math.abs(diff) <= 1.0E-4F) {
+            return current;
         }
         float delta = Mth.clamp(diff, -maxStep, maxStep);
         float gcd = gcdStep(mc);
-        if (gcd > 0.0F && Math.abs(diff) > gcd) {
+        if (gcd > 0.0F) {
+            if (Math.abs(diff) < gcd * 0.5F) {
+                return current;
+            }
             delta = Math.round(delta / gcd) * gcd;
             if (delta == 0.0F) {
                 delta = Math.copySign(gcd, diff);
             }
+            return current + delta;
+        }
+        if (Math.abs(diff) <= 0.01F) {
+            return target;
         }
         float next = current + delta;
         return (diff > 0.0F ? next > target : next < target) ? target : next;

@@ -141,7 +141,7 @@
   "multiclicker.module.offhand": "Zweithand",
   "multiclicker.module.offhand.desc": "Hält den nützlichsten Gegenstand in der Zweithand",
   "multiclicker.module.offhand.totem_health": "Totem ab Gesundheit",
-  "multiclicker.module.offhand.totem_health.desc": "Höchste Priorität. Legt ein Totem der Unsterblichkeit in die Zweithand, sobald die Gesundheit auf diesen Wert fällt. 100 % – immer eines bereithalten.",
+  "multiclicker.module.offhand.totem_health.desc": "Höchste Priorität. Legt ein Totem der Unsterblichkeit in die Zweithand, sobald die Gesundheit auf diesen Wert fällt. 100 %% – immer eines bereithalten.",
   "multiclicker.module.offhand.food_hunger": "Nahrung ab Hunger",
   "multiclicker.module.offhand.food_hunger.desc": "Legt die beste sichere Nahrung in die Zweithand, wenn die Hungerleiste auf diesen Wert fällt, bis du satt bist. Mit Auto-Essen wird Nahrung nur aus dem Inventar genommen: Die Nahrung in der Schnellzugriffsleiste bleibt für Auto-Essen.",
   "multiclicker.module.offhand.fireworks_elytra": "Feuerwerk mit Elytren",

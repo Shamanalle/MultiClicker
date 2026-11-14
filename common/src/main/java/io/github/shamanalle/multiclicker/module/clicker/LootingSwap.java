@@ -8,11 +8,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.EntityHitResult;
+import io.github.shamanalle.multiclicker.MultiClicker;
 import io.github.shamanalle.multiclicker.compat.Entities;
 import io.github.shamanalle.multiclicker.compat.Enchants;
 import io.github.shamanalle.multiclicker.compat.Lookups;
 import io.github.shamanalle.multiclicker.compat.Slots;
 import io.github.shamanalle.multiclicker.compat.Stacks;
+import io.github.shamanalle.multiclicker.compat.Tools;
 import io.github.shamanalle.multiclicker.util.Input;
 import io.github.shamanalle.multiclicker.util.Inventories;
 
@@ -67,6 +69,9 @@ final class LootingSwap {
             retryDelay--;
             return false;
         }
+        if (target.hurtTime > 0 || target.isBlocking()) {
+            return false;
+        }
         Enchants enchantments = Enchants.of(mc);
         if (!enchantments.hasLooting()) {
             return false;
@@ -79,9 +84,12 @@ final class LootingSwap {
         int bestSlot = -1;
         int bestLevel = currentLevel;
         float bestDamage = 0;
+        MultiClicker mod = MultiClicker.get();
         for (int slot = 0; slot < Inventories.HOTBAR_SIZE; slot++) {
             ItemStack stack = player.getInventory().getItem(slot);
-            if (slot == selected || stack.isEmpty() || Inventories.isNearlyBroken(stack, 1)) {
+            int minDurability = Tools.kind(stack) == Tools.SWORD ? 1 : 2;
+            if (slot == selected || stack.isEmpty() || Inventories.isNearlyBroken(stack, minDurability)
+                    || mod != null && mod.isSlotBorrowed(slot)) {
                 continue;
             }
             int level = enchantments.looting(stack);
@@ -156,7 +164,12 @@ final class LootingSwap {
     /** Switches back to the previous slot (only if the Looting weapon is still selected). */
     void restore(Minecraft mc, LocalPlayer player) {
         if (pressed) {
-            Input.release(mc.options.keyAttack);
+            MultiClicker mod = MultiClicker.get();
+            if (mod != null && mod.clicker().attack.onlyWhileHeld.get() && Input.isPhysicallyDown(mc.options.keyAttack)) {
+                Input.forceUp(mc.options.keyAttack);
+            } else {
+                Input.release(mc.options.keyAttack);
+            }
         }
         if (player != null && previousSlot != -1 && Slots.selected(player.getInventory()) == lootingSlot) {
             Inventories.selectSlot(player, previousSlot);

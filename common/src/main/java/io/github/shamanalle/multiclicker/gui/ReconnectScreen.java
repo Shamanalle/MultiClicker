@@ -2,6 +2,7 @@ package io.github.shamanalle.multiclicker.gui;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.util.Mth;
 import io.github.shamanalle.multiclicker.compat.Canvas;
 import io.github.shamanalle.multiclicker.gui.widget.FlatButton;
 import io.github.shamanalle.multiclicker.module.session.AutoReconnectModule;
@@ -40,7 +41,8 @@ public class ReconnectScreen extends PanelScreen {
     }
 
     private List<String> reasonLines() {
-        List<String> lines = font.getSplitter().splitLines(reason.getString(), preferredWidth() - 20, Style.EMPTY)
+        int wrapWidth = width > 0 ? Math.max(40, Math.min(width - 24, preferredWidth()) - 20) : preferredWidth() - 20;
+        List<String> lines = font.getSplitter().splitLines(reason.getString(), wrapWidth, Style.EMPTY)
                 .stream().map(line -> line.getString()).toList();
         return lines.size() > MAX_REASON_LINES ? lines.subList(0, MAX_REASON_LINES) : lines;
     }
@@ -78,7 +80,7 @@ public class ReconnectScreen extends PanelScreen {
         int barX = panelX + 20;
         int barW = panelW - 40;
         Draw.rect(g, barX, y + 14, barW, 4, 2, Theme.CONTROL);
-        int filled = Math.round(barW * (1.0F - (float) ticksLeft / totalTicks));
+        int filled = Mth.clamp(Math.round(barW * (1.0F - (float) ticksLeft / totalTicks)), 0, barW);
         if (filled > 0) {
             Draw.rect(g, barX, y + 14, filled, 4, 2, Theme.accent());
         }

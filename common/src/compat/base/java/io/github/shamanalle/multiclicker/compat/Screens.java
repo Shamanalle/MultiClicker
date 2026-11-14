@@ -18,6 +18,11 @@ public final class Screens {
         mc.setScreen(screen);
     }
 
+    /** Whether a loading or resource-pack overlay covers the game. */
+    public static boolean hasOverlay(Minecraft mc) {
+        return mc.getOverlay() != null;
+    }
+
     /** Whether the player hid the HUD (F1). */
     public static boolean hudHidden(Minecraft mc) {
         return mc.options.hideGui;
