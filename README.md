@@ -160,7 +160,7 @@ the crosshair rests on one, a notification says once where to turn them on.
   exact value; changed settings are marked with a dot, a whole module can be reset with ↺, and resetting a
   module or applying a preset can be undone (`↺ Undo` or <kbd>Ctrl</kbd>+<kbd>Z</kbd>). Every setting can
   be reached from the keyboard. Fits the window size; on small screens the sidebar turns into icons.
-- **Feedback.** Accent color, a sound and a message above the hotbar when the mod turns on or off.
+- **Feedback.** Accent color, optional menu background blur, and a sound and message above the hotbar when the mod turns on or off.
 - **Statistics.** What the mod did, kept between games: for the session, for each server and for all
   time, plus the last 20 sessions. Clicks, kills by mob, damage and DPS, catches by kind and item, harvest,
   mined blocks, food, totems, deaths, experience and more, with rates per hour. The live session shows

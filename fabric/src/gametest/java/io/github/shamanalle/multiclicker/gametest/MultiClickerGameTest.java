@@ -51,9 +51,12 @@ import io.github.shamanalle.multiclicker.stats.Stat;
 import io.github.shamanalle.multiclicker.stats.Statistics;
 import io.github.shamanalle.multiclicker.util.ServerStats;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
+import javax.imageio.ImageIO;
 
 /**
  * Plays MultiClicker in a real singleplayer world: every scenario sets up a situation, turns the
@@ -1016,6 +1019,8 @@ public class MultiClickerGameTest implements FabricClientGameTest {
 
         // 1) Header active-only filter toggle + side mouse button ignored on sidebar.
         context.runOnClient(mc -> {
+            check(!net.minecraft.client.resources.language.I18n.get("multiclicker.gui.title").equals("multiclicker.gui.title"),
+                    "MultiClicker translations did not load into ResourceManager");
             ConfigScreen screen = (ConfigScreen) Screens.current(mc);
             check(screen.visibleCardCount() > 1, "expected all survival modules before filtering");
             int panelW = Math.min(screen.width - 24, 640);
@@ -1110,6 +1115,90 @@ public class MultiClickerGameTest implements FabricClientGameTest {
         context.setScreen(() -> new ListEditScreen(new ConfigScreen(null), MultiClicker.get().safety().ignoredPlayers));
         context.waitTicks(2);
         context.setScreen(() -> null);
+
+        // 5) Background blur stays off by default, renders behind the panel when enabled, and never blurs HudEditScreen.
+        // Static backdrop inside reset()'s clear volume, sampled at right-middle away from top-right recipe toasts.
+        server.runCommand("time set noon");
+        server.runCommand("fill -5 -60 4 5 -55 4 minecraft:white_concrete");
+        context.runOnClient(mc -> {
+            MultiClicker.get().ui().backgroundBlur.set(false);
+            mc.options.menuBackgroundBlurriness().set(0);
+        });
+        context.setScreen(() -> new ConfigScreen(null));
+        context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).showCategory(Category.VISUAL));
+        parkCursor(context);
+        try {
+            int[] layout = context.computeOnClient(mc -> {
+                ConfigScreen screen = (ConfigScreen) Screens.current(mc);
+                int panelW = Math.min(screen.width - 24, 640);
+                int panelH = Math.min(screen.height - 24, 400);
+                int panelX = (screen.width - panelW) / 2;
+                int panelY = (screen.height - panelH) / 2;
+                return new int[] {screen.width, screen.height, panelX, panelY};
+            });
+            double accentGx = layout[2] + 9.5;
+            double accentGy = layout[3] + 15.0;
+            double worldGx = layout[0] - 4.0;
+            double worldGy = layout[1] / 2.0;
+
+            BufferedImage zeroImg = ImageIO.read(context.takeScreenshot("blur_check_zero").toFile());
+            int zeroAccent = sampleGuiPixel(zeroImg, layout[0], layout[1], accentGx, accentGy);
+            int zeroWorld = sampleGuiPixel(zeroImg, layout[0], layout[1], worldGx, worldGy);
+            checkRgbClose(zeroAccent, 0xFF4F8CFF, 6, "panel accent bar baseline");
+
+            context.runOnClient(mc -> mc.options.menuBackgroundBlurriness().set(10));
+            context.waitTicks(2);
+            BufferedImage suppressedImg = ImageIO.read(context.takeScreenshot("blur_check_suppressed").toFile());
+            int suppressedAccent = sampleGuiPixel(suppressedImg, layout[0], layout[1], accentGx, accentGy);
+            int suppressedWorld = sampleGuiPixel(suppressedImg, layout[0], layout[1], worldGx, worldGy);
+            checkRgbClose(suppressedAccent, 0xFF4F8CFF, 6, "panel accent bar blurred or dimmed when backgroundBlur is off");
+            checkRgbClose(suppressedWorld, zeroWorld, 6, "world behind menu blurred or dimmed when backgroundBlur is off");
+
+            context.runOnClient(mc -> MultiClicker.get().ui().backgroundBlur.set(true));
+            context.waitTicks(2);
+            BufferedImage enabledImg = ImageIO.read(context.takeScreenshot("blur_check_enabled").toFile());
+            int enabledAccent = sampleGuiPixel(enabledImg, layout[0], layout[1], accentGx, accentGy);
+            int enabledWorld = sampleGuiPixel(enabledImg, layout[0], layout[1], worldGx, worldGy);
+            checkRgbClose(enabledAccent, 0xFF4F8CFF, 6, "panel accent bar was covered by vanilla background blur");
+            int zeroBlue = zeroWorld & 0xFF;
+            int enabledBlue = enabledWorld & 0xFF;
+            check(zeroBlue - enabledBlue >= 20,
+                    "expected vanilla menu background blur/dim behind panel to lower blue from "
+                            + zeroBlue + " to at most " + (zeroBlue - 20) + ", got " + enabledBlue);
+
+            context.setScreen(() -> new HudEditScreen(null));
+            parkCursor(context);
+            BufferedImage hudEditorImg = ImageIO.read(context.takeScreenshot("blur_check_hud_editor").toFile());
+            int hudEditorWorld = sampleGuiPixel(hudEditorImg, layout[0], layout[1], worldGx, worldGy);
+            checkRgbClose(hudEditorWorld, zeroWorld, 6, "HudEditScreen blurred or dimmed the world");
+        } catch (IOException e) {
+            throw new AssertionError("Failed to read blur regression screenshot", e);
+        } finally {
+            context.runOnClient(mc -> {
+                mc.options.menuBackgroundBlurriness().set(0);
+                MultiClicker.get().ui().backgroundBlur.set(false);
+            });
+            context.setScreen(() -> null);
+        }
+    }
+
+    private static int sampleGuiPixel(BufferedImage image, int screenWidth, int screenHeight, double guiX, double guiY) {
+        int px = Math.max(0, Math.min(image.getWidth() - 1, (int) Math.floor(guiX * image.getWidth() / screenWidth)));
+        int py = Math.max(0, Math.min(image.getHeight() - 1, (int) Math.floor(guiY * image.getHeight() / screenHeight)));
+        return image.getRGB(px, py);
+    }
+
+    private static void checkRgbClose(int actualRgb, int expectedRgb, int tolerance, String context) {
+        int ar = (actualRgb >> 16) & 0xFF;
+        int ag = (actualRgb >> 8) & 0xFF;
+        int ab = actualRgb & 0xFF;
+        int er = (expectedRgb >> 16) & 0xFF;
+        int eg = (expectedRgb >> 8) & 0xFF;
+        int eb = expectedRgb & 0xFF;
+        if (Math.abs(ar - er) > tolerance || Math.abs(ag - eg) > tolerance || Math.abs(ab - eb) > tolerance) {
+            throw new AssertionError(context + ": expected RGB(" + er + "," + eg + "," + eb
+                    + ") +/- " + tolerance + ", got RGB(" + ar + "," + ag + "," + ab + ")");
+        }
     }
 
     private static void clickScreen(ModScreen screen, double x, double y, int button) {

@@ -1,5 +1,6 @@
 package io.github.shamanalle.multiclicker.compat;
 
+import io.github.shamanalle.multiclicker.MultiClicker;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -14,12 +15,29 @@ public abstract class ModScreen extends Screen {
         super(title);
     }
 
+    /** Whether this screen allows blurring and dimming the world behind it when {@code backgroundBlur} is on. */
+    protected boolean allowsWorldBlur() {
+        return true;
+    }
+
+    /** True outside a world (title screen / reconnect screen) or when in-world menu blur is enabled. */
+    private boolean shouldRenderBackground() {
+        if (minecraft == null || minecraft.level == null) {
+            return true;
+        }
+        MultiClicker mod = MultiClicker.get();
+        return allowsWorldBlur() && mod != null && mod.ui().backgroundBlur.get();
+    }
+
     protected void draw(Canvas g, int mouseX, int mouseY, float partialTick) {
         super.render(g.graphics(), mouseX, mouseY, partialTick);
     }
 
     @Override
     public final void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (shouldRenderBackground()) {
+            super.renderBackground(graphics);
+        }
         draw(new Canvas(graphics), mouseX, mouseY, partialTick);
     }
 

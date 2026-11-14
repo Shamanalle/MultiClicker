@@ -2,6 +2,21 @@
 
 All notable changes to **MultiClicker** will be documented in this file. In Russian: [CHANGELOG.ru.md](CHANGELOG.ru.md).
 
+## [2.8.2] - 2026-11-14
+### Added
+- **Background blur** setting under **Interface** (off by default): lets players opt in to vanilla menu
+  blurring and dimming behind MultiClicker menus instead of seeing an unblurred world view.
+
+### Fixed
+- **Menu background blur rendering over MultiClicker UI:** fixed vanilla `Screen.renderBackground`
+  running on top of MultiClicker screens on Minecraft 1.20.2 – 1.21.5 (which blurred and darkened the mod's
+  own menu panels whenever Minecraft's *Menu Background Blur* was enabled), and suppressed unwanted in-world
+  menu blur across all versions unless **Background blur** is enabled, while keeping the HUD editor clear
+  and preserving vanilla backgrounds on the title and reconnect screens.
+- **Translations in 26.1 – 26.3 Fabric dev runs:** wired `:common`'s output directories onto both `loom.mods`
+  and the dev classpath in `fabric/build26.gradle` so Fabric development runs and client game tests load
+  localized resources.
+
 ## [2.8.1] - 2026-11-14
 ### Changed
 - **Auto walk & safe inventory coordination:** when a module needs a main-inventory swap while **Auto walk** is

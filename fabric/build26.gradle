@@ -1,3 +1,7 @@
+evaluationDependsOn(':common')
+
+def commonOutput = project(':common').sourceSets.main.output
+
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
 
@@ -9,7 +13,7 @@ dependencies {
     // Mod Menu is optional: compile against its API and run it in the dev environment only.
     compileOnly "com.terraformersmc:modmenu:${project.modmenu}"
     localRuntime "com.terraformersmc:modmenu:${project.modmenu}"
-    implementation project(':common')
+    implementation files(commonOutput)
 }
 
 // In-game tests (Fabric client game tests): a separate test mod that is never part of the release jar.
@@ -37,6 +41,10 @@ tasks.named('compileGametestJava') { dependsOn mergeGametestCompat }
 
 loom {
     mods {
+        "multiclicker" {
+            sourceSet sourceSets.main
+            sourceSet project(':common').sourceSets.main
+        }
         "multiclicker-gametest" {
             sourceSet sourceSets.gametest
         }
@@ -73,7 +81,7 @@ processResources {
 
 jar {
     // The common module is part of the mod jar.
-    from project(':common').sourceSets.main.output
+    from commonOutput
     // MultiClicker-fabric-<mod version>+<minecraft version>.jar, or +<oldest>-<newest> for a shared jar
     archiveVersion = "${rootProject.mod_version}+${releasedFor.label}"
 }

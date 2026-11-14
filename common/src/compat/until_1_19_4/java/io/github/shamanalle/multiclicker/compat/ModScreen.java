@@ -1,6 +1,7 @@
 package io.github.shamanalle.multiclicker.compat;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import io.github.shamanalle.multiclicker.MultiClicker;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -14,12 +15,29 @@ public abstract class ModScreen extends Screen {
         super(title);
     }
 
+    /** Whether this screen allows blurring and dimming the world behind it when {@code backgroundBlur} is on. */
+    protected boolean allowsWorldBlur() {
+        return true;
+    }
+
+    /** True outside a world (title screen / reconnect screen) or when in-world menu blur is enabled. */
+    private boolean shouldRenderBackground() {
+        if (minecraft == null || minecraft.level == null) {
+            return true;
+        }
+        MultiClicker mod = MultiClicker.get();
+        return allowsWorldBlur() && mod != null && mod.ui().backgroundBlur.get();
+    }
+
     protected void draw(Canvas g, int mouseX, int mouseY, float partialTick) {
         super.render(g.pose(), mouseX, mouseY, partialTick);
     }
 
     @Override
     public final void render(PoseStack pose, int mouseX, int mouseY, float partialTick) {
+        if (shouldRenderBackground()) {
+            super.renderBackground(pose);
+        }
         draw(new Canvas(pose), mouseX, mouseY, partialTick);
     }
 

@@ -51,6 +51,11 @@ public class HudEditScreen extends ModScreen {
     }
 
     @Override
+    protected boolean allowsWorldBlur() {
+        return false;
+    }
+
+    @Override
     public void onClose() {
         mod.saveConfig();
         Screens.open(minecraft, parent);

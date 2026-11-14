@@ -8,6 +8,7 @@ import io.github.shamanalle.multiclicker.setting.EnumSetting;
 /** Look and feel of the mod itself. */
 public class InterfaceModule extends Module {
     public final EnumSetting<Palette> accent = add(new EnumSetting<>("accent", Palette.BLUE));
+    public final BoolSetting backgroundBlur = add(new BoolSetting("background_blur", false));
     public final BoolSetting toggleSound = add(new BoolSetting("toggle_sound", true));
     public final BoolSetting toggleMessage = add(new BoolSetting("toggle_message", true));
     /** The one-time hint with the key bindings was shown. */
