@@ -18,6 +18,7 @@ import io.github.shamanalle.multiclicker.compat.ModScreen;
 import io.github.shamanalle.multiclicker.compat.Screens;
 import io.github.shamanalle.multiclicker.compat.Widgets;
 import io.github.shamanalle.multiclicker.compat.Sounds;
+import io.github.shamanalle.multiclicker.config.Preset;
 import io.github.shamanalle.multiclicker.gui.widget.FlatButton;
 import io.github.shamanalle.multiclicker.gui.widget.SettingControl;
 import io.github.shamanalle.multiclicker.gui.widget.SliderControl;
@@ -188,6 +189,14 @@ public class ConfigScreen extends ModScreen {
     /** Number of module cards currently listed on the right side. */
     public int visibleCardCount() {
         return cards.size();
+    }
+
+    public int contentX() {
+        return viewX + CARD_MARGIN;
+    }
+
+    public int contentY() {
+        return viewY + CARD_MARGIN;
     }
 
     /** Shows the card of a module, opened, and scrolls to it. */
@@ -639,13 +648,13 @@ public class ConfigScreen extends ModScreen {
         if (isOverview()) {
             int bottom = renderOverview(g, cardX, top, cardW, mouseX, mouseY, mouseInView);
             contentHeight = bottom - top + CARD_MARGIN * 2;
-            for (Hit hit : hits) {
-                if (mouseInView && hit.contains(mouseX, mouseY)) {
-                    hovered = hit;
-                }
-            }
         } else {
             int y = top;
+            boolean miningCallout = query.isEmpty() && !activeOnly && category == Category.MINING
+                    && !mod.clicker().minesBlocks();
+            if (miningCallout) {
+                y = drawMiningSetupCard(g, cardX, y, cardW, mouseX, mouseY, mouseInView) + CARD_GAP;
+            }
             for (Card card : cards) {
                 card.y = y;
                 card.offset = y - top;
@@ -672,9 +681,14 @@ public class ConfigScreen extends ModScreen {
                 y += card.height + CARD_GAP;
             }
             contentHeight = y - top + CARD_MARGIN * 2 - CARD_GAP;
-            if (cards.isEmpty()) {
+            if (cards.isEmpty() && !miningCallout) {
                 Draw.textCentered(g, font, I18n.get("multiclicker.gui.nothing_found"), viewX + viewW / 2,
                         viewY + viewH / 2 - 4, Theme.TEXT_MUTED);
+            }
+        }
+        for (Hit hit : hits) {
+            if (mouseInView && hit.contains(mouseX, mouseY)) {
+                hovered = hit;
             }
         }
         g.disableScissor();
@@ -944,6 +958,72 @@ public class ConfigScreen extends ModScreen {
 
     private void openStats() {
         Screens.open(minecraft, new StatsScreen(this));
+    }
+
+    /** Shown at the top of the Mining tab while Clicker's Attack channel is not set to break blocks. */
+    private int drawMiningSetupCard(Canvas g, int x, int y, int w, int mouseX, int mouseY, boolean mouseInView) {
+        int textW = w - 20;
+        List<String> descLines = new ArrayList<>();
+        font.getSplitter().splitLines(I18n.get("multiclicker.gui.mining.off_desc"), textW, Style.EMPTY)
+                .forEach(line -> descLines.add(line.getString().strip()));
+        if (descLines.size() > 2) {
+            String rest = String.join(" ", descLines.subList(1, descLines.size()));
+            descLines.subList(1, descLines.size()).clear();
+            descLines.add(Draw.ellipsize(font, rest, textW));
+        }
+        int extraLines = Math.max(0, descLines.size() - 1);
+        int h = 60 + extraLines * DESCRIPTION_LINE;
+        Draw.box(g, x, y, w, h, 4, Theme.CARD, Theme.alpha(Theme.WARNING, 0.45F));
+        Draw.rect(g, x + 1, y + 8, 2, h - 16, 1, Theme.WARNING);
+        String linkText = mod.clicker().name().getString();
+        String offTitle = Draw.ellipsize(font, I18n.get("multiclicker.gui.mining.off_title"),
+                Style.EMPTY.withBold(true), Math.max(40, w - 28 - font.width(linkText + " ›")));
+        overviewTitle(g, x, y, w, offTitle, Theme.WARNING, linkText, () -> showModule(mod.clicker()),
+                mouseX, mouseY, mouseInView);
+        for (int i = 0; i < descLines.size(); i++) {
+            Draw.text(g, font, descLines.get(i), x + 10, y + 23 + i * DESCRIPTION_LINE, Theme.TEXT_MUTED);
+        }
+
+        String enableLabel = I18n.get("multiclicker.gui.mining.enable");
+        String presetLabel = I18n.get("multiclicker.gui.mining.preset");
+        int enableW = font.width(enableLabel) + 18;
+        int presetW = font.width(presetLabel) + 18;
+        int avail = Math.max(60, textW - 6);
+        if (enableW + presetW > avail) {
+            enableW = avail * enableW / (enableW + presetW);
+            presetW = avail - enableW;
+        }
+        int btnY = y + 38 + extraLines * DESCRIPTION_LINE;
+
+        boolean overEnable = over(mouseX, mouseY, mouseInView, x + 10, btnY, enableW, 16);
+        int base = Theme.alpha(Theme.accent(), 0.85F);
+        Draw.rect(g, x + 10, btnY, enableW, 16, 3, overEnable ? Theme.mix(base, 0xFFFFFFFF, 0.18F) : base);
+        Draw.textCentered(g, font, Draw.ellipsize(font, enableLabel, enableW - 8), x + 10 + enableW / 2, btnY + 4, 0xFFFFFFFF);
+        hits.add(new Hit("enable_mining", x + 10, btnY, enableW, 16, this::enableBlockMining, null, null));
+
+        int presetX = x + 10 + enableW + 6;
+        boolean overPreset = over(mouseX, mouseY, mouseInView, presetX, btnY, presetW, 16);
+        Draw.rect(g, presetX, btnY, presetW, 16, 3, overPreset ? Theme.CONTROL_HOVER : Theme.CONTROL);
+        Draw.textCentered(g, font, Draw.ellipsize(font, presetLabel, presetW - 8), presetX + presetW / 2, btnY + 4, Theme.TEXT);
+        hits.add(new Hit("mining_preset", presetX, btnY, presetW, 16, this::applyMiningPreset, null,
+                Preset.MINING.description()));
+        return y + h;
+    }
+
+    private void enableBlockMining() {
+        mod.restartModules(minecraft, () -> mod.config().runUndoable(() -> {
+            mod.clicker().attack.enabled.set(true);
+            mod.clicker().attackTarget.set(ClickerModule.AttackTarget.ENTITIES_AND_BLOCKS);
+        }));
+        mod.config().clearActiveProfile();
+        mod.saveConfig();
+        rebuildPreservingScroll();
+    }
+
+    private void applyMiningPreset() {
+        mod.restartModules(minecraft, () -> mod.config().runUndoable(() -> Preset.MINING.apply(mod)));
+        mod.saveConfig();
+        rebuildPreservingScroll();
     }
 
     // --- Cards ----------------------------------------------------------------------------------
@@ -1385,15 +1465,15 @@ public class ConfigScreen extends ModScreen {
                 scrollFromMouse(mouseY);
                 return true;
             }
-            if (isOverview()) {
-                for (Hit hit : List.copyOf(hits)) {
-                    Runnable action = button == 0 ? hit.left() : button == 1 ? hit.right() : null;
-                    if (action != null && hit.contains(mouseX, mouseY)) {
-                        playClick();
-                        action.run();
-                        return true;
-                    }
+            for (Hit hit : List.copyOf(hits)) {
+                Runnable action = button == 0 ? hit.left() : button == 1 ? hit.right() : null;
+                if (action != null && hit.contains(mouseX, mouseY)) {
+                    playClick();
+                    action.run();
+                    return true;
                 }
+            }
+            if (isOverview()) {
                 return super.clicked(mouseX, mouseY, button);
             }
             int cardX = viewX + CARD_MARGIN;

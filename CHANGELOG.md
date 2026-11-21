@@ -2,6 +2,18 @@
 
 All notable changes to **MultiClicker** will be documented in this file. In Russian: [CHANGELOG.ru.md](CHANGELOG.ru.md).
 
+## [2.8.3] - 2026-11-21
+### Added
+- **Mining setup prompt:** when **Clicker → Targets** is still set to *Entities*, the **Mining** tab now
+  shows a one-click **Enable block mining** / **Mining preset** card, and aiming at a block with a pickaxe,
+  shovel, hoe, shears or **Auto tool** shows a one-time hint above the hotbar.
+
+### Fixed
+- **HUD disappearing with F3+B hitboxes or F3+G chunk borders on Minecraft 1.21.9 – 26.3:** checked the F3
+  text overlay state directly (`isF3Visible` / `isOverlayVisible`) instead of
+  `DebugScreenOverlay.showDebugScreen()`, which also returns `true` whenever any persistent world debug
+  renderer is active.
+
 ## [2.8.2] - 2026-11-14
 ### Added
 - **Background blur** setting under **Interface** (off by default): lets players opt in to vanilla menu

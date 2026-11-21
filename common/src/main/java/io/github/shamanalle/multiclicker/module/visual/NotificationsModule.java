@@ -225,6 +225,16 @@ public class NotificationsModule extends Module {
         send(mc, "players_skipped", Integer.MAX_VALUE, Component.translatable("multiclicker.notify.players_skipped"));
     }
 
+    /** The crosshair rests on a block with a mining setup while Clicker targets only entities; once per start. */
+    public void blocksSkipped(Minecraft mc) {
+        send(mc, "blocks_skipped", Integer.MAX_VALUE, Component.translatable("multiclicker.notify.blocks_skipped"));
+    }
+
+    /** Whether the notification with the given key has been shown since the mod started. */
+    public boolean wasShown(String key) {
+        return lastShown.containsKey(key);
+    }
+
     /** A Totem of Undying saved the player while the mod was active. */
     public void totemUsed(Minecraft mc, boolean stopping) {
         if (stopping) {
@@ -380,7 +390,7 @@ public class NotificationsModule extends Module {
         }
         lastShown.put(key, ticks);
         show(mc, message, sound.get());
-        if (!"players_skipped".equals(key)) {
+        if (!"players_skipped".equals(key) && !"blocks_skipped".equals(key)) {
             attention(mc);
         }
         return true;

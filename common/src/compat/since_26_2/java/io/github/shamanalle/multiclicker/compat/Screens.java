@@ -28,9 +28,9 @@ public final class Screens {
         return mc.gui.hud.isHidden();
     }
 
-    /** Whether the F3 debug screen is open. */
+    /** Whether the F3 debug screen is open (ignoring world debug renderers like F3+B hitboxes). */
     public static boolean debugShown(Minecraft mc) {
-        return mc.getDebugOverlay().showDebugScreen();
+        return mc.debugEntries.isOverlayVisible();
     }
 
     /** Whether the active language has this translation key. */

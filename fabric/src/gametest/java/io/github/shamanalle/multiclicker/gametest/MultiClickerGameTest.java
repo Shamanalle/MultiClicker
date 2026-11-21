@@ -46,6 +46,7 @@ import io.github.shamanalle.multiclicker.module.clicker.ClickChannel;
 import io.github.shamanalle.multiclicker.module.clicker.ClickerModule;
 import io.github.shamanalle.multiclicker.module.clicker.Jitter;
 import io.github.shamanalle.multiclicker.module.visual.HighlightModule;
+import io.github.shamanalle.multiclicker.module.visual.HudModule;
 import io.github.shamanalle.multiclicker.stats.Counters;
 import io.github.shamanalle.multiclicker.stats.Stat;
 import io.github.shamanalle.multiclicker.stats.Statistics;
@@ -1180,6 +1181,58 @@ public class MultiClickerGameTest implements FabricClientGameTest {
             });
             context.setScreen(() -> null);
         }
+
+        // 6) Mining tab setup callout enables block mining in one click (and Undo restores ENTITIES).
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.clicker().attack.enabled.set(true);
+            mod.clicker().attackTarget.set(ClickerModule.AttackTarget.ENTITIES);
+        });
+        context.setScreen(() -> new ConfigScreen(null));
+        context.runOnClient(mc -> ((ConfigScreen) Screens.current(mc)).showCategory(Category.MINING));
+        context.waitTicks(10); // let category slide animation settle
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            ConfigScreen screen = (ConfigScreen) Screens.current(mc);
+            for (int dy = 44; dy <= 56 && !mod.clicker().minesBlocks(); dy += 10) {
+                clickScreen(screen, screen.contentX() + 20, screen.contentY() + dy, 0);
+            }
+            check(mod.clicker().minesBlocks() && mod.config().canUndo(),
+                    "clicking Enable block mining on Mining tab did not switch Targets with undo");
+        });
+        context.waitTicks(2);
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            ConfigScreen screen = (ConfigScreen) Screens.current(mc);
+            int panelW = Math.min(screen.width - 24, 640);
+            int panelH = Math.min(screen.height - 24, 400);
+            int panelX = (screen.width - panelW) / 2;
+            int panelY = (screen.height - panelH) / 2;
+            clickScreen(screen, panelX + panelW - 12, panelY + panelH - 8, 0);
+            check(!mod.clicker().minesBlocks() && !mod.config().canUndo(),
+                    "clicking Undo after enabling block mining did not restore Entities target");
+        });
+        context.setScreen(() -> null);
+
+        // 7) Aiming at a block with a pickaxe while Clicker targets only entities shows blocks_skipped hint once.
+        deactivate(context);
+        give(server, 0, new ItemStack(Items.IRON_PICKAXE));
+        server.runCommand("setblock 0 -60 2 minecraft:stone");
+        server.runCommand("tp @a 0.5 -60 0.5 0 30");
+        context.runOnClient(mc -> {
+            MultiClicker mod = MultiClicker.get();
+            mod.clicker().attack.enabled.set(true);
+            mod.clicker().attackTarget.set(ClickerModule.AttackTarget.ENTITIES);
+            Slots.select(mc.player.getInventory(), 0);
+        });
+        context.waitTicks(3);
+        activate(context);
+        waitUntil(context, "blocksSkipped hint to fire", 40,
+                mc -> MultiClicker.get().notifications().wasShown("blocks_skipped"));
+        check(context.computeOnClient(mc -> mc.level.getBlockState(new BlockPos(0, -60, 2)).is(Blocks.STONE)),
+                "block was broken while Targets was set to ENTITIES");
+        deactivate(context);
+        server.runCommand("setblock 0 -60 2 minecraft:air");
     }
 
     private static int sampleGuiPixel(BufferedImage image, int screenWidth, int screenHeight, double guiX, double guiY) {
@@ -1208,6 +1261,29 @@ public class MultiClickerGameTest implements FabricClientGameTest {
 
     private void hudScreenshots(ClientGameTestContext context, TestServerContext server) {
         hud(context, server, "");
+        try {
+            context.runOnClient(mc -> TestCompat.setHitboxes(mc, true));
+            context.waitTicks(2);
+            check(!context.computeOnClient(Screens::debugShown),
+                    "F3+B hitboxes caused Screens.debugShown to return true");
+            int[] size = context.computeOnClient(mc -> new int[] {
+                    mc.getWindow().getGuiScaledWidth(), mc.getWindow().getGuiScaledHeight()
+            });
+            BufferedImage hitboxImg = ImageIO.read(context.takeScreenshot("hud_with_hitboxes").toFile());
+            int hudAccent = sampleGuiPixel(hitboxImg, size[0], size[1], HudModule.MARGIN + 0.5, HudModule.MARGIN + 6.0);
+            checkRgbClose(hudAccent, 0xFF4F8CFF, 6, "HUD disappeared when entity hitboxes (F3+B) were enabled");
+
+            context.runOnClient(mc -> TestCompat.setDebugScreen(mc, true));
+            context.waitTicks(2);
+            check(context.computeOnClient(Screens::debugShown), "F3 overlay did not set Screens.debugShown");
+        } catch (IOException e) {
+            throw new AssertionError("Failed to read HUD hitbox screenshot", e);
+        } finally {
+            context.runOnClient(mc -> {
+                TestCompat.setDebugScreen(mc, false);
+                TestCompat.setHitboxes(mc, false);
+            });
+        }
     }
 
     private void hud(ClientGameTestContext context, TestServerContext server, String prefix) {

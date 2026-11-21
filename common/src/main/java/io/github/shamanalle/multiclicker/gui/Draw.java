@@ -1,6 +1,8 @@
 package io.github.shamanalle.multiclicker.gui;
 
 import net.minecraft.client.gui.Font;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import io.github.shamanalle.multiclicker.compat.Canvas;
 
 /** Small drawing helpers for a flat, rounded look built from plain fills. */
@@ -90,10 +92,16 @@ public final class Draw {
 
     /** Cuts the text with an ellipsis so that it fits into the given width. */
     public static String ellipsize(Font font, String text, int maxWidth) {
-        if (font.width(text) <= maxWidth) {
+        return ellipsize(font, text, Style.EMPTY, maxWidth);
+    }
+
+    /** Cuts text rendered with {@code style} (such as bold) with an ellipsis to fit {@code maxWidth}. */
+    public static String ellipsize(Font font, String text, Style style, int maxWidth) {
+        if (font.width(Component.literal(text).withStyle(style)) <= maxWidth) {
             return text;
         }
         String ellipsis = "…";
-        return font.plainSubstrByWidth(text, Math.max(0, maxWidth - font.width(ellipsis))) + ellipsis;
+        int ellipsisW = font.width(Component.literal(ellipsis).withStyle(style));
+        return font.getSplitter().plainHeadByWidth(text, Math.max(0, maxWidth - ellipsisW), style) + ellipsis;
     }
 }

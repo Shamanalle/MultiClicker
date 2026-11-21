@@ -24,4 +24,14 @@ final class TestCompat {
     static boolean overlayGone(Minecraft mc) {
         return mc.getOverlay() == null;
     }
+
+    static void setHitboxes(Minecraft mc, boolean shown) {
+        mc.getEntityRenderDispatcher().setRenderHitBoxes(shown);
+    }
+
+    static void setDebugScreen(Minecraft mc, boolean shown) {
+        if (mc.getDebugOverlay().showDebugScreen() != shown) {
+            mc.getDebugOverlay().toggleOverlay();
+        }
+    }
 }

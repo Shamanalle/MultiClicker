@@ -6,6 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -22,6 +23,7 @@ import io.github.shamanalle.multiclicker.setting.EnumSetting;
 import io.github.shamanalle.multiclicker.setting.IntSetting;
 import io.github.shamanalle.multiclicker.setting.Setting;
 import io.github.shamanalle.multiclicker.setting.Unit;
+import io.github.shamanalle.multiclicker.stats.Stat;
 import io.github.shamanalle.multiclicker.util.Input;
 import io.github.shamanalle.multiclicker.util.Players;
 
@@ -58,6 +60,8 @@ public class ClickerModule extends Module {
     private int attackCount;
     /** Ticks the crosshair has stayed on a player the target filter leaves alone. */
     private int skippedPlayerTicks;
+    /** Ticks the crosshair has stayed on a block while Clicker targets only entities. */
+    private int skippedBlockTicks;
     /** The player's own "pause on lost focus" option, restored when the clicker stops. */
     private Boolean savedPauseOnLostFocus;
     private final LootingSwap swap = new LootingSwap();
@@ -131,6 +135,7 @@ public class ClickerModule extends Module {
     public void start(Minecraft mc) {
         startDelayLeft = startDelay.get();
         skippedPlayerTicks = 0;
+        skippedBlockTicks = 0;
         attackCount = 0;
         resetChannels(mc);
         applyBackground(mc);
@@ -235,6 +240,11 @@ public class ClickerModule extends Module {
         }
     }
 
+    /** Whether the attack channel is currently configured to break blocks. */
+    public boolean minesBlocks() {
+        return isEnabled() && attack.enabled.get() && attackTarget.get() != AttackTarget.ENTITIES;
+    }
+
     /** Whether the attack channel is configured to hit entities with the currently held item. */
     public boolean canHighlightEntities(LocalPlayer player, MultiClicker mod) {
         if (!isEnabled() || !attack.enabled.get()) {
@@ -256,6 +266,7 @@ public class ClickerModule extends Module {
         hintSkippedPlayer(mc, mod, target);
         boolean charged = player.getAttackStrengthScale(0.5F) >= 1.0F;
         boolean onBlock = target == null && hit instanceof BlockHitResult && hit.getType() == HitResult.Type.BLOCK;
+        hintSkippedBlock(mc, player, mod, target, onBlock);
         // With cooldown sync the delay starts counting once the weapon is charged, so it is added on
         // top of the cooldown. Mining does not depend on the charge.
         boolean countDown = !attackCooldown.get() || onBlock || charged;
@@ -375,6 +386,31 @@ public class ClickerModule extends Module {
             }
         } else {
             skippedPlayerTicks = 0;
+        }
+    }
+
+    private static boolean isDedicatedMiningTool(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return false;
+        }
+        int k = Tools.kind(stack);
+        return k == Tools.PICKAXE || k == Tools.SHOVEL || k == Tools.HOE || stack.is(Items.SHEARS);
+    }
+
+    /**
+     * Clicker targets only entities by default, so aiming at stone with a pickaxe or Auto Tool does
+     * nothing. Once the crosshair has rested on a block for a second in that state, says why.
+     */
+    private void hintSkippedBlock(Minecraft mc, LocalPlayer player, MultiClicker mod, Entity target, boolean onBlock) {
+        boolean wantsMining = isDedicatedMiningTool(player.getMainHandItem())
+                || (mod.autoTool().isEnabled() && mod.stats().session().get(Stat.ATTACKS) == 0);
+        if (attackTarget.get() == AttackTarget.ENTITIES && target == null && onBlock && wantsMining
+                && !mc.level.getBlockState(((BlockHitResult) mc.hitResult).getBlockPos()).isAir()) {
+            if (++skippedBlockTicks == SKIPPED_PLAYER_HINT_TICKS) {
+                mod.notifications().blocksSkipped(mc);
+            }
+        } else {
+            skippedBlockTicks = 0;
         }
     }
 
